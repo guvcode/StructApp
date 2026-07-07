@@ -33,9 +33,7 @@ const userUpdateSchema = z.object({
 });
 
 function requireAdminMw(req: Request, _res: Response, next: NextFunction) {
-  if (req.user?.role !== 'Admin') {
-    return _res.status(403).json({ success: false, error_code: 'FORBIDDEN', message: 'Admin access required' });
-  }
+  if (req.user?.role !== 'Admin') return _res.status(403).json({ success: false, error_code: 'FORBIDDEN', message: 'Admin access required' });
   next();
 }
 
@@ -86,7 +84,7 @@ router.get('/:id/invite-link', requireAuth, requireRole('Admin'), async (req: Re
   } catch (err) { next(err); }
 });
 
-router.get('/', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+router.get('/', requireAdminMw, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const role = req.query.role as string | undefined;
     const rows = await userService.listUsers(role);
@@ -107,7 +105,7 @@ router.get('/:id', requireAuth, async (req: Request, res: Response, next: NextFu
   } catch (err) { next(err); }
 });
 
-router.patch('/:id', requireAuth, requireRole('Admin', 'Reviewer'), async (req: Request, res: Response, next: NextFunction) => {
+router.patch('/:id', requireAdminMw, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const input = userUpdateSchema.parse(req.body);
     const fields: Record<string, unknown> = {};
@@ -120,7 +118,7 @@ router.patch('/:id', requireAuth, requireRole('Admin', 'Reviewer'), async (req: 
   } catch (err) { next(err); }
 });
 
-router.post('/:id/deactivate', requireAuth, requireRole('Admin'), async (req: Request, res: Response, next: NextFunction) => {
+router.post('/:id/deactivate', requireAdminMw, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const found = await userService.deactivateUser(req.params.id);
     if (!found) return res.status(404).json({ success: false, error_code: 'NOT_FOUND', message: 'User not found' });
