@@ -1,0 +1,5 @@
+import { SYNC_BATCH_SIZE, DELIVERABLE_LINK_TTL_DAYS, SCHEDULE_LEAD_TIME_DAYS } from './constants';
+
+export const LEAD_TIME_DAYS = parseInt(process.env.LEAD_TIME_DAYS || '14', 10);
+export const MAX_SYNC_BATCH = SYNC_BATCH_SIZE;
+export const DELIVERABLE_TTL = DELIVERABLE_LINK_TTL_DAYS;

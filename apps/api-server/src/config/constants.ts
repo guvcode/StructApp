@@ -1,0 +1,4 @@
+export const SYNC_BATCH_SIZE = 100;
+export const DELIVERABLE_LINK_TTL_DAYS = 7;
+export const SCHEDULE_LEAD_TIME_DAYS = 14;
+export const MAX_PHOTOS_PER_DEFICIENCY = 20;
