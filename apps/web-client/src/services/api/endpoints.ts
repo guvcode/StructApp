@@ -109,6 +109,7 @@ export const ENDPOINTS = {
     retry: (id: string) => `${BASE_URL}/reports/jobs/${id}/retry`,
   },
   sync: {
+    state: `${BASE_URL}/sync/state`,
     push: `${BASE_URL}/sync/push-outbox`,
     pull: `${BASE_URL}/sync/pull-package`,
   },

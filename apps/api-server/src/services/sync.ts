@@ -178,6 +178,35 @@ export async function processSyncPush(
   }
 }
 
+// Lightweight sync state query (GET /sync/state)
+
+export async function getSyncState(
+  clientId: string,
+  userId: string
+): Promise<{ lastSync: string | null; pendingCount: number; status: string }> {
+  const lastSyncResult = await pool.query(
+    `SELECT MAX(created_at) AS last_sync
+     FROM sync_log
+     WHERE client_id = $1 AND user_id = $2`,
+    [clientId, userId],
+  );
+
+  const pendingResult = await pool.query(
+    `SELECT COUNT(*)::int AS count
+     FROM deficiency_records
+     WHERE client_id = $1 AND triage_state = 'New' AND synced_at IS NULL`,
+    [clientId],
+  );
+
+  return {
+    lastSync: lastSyncResult.rows[0]?.last_sync
+      ? new Date(lastSyncResult.rows[0].last_sync).toISOString()
+      : null,
+    pendingCount: pendingResult.rows[0]?.count ?? 0,
+    status: pendingResult.rows[0]?.count > 0 ? 'pending' : 'synced',
+  };
+}
+
 // Photo / Cloudinary streaming pipeline (INT-303)
 
 export async function processSyncPull(
