@@ -16,7 +16,7 @@ function getFirstClientId(session: import('../../types').AuthSession): string | 
 
 async function redirectAfterLogin(session: import('../../types').AuthSession, navigate: ReturnType<typeof useNavigate>) {
   const hasPin = await hasLocalPin();
-  if (!hasPin && navigator.onLine) {
+  if (!hasPin && navigator.onLine && session.user.role === 'contractor') {
     sessionStorage.setItem('pin_setup_prompt', 'true');
   }
   const membershipCount = getClientMembershipCount(session);

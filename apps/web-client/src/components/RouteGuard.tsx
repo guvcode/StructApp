@@ -35,7 +35,7 @@ export default function RouteGuard() {
     return <Navigate to="/login" replace />;
   }
 
-  if (sessionStorage.getItem('pin_setup_prompt') === 'true' && pathname !== '/m/setup-pin') {
+  if (sessionStorage.getItem('pin_setup_prompt') === 'true' && pathname !== '/m/setup-pin' && pathname.startsWith('/m/')) {
     sessionStorage.removeItem('pin_setup_prompt');
     return <Navigate to="/m/setup-pin" replace />;
   }
