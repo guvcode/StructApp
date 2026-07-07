@@ -74,7 +74,7 @@ export async function fetchSession(): Promise<AuthSession | null> {
 export async function inviteUser(email: string, role: string, clientId: string, display_name?: string): Promise<{ user_id: string }> {
   return apiClient<{ success: boolean; data: { user_id: string } }>(ENDPOINTS.auth.invite, {
     method: 'POST',
-    body: JSON.stringify({ email, role, client_id: clientId, display_name }),
+    body: JSON.stringify({ email, role: mapToBackendRole(role), client_id: clientId, display_name }),
   }).then(r => r.data);
 }
 
