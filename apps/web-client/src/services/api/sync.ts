@@ -3,10 +3,10 @@ import { ENDPOINTS } from './endpoints';
 import type { SyncStateInfo } from '../../types';
 
 export async function getSyncState(): Promise<SyncStateInfo> {
-  return apiClient(ENDPOINTS.sync.pull);
+  return apiClient<SyncStateInfo>(ENDPOINTS.sync.state);
 }
 
 export async function getPendingCount(): Promise<number> {
-  const data = await apiClient<{ pendingCount: number }>(`${ENDPOINTS.sync.push}?count=true`);
+  const data = await apiClient<{ pendingCount: number }>(ENDPOINTS.sync.state);
   return data.pendingCount;
 }
