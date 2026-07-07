@@ -1,12 +1,28 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import { requireAuth, requireRole } from '../middleware/auth';
 import { pool } from '../lib/db';
 import { logger } from '../lib/logger';
 import * as userService from '../services/users';
 
 const router = Router();
+
+const ACTIVATE_TOKEN_SECRET = process.env.JWT_ACCESS_SECRET || 'fallback-activate-secret';
+
+function generateInviteToken(userId: string, email: string): string {
+  return jwt.sign(
+    { sub: userId, email, purpose: 'invite' },
+    ACTIVATE_TOKEN_SECRET,
+    { expiresIn: '7d', issuer: 'structapp-app', audience: 'structapp-api' },
+  );
+}
+
+function getInviteUrl(token: string): string {
+  const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  return `${baseUrl}/activate?token=${token}`;
+}
 
 const userUpdateSchema = z.object({
   role: z.enum(['Admin', 'Reviewer', 'Contractor']).optional(),
@@ -16,12 +32,60 @@ const userUpdateSchema = z.object({
   })).optional(),
 });
 
+router.post('/:id/resend-invite', requireAuth, requireRole('Admin'), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user = await pool.query(
+      'SELECT user_id, email, invite_accepted_at FROM users WHERE user_id = $1',
+      [req.params.id],
+    );
+    if (user.rowCount === 0) {
+      return res.status(404).json({ success: false, error_code: 'NOT_FOUND', message: 'User not found' });
+    }
+    if (user.rows[0].invite_accepted_at) {
+      return res.status(400).json({ success: false, error_code: 'ALREADY_ACTIVATED', message: 'User has already accepted the invite' });
+    }
+    const token = generateInviteToken(user.rows[0].user_id, user.rows[0].email);
+    const inviteLink = getInviteUrl(token);
+    await pool.query(
+      'UPDATE users SET invite_token = $1, invite_sent_at = NOW() WHERE user_id = $2',
+      [token, user.rows[0].user_id],
+    );
+    logger.info('Invite resent', { userId: user.rows[0].user_id, email: user.rows[0].email });
+    res.json({ success: true, data: { invite_link: inviteLink, invite_sent_at: new Date().toISOString() } });
+  } catch (err) { next(err); }
+});
+
+router.get('/:id/invite-link', requireAuth, requireRole('Admin'), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user = await pool.query(
+      'SELECT user_id, email, invite_token, invite_accepted_at, invite_sent_at FROM users WHERE user_id = $1',
+      [req.params.id],
+    );
+    if (user.rowCount === 0) {
+      return res.status(404).json({ success: false, error_code: 'NOT_FOUND', message: 'User not found' });
+    }
+    const row = user.rows[0];
+    const isActivated = !!row.invite_accepted_at;
+    const inviteLink = row.invite_token ? getInviteUrl(row.invite_token) : null;
+    res.json({
+      success: true,
+      data: {
+        is_activated: isActivated,
+        invite_link: inviteLink,
+        invite_sent_at: row.invite_sent_at || null,
+        invite_accepted_at: row.invite_accepted_at || null,
+      },
+    });
+  } catch (err) { next(err); }
+});
+
 router.get('/', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const role = req.query.role as string | undefined;
     const rows = await userService.listUsers(role);
     const users = rows.map(r => ({
       id: r.user_id, email: r.email, display_name: r.display_name, role: r.role, is_active: r.is_active,
+      last_login_at: r.last_login_at || null, invite_accepted_at: r.invite_accepted_at || null,
       client_memberships: r.client_memberships,
     }));
     res.json({ success: true, data: users });

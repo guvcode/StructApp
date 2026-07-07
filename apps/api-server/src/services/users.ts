@@ -6,10 +6,12 @@ type UserRow = {
   display_name: string | null;
   role: string;
   is_active: boolean;
+  last_login_at: string | null;
+  invite_accepted_at: string | null;
 };
 
 export async function listUsers(role?: string): Promise<UserRow[]> {
-  let query = 'SELECT user_id, email, display_name, role, is_active FROM users WHERE is_active = TRUE';
+  let query = 'SELECT user_id, email, display_name, role, is_active, last_login_at, invite_accepted_at FROM users WHERE is_active = TRUE';
   const params: unknown[] = [];
   if (role) { query += ' AND role = $1'; params.push(role); }
   query += ' ORDER BY email ASC';
@@ -25,7 +27,7 @@ export async function listUsers(role?: string): Promise<UserRow[]> {
 
 export async function getUserById(userId: string): Promise<(UserRow & { client_memberships: Array<{ client_id: string }> }) | null> {
   const result = await pool.query(
-    'SELECT user_id, email, display_name, role, is_active FROM users WHERE user_id = $1',
+    'SELECT user_id, email, display_name, role, is_active, last_login_at, invite_accepted_at FROM users WHERE user_id = $1',
     [userId],
   );
   if (result.rowCount === 0 || !result.rows[0]) return null;

@@ -1,7 +1,10 @@
 import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import { useUsers, useUpdateUser, useDeactivateUser } from '../../hooks/useUsers';
 import { useClients } from '../../hooks/useClients';
+import { resendInvite, getInviteLink } from '../../services/api/users';
 import type { User } from '../../types';
 import { UserRole } from '../../types';
 import Card from '../../components/Card';
@@ -15,6 +18,53 @@ const roleOptions = [
   { value: UserRole.inspector, label: 'Inspector' },
   { value: UserRole.owner, label: 'Owner' },
 ];
+
+function InviteActions({ user }: { user: User }) {
+  const queryClient = useQueryClient();
+  const isActivated = !!user.invite_accepted_at || !!user.last_login_at;
+
+  const resendMutation = useMutation({
+    mutationFn: () => resendInvite(user.id),
+    onSuccess: (data) => {
+      navigator.clipboard.writeText(data.invite_link);
+      toast.success('New invite link copied to clipboard');
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+    },
+    onError: () => toast.error('Failed to resend invite'),
+  });
+
+  return isActivated ? (
+    <span className="text-xs text-green-600 font-medium">Accepted</span>
+  ) : (
+    <div className="flex gap-1">
+      <button
+        onClick={() => resendMutation.mutate()}
+        disabled={resendMutation.isPending}
+        className="px-2 py-1 text-xs text-accent hover:bg-accent/10 font-medium rounded transition-colors disabled:opacity-50"
+      >
+        {resendMutation.isPending ? 'Sending...' : 'Resend'}
+      </button>
+      <button
+        onClick={async () => {
+          try {
+            const data = await getInviteLink(user.id);
+            if (data.invite_link) {
+              navigator.clipboard.writeText(data.invite_link);
+              toast.success('Invite link copied');
+            } else {
+              toast.error('No invite link available');
+            }
+          } catch {
+            toast.error('Failed to get invite link');
+          }
+        }}
+        className="px-2 py-1 text-xs text-accent hover:bg-accent/10 font-medium rounded transition-colors"
+      >
+        Copy
+      </button>
+    </div>
+  );
+}
 
 function UserEditDrawer({
   user,
@@ -172,6 +222,7 @@ export default function UserListPage() {
                   <th className="px-6 py-3 text-text-secondary font-semibold">Role</th>
                   <th className="px-6 py-3 text-text-secondary font-semibold">Clients</th>
                   <th className="px-6 py-3 text-text-secondary font-semibold">Active</th>
+                  <th className="px-6 py-3 text-text-secondary font-semibold">Invite</th>
                   <th className="px-6 py-3 text-text-secondary font-semibold">Actions</th>
                 </tr>
               </thead>
@@ -193,6 +244,13 @@ export default function UserListPage() {
                       <span className={`inline-block px-2 py-0.5 text-xs rounded-full ${u.is_active ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
                         {u.is_active ? 'Active' : 'Inactive'}
                       </span>
+                    </td>
+                    <td className="py-4">
+                      {u.is_active ? (
+                        <InviteActions user={u} />
+                      ) : (
+                        <span className="text-text-tertiary text-xs">—</span>
+                      )}
                     </td>
                     <td className="py-4">
                       <div className="flex gap-2">

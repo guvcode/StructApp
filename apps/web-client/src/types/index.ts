@@ -145,6 +145,8 @@ export interface User {
   role: UserRole;
   avatar_url?: string;
   is_active: boolean;
+  last_login_at?: string | null;
+  invite_accepted_at?: string | null;
   client_memberships: ClientMembership[];
 }
 

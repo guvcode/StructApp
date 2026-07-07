@@ -24,6 +24,7 @@ export const ENDPOINTS = {
     deactivate: (id: string) => `${BASE_URL}/users/${id}/deactivate`,
     byRole: (role: string) => `${BASE_URL}/users?role=${role}`,
     resendInvite: (id: string) => `${BASE_URL}/users/${id}/resend-invite`,
+    inviteLink: (id: string) => `${BASE_URL}/users/${id}/invite-link`,
     revokeInvite: (id: string) => `${BASE_URL}/users/${id}/revoke-invite`,
     resetPassword: (id: string) => `${BASE_URL}/users/${id}/reset-password`,
     resetPin: (id: string) => `${BASE_URL}/users/${id}/reset-pin`,

@@ -1,13 +1,35 @@
 import { Router, Request, Response, NextFunction } from 'express';
+import { z } from 'zod';
 import bcrypt from 'bcryptjs';
-import rateLimit from 'express-rate-limit';
-import { loginSchema, refreshSchema, inviteSchema, switchClientSchema, forgotPasswordSchema, resetPasswordSchema } from '../contracts/auth';
-import { login, verifyRefreshToken, refreshAccessToken, switchClient, forgotPassword, resetPassword } from '../services/auth';
-import { logger } from '../lib/logger';
-import { pool } from '../lib/db';
+import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import { requireAuth, requireRole } from '../middleware/auth';
+import { pool } from '../lib/db';
+import { logger } from '../lib/logger';
+import { loginSchema, inviteSchema, switchClientSchema, forgotPasswordSchema, resetPasswordSchema } from '../contracts/auth';
+import { login, refreshAccessToken, switchClient, forgotPassword, resetPassword } from '../services/auth';
 
 const router = Router();
+
+const ACTIVATE_TOKEN_SECRET = process.env.JWT_ACCESS_SECRET || 'fallback-activate-secret';
+
+function generateInviteToken(userId: string, email: string): string {
+  return jwt.sign(
+    { sub: userId, email, purpose: 'invite' },
+    ACTIVATE_TOKEN_SECRET,
+    { expiresIn: '7d', issuer: 'structapp-app', audience: 'structapp-api' },
+  );
+}
+
+function getInviteUrl(token: string): string {
+  const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  return `${baseUrl}/activate?token=${token}`;
+}
+
+const activateSchema = z.object({
+  token: z.string().min(1),
+  password: z.string().min(8),
+});
 
 const forgotPasswordLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -75,7 +97,7 @@ router.post('/refresh', async (req: Request, res: Response, next: NextFunction) 
 router.post('/invite', requireAuth, requireRole('Admin'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const input = inviteSchema.parse(req.body);
-    const passwordHash = await bcrypt.hash(require('crypto').randomBytes(16).toString('hex'), 10);
+    const passwordHash = await bcrypt.hash(crypto.randomBytes(16).toString('hex'), 10);
     const result = await pool.query(
       `INSERT INTO users (email, password_hash, role, is_active, display_name)
        VALUES ($1, $2, $3, TRUE, $4)
@@ -87,14 +109,66 @@ router.post('/invite', requireAuth, requireRole('Admin'), async (req: Request, r
        VALUES ($1, $2)`,
       [result.rows[0].user_id, input.client_id],
     );
-    logger.info('User invited', { userId: result.rows[0].user_id, email: input.email, role: input.role, clientId: input.client_id });
-    res.status(201).json({ success: true, data: { user_id: result.rows[0].user_id } });
+
+    const userId = result.rows[0].user_id;
+    const token = generateInviteToken(userId, input.email);
+    const inviteLink = getInviteUrl(token);
+
+    await pool.query(
+      'UPDATE users SET invite_token = $1, invite_sent_at = NOW() WHERE user_id = $2',
+      [token, userId],
+    );
+
+    logger.info('User invited', { userId, email: input.email, role: input.role, clientId: input.client_id });
+    res.status(201).json({
+      success: true,
+      data: {
+        user_id: userId,
+        invite_link: inviteLink,
+        invite_sent_at: new Date().toISOString(),
+      },
+    });
   } catch (err: unknown) {
     const pgErr = err as { code?: string } | undefined;
     if (pgErr?.code === '23505') {
       return res.status(409).json({ success: false, error_code: 'EMAIL_EXISTS', message: 'A user with this email already exists' });
     }
     logger.error('Invite failed', { email: req.body.email, error: err });
+    next(err);
+  }
+});
+
+router.post('/activate', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const input = activateSchema.parse(req.body);
+    let payload: { sub: string; email: string; purpose: string };
+    try {
+      payload = jwt.verify(input.token, ACTIVATE_TOKEN_SECRET) as typeof payload;
+    } catch {
+      return res.status(401).json({ success: false, error_code: 'INVALID_TOKEN', message: 'Invalid or expired invite token' });
+    }
+    if (payload.purpose !== 'invite') {
+      return res.status(400).json({ success: false, error_code: 'INVALID_TOKEN', message: 'Invalid token purpose' });
+    }
+    const user = await pool.query(
+      'SELECT user_id, invite_token, invite_accepted_at FROM users WHERE user_id = $1 AND email = $2',
+      [payload.sub, payload.email],
+    );
+    if (user.rowCount === 0) {
+      return res.status(404).json({ success: false, error_code: 'NOT_FOUND', message: 'User not found' });
+    }
+    if (user.rows[0].invite_accepted_at) {
+      return res.status(400).json({ success: false, error_code: 'ALREADY_ACTIVATED', message: 'Invite already accepted' });
+    }
+    const passwordHash = await bcrypt.hash(input.password, 10);
+    await pool.query(
+      'UPDATE users SET password_hash = $1, invite_accepted_at = NOW(), invite_token = NULL WHERE user_id = $2',
+      [passwordHash, payload.sub],
+    );
+    logger.info('User activated', { userId: payload.sub, email: payload.email });
+    res.json({ success: true, data: { message: 'Account activated' } });
+  } catch (err) {
+    logger.error('Activate failed', { error: err });
     next(err);
   }
 });
