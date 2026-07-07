@@ -86,3 +86,19 @@ export async function activateInvite(token: string, password: string): Promise<{
     body: JSON.stringify({ token, password }),
   });
 }
+
+export async function syncPinToServer(pinHash: string): Promise<void> {
+  await apiClient(ENDPOINTS.auth.pin, {
+    method: 'POST',
+    body: JSON.stringify({ pin_hash: pinHash }),
+  });
+}
+
+export async function checkServerPin(): Promise<boolean> {
+  const result = await apiClient<{ has_pin: boolean }>(ENDPOINTS.auth.pin);
+  return result?.has_pin ?? false;
+}
+
+export async function clearServerPin(): Promise<void> {
+  await apiClient(ENDPOINTS.auth.pin, { method: 'DELETE' });
+}

@@ -182,22 +182,45 @@ export async function processSyncPush(
 
 export async function getSyncState(
   clientId: string,
-  _userId: string
+  userId: string
 ): Promise<{ lastSync: string | null; pendingCount: number; status: string }> {
-  const pendingResult = await pool.query(
-    `SELECT COUNT(*)::int AS count
-     FROM deficiency_records
-     WHERE client_id = $1 AND triage_state = 'New'`,
-    [clientId],
-  );
+  const [lastSyncResult, pendingResult] = await Promise.all([
+    pool.query(
+      `SELECT created_at FROM sync_log
+       WHERE client_id = $1 AND user_id = $2
+       ORDER BY created_at DESC LIMIT 1`,
+      [clientId, userId],
+    ),
+    pool.query(
+      `SELECT COUNT(*)::int AS count
+       FROM deficiency_records
+       WHERE client_id = $1 AND triage_state = 'New'`,
+      [clientId],
+    ),
+  ]);
 
   const count = pendingResult.rows[0]?.count ?? 0;
 
   return {
-    lastSync: null,
+    lastSync: lastSyncResult.rows[0]?.created_at
+      ? new Date(lastSyncResult.rows[0].created_at).toISOString()
+      : null,
     pendingCount: count,
     status: count > 0 ? 'pending' : 'synced',
   };
+}
+
+export async function logSyncAction(
+  clientId: string,
+  userId: string,
+  action: 'push' | 'pull',
+  itemCount: number = 0,
+): Promise<void> {
+  await pool.query(
+    `INSERT INTO sync_log (client_id, user_id, action, item_count, created_at)
+     VALUES ($1, $2, $3, $4, NOW())`,
+    [clientId, userId, action, itemCount],
+  );
 }
 
 // Photo / Cloudinary streaming pipeline (INT-303)

@@ -7,6 +7,8 @@ export type AuthState = {
   clientId: string;
   userId: string;
   role: 'Admin' | 'Reviewer' | 'Contractor';
+  pinHash?: string;
+  userData?: string;
 };
 
 export type DeficiencyRecord = {
@@ -64,6 +66,12 @@ export class StructAppLocalDB extends Dexie {
       authState: 'id, accessToken, refreshToken, clientId, userId, role',
       deficiencies: '++localId, inspectionId, syncState',
       pinOutbox: '++localId, structureId, pinMode, createdAt',
+    });
+    this.version(2).stores({
+      authState: 'id, accessToken, refreshToken, clientId, userId, role',
+      deficiencies: '++localId, inspectionId, syncState',
+      pinOutbox: '++localId, structureId, pinMode, createdAt',
+    }).upgrade(tx => {
     });
   }
 }

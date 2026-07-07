@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import { z } from 'zod';
 import { pool } from './lib/db';
 import { logger } from './lib/logger';
 import pinoHttp from 'pino-http';
@@ -70,6 +71,9 @@ app.get('/health', (_req, res) => {
 });
 
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  if (err instanceof z.ZodError) {
+    return res.status(400).json({ success: false, error_code: 'VALIDATION_ERROR', message: 'Invalid request body', details: err.errors });
+  }
   logger.error({ err }, 'Unhandled error');
   res.status(500).json({ success: false, error_code: 'INTERNAL_ERROR', message: 'An unexpected error occurred' });
 });

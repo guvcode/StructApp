@@ -3,7 +3,7 @@ import { isAuthenticated, getUserRole } from '../lib/authStore';
 
 function isPublicRoute(pathname: string): boolean {
   const path = pathname.toLowerCase();
-  return ['/login', '/activate', '/select-client', '/session-expired'].some(r => path.startsWith(r));
+  return ['/login', '/activate', '/select-client', '/session-expired', '/m/setup-pin'].some(r => path.startsWith(r));
 }
 
 function getRouteRole(pathname: string): string | null {
@@ -33,6 +33,11 @@ export default function RouteGuard() {
 
   if (!isAuthenticated()) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (sessionStorage.getItem('pin_setup_prompt') === 'true' && pathname !== '/m/setup-pin') {
+    sessionStorage.removeItem('pin_setup_prompt');
+    return <Navigate to="/m/setup-pin" replace />;
   }
 
   const role = getUserRole();
