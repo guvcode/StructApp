@@ -16,6 +16,7 @@ export const ENDPOINTS = {
     switchClient: `${BASE_URL}/auth/switch-client`,
     forgotPassword: `${BASE_URL}/auth/forgot-password`,
     resetPassword: `${BASE_URL}/auth/reset-password`,
+    pin: `${BASE_URL}/auth/pin`,
   },
   users: {
     list: `${BASE_URL}/users`,

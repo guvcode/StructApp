@@ -10,6 +10,8 @@ import { logger } from '../lib/logger';
 import { loginSchema, inviteSchema, switchClientSchema, forgotPasswordSchema, resetPasswordSchema } from '../contracts/auth';
 import { login, refreshAccessToken, switchClient, forgotPassword, resetPassword } from '../services/auth';
 
+import { hashPin } from '../services/pin';
+
 const router = Router();
 
 const ACTIVATE_TOKEN_SECRET = process.env.JWT_ACCESS_SECRET || 'fallback-activate-secret';
@@ -23,7 +25,7 @@ function generateInviteToken(userId: string, email: string): string {
 }
 
 function getInviteUrl(token: string): string {
-  const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const baseUrl = process.env.FRONTEND_URL || process.env.CORS_ORIGIN || 'http://localhost:3000';
   return `${baseUrl}/activate?token=${token}`;
 }
 
@@ -220,6 +222,39 @@ router.post('/reset-password', resetPasswordLimiter, async (req: Request, res: R
     }
     next(err);
   }
+});
+
+router.post('/pin', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const schema = z.object({ pin_hash: z.string().min(1) });
+    const { pin_hash } = schema.parse(req.body);
+    const hashed = await hashPin(pin_hash);
+    await pool.query(
+      'UPDATE users SET pin_hash = $1, pin_set_at = NOW(), must_set_pin = FALSE WHERE user_id = $2',
+      [hashed, req.user!.sub],
+    );
+    res.json({ success: true });
+  } catch (err) { next(err); }
+});
+
+router.get('/pin', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const result = await pool.query(
+      'SELECT pin_hash IS NOT NULL AS has_pin FROM users WHERE user_id = $1',
+      [req.user!.sub],
+    );
+    res.json({ success: true, data: { has_pin: result.rows[0]?.has_pin || false } });
+  } catch (err) { next(err); }
+});
+
+router.delete('/pin', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await pool.query(
+      'UPDATE users SET pin_hash = NULL, pin_set_at = NULL, must_set_pin = TRUE WHERE user_id = $1',
+      [req.user!.sub],
+    );
+    res.json({ success: true });
+  } catch (err) { next(err); }
 });
 
 export const authRouter = router;
