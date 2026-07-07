@@ -15,7 +15,7 @@
 | 2 | 3 | 0 | 0 | 3 | 0 |
 | 3 | 6 | 2 | 1 | 4 | 0 |
 | 4 | 2 | 2 | 0 | 0 | 0 |
-| 5 | 34 | 1 | 0 | 33 | 0 |
+| 5 | 34 | 0 | 0 | 34 | 0 |
 | 6 | 20 | 20 | 0 | 0 | 0 |
 | B1 | 7 | 0 | 0 | 7 | 0 |
 | B2 | 10 | 0 | 0 | 10 | 0 |
@@ -44,6 +44,7 @@
 | PWA-205 | Workbox service worker | 4 | 🟩 COMPLETED | UI freeze |
 | PWA-206 | Token refresh-on-sync flow (ADR-010) | 3 | 🟩 COMPLETED | ST-103 |
 | PWA-207 | `<QrScanButton>` component | 2 | 🟩 COMPLETED | None |
+| PWA-208 | Offline PIN login (SHA-256 local verify, server argon2 sync) | 5 | 🟩 COMPLETED | PWA-202 |
 
 ## 10.3 Integration & Business Logic Track (v2)
 
