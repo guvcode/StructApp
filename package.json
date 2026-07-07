@@ -1,0 +1,17 @@
+{
+  "name": "structapp",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=apps/web-client",
+    "dev:api": "npm run dev --workspace=apps/api-server",
+    "lint": "node scripts/check-no-effect-fetch.js",
+    "typecheck": "npx tsc --noEmit -p apps/api-server/tsconfig.json"
+  },
+  "dependencies": {
+    "react-router-dom": "^7.18.0"
+  }
+}

@@ -1,0 +1,54 @@
+import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
+import { usePicklists } from '../../hooks/usePicklists';
+import Skeleton from '../../components/Skeleton';
+
+export default function PicklistLandingPage() {
+  const { data: ct = [] } = usePicklists('component-types');
+  const { data: wt = [] } = usePicklists('work-types');
+  const { data: st = [] } = usePicklists('structure-types');
+  const loading = ct.length === 0 && wt.length === 0 && st.length === 0;
+
+  if (loading) {
+    return (
+      <div className="p-6 animate-fadeIn space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Skeleton className="h-32 rounded-lg" />
+          <Skeleton className="h-32 rounded-lg" />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 animate-fadeIn">
+      <h2 className="text-2xl font-bold text-text-primary mb-6">Categories</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Link
+          to="/categories/component-types"
+          className="block p-6 bg-surface-primary rounded-lg border border-border hover:shadow-md transition-shadow"
+        >
+          <h3 className="text-lg font-semibold text-text-primary">Component Types</h3>
+          <p className="text-3xl font-bold text-accent mt-2">{ct.length}</p>
+          <p className="text-text-secondary text-sm mt-1">Manage component types</p>
+        </Link>
+        <Link
+          to="/categories/work-types"
+          className="block p-6 bg-surface-primary rounded-lg border border-border hover:shadow-md transition-shadow"
+        >
+          <h3 className="text-lg font-semibold text-text-primary">Work Types</h3>
+          <p className="text-3xl font-bold text-accent mt-2">{wt.length}</p>
+          <p className="text-text-secondary text-sm mt-1">Manage work types</p>
+        </Link>
+        <Link
+          to="/categories/structure-types"
+          className="block p-6 bg-surface-primary rounded-lg border border-border hover:shadow-md transition-shadow"
+        >
+          <h3 className="text-lg font-semibold text-text-primary">Structure Types</h3>
+          <p className="text-3xl font-bold text-accent mt-2">{st.length}</p>
+          <p className="text-text-secondary text-sm mt-1">Manage structure types</p>
+        </Link>
+      </div>
+    </div>
+  );
+}

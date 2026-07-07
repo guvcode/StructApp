@@ -1,0 +1,144 @@
+import { pool } from '../lib/db';
+
+export async function listProjects(clientId?: string): Promise<Array<Record<string, unknown>>> {
+  let query = 'SELECT project_id, client_id, title, type, due_date, created_at, updated_at FROM projects';
+  const params: unknown[] = [];
+  if (clientId) { query += ' WHERE client_id = $1'; params.push(clientId); }
+  query += ' ORDER BY title ASC';
+  const result = await pool.query(query, params);
+  return result.rows;
+}
+
+export async function getProjectById(projectId: string): Promise<Record<string, unknown> | null> {
+  const result = await pool.query(
+    'SELECT project_id, client_id, title, type, due_date, created_at, updated_at FROM projects WHERE project_id = $1',
+    [projectId],
+  );
+  return result.rows[0] || null;
+}
+
+export async function createProject(input: {
+  client_id: string; title: string; type: string; due_date: string;
+}): Promise<Record<string, unknown>> {
+  const result = await pool.query(
+    'INSERT INTO projects (client_id, title, type, due_date) VALUES ($1, $2, $3, $4) RETURNING project_id, client_id, title, type, due_date, created_at, updated_at',
+    [input.client_id, input.title, input.type, input.due_date],
+  );
+  return result.rows[0];
+}
+
+export async function updateProject(projectId: string, fields: Record<string, unknown>): Promise<Record<string, unknown> | null> {
+  const setClauses: string[] = [];
+  const params: unknown[] = [];
+  let idx = 1;
+  for (const [key, value] of Object.entries(fields)) {
+    setClauses.push(`${key} = $${idx++}`);
+    params.push(value);
+  }
+  if (setClauses.length === 0) return null;
+  params.push(projectId);
+  const result = await pool.query(
+    `UPDATE projects SET ${setClauses.join(', ')} WHERE project_id = $${idx}
+     RETURNING project_id, client_id, title, type, due_date, created_at, updated_at`,
+    params,
+  );
+  return result.rows[0] || null;
+}
+
+export async function listSites(projectId?: string): Promise<Array<Record<string, unknown>>> {
+  let query = 'SELECT site_id, project_id, client_id, name, iana_timezone, created_at, updated_at FROM sites';
+  const params: unknown[] = [];
+  if (projectId) { query += ' WHERE project_id = $1'; params.push(projectId); }
+  query += ' ORDER BY name ASC';
+  const result = await pool.query(query, params);
+  return result.rows;
+}
+
+export async function getSiteById(siteId: string): Promise<Record<string, unknown> | null> {
+  const result = await pool.query(
+    'SELECT site_id, project_id, client_id, name, iana_timezone, created_at, updated_at FROM sites WHERE site_id = $1',
+    [siteId],
+  );
+  return result.rows[0] || null;
+}
+
+export async function createSite(input: {
+  project_id: string; name: string; iana_timezone?: string;
+}): Promise<Record<string, unknown>> {
+  const result = await pool.query(
+    'INSERT INTO sites (project_id, name, iana_timezone) VALUES ($1, $2, $3) RETURNING site_id, project_id, client_id, name, iana_timezone, created_at, updated_at',
+    [input.project_id, input.name, input.iana_timezone || 'UTC'],
+  );
+  return result.rows[0];
+}
+
+export async function updateSite(siteId: string, fields: Record<string, unknown>): Promise<Record<string, unknown> | null> {
+  const setClauses: string[] = [];
+  const params: unknown[] = [];
+  let idx = 1;
+  for (const [key, value] of Object.entries(fields)) {
+    setClauses.push(`${key} = $${idx++}`);
+    params.push(value);
+  }
+  if (setClauses.length === 0) return null;
+  params.push(siteId);
+  const result = await pool.query(
+    `UPDATE sites SET ${setClauses.join(', ')} WHERE site_id = $${idx}
+     RETURNING site_id, project_id, client_id, name, iana_timezone, created_at, updated_at`,
+    params,
+  );
+  return result.rows[0] || null;
+}
+
+export async function listStructures(siteId?: string): Promise<Array<Record<string, unknown>>> {
+  let query = 'SELECT structure_id, site_id, client_id, asset_tag, description, qr_code_value, created_at, updated_at FROM structures';
+  const params: unknown[] = [];
+  if (siteId) { query += ' WHERE site_id = $1'; params.push(siteId); }
+  query += ' ORDER BY asset_tag ASC';
+  const result = await pool.query(query, params);
+  return result.rows;
+}
+
+export async function searchStructures(queryStr: string): Promise<Array<Record<string, unknown>>> {
+  const result = await pool.query(
+    "SELECT structure_id, site_id, client_id, asset_tag, description, qr_code_value, created_at, updated_at FROM structures WHERE asset_tag ILIKE $1 OR description ILIKE $1 ORDER BY asset_tag ASC LIMIT 50",
+    [`%${queryStr}%`],
+  );
+  return result.rows;
+}
+
+export async function getStructureById(structureId: string): Promise<Record<string, unknown> | null> {
+  const result = await pool.query(
+    'SELECT structure_id, site_id, client_id, asset_tag, description, qr_code_value, created_at, updated_at FROM structures WHERE structure_id = $1',
+    [structureId],
+  );
+  return result.rows[0] || null;
+}
+
+export async function createStructure(input: {
+  site_id: string; asset_tag: string; description: string; qr_code_value?: string;
+}): Promise<Record<string, unknown>> {
+  const result = await pool.query(
+    'INSERT INTO structures (site_id, asset_tag, description, qr_code_value) VALUES ($1, $2, $3, $4) RETURNING structure_id, site_id, client_id, asset_tag, description, qr_code_value, created_at, updated_at',
+    [input.site_id, input.asset_tag, input.description, input.qr_code_value || null],
+  );
+  return result.rows[0];
+}
+
+export async function updateStructure(structureId: string, fields: Record<string, unknown>): Promise<Record<string, unknown> | null> {
+  const setClauses: string[] = [];
+  const params: unknown[] = [];
+  let idx = 1;
+  for (const [key, value] of Object.entries(fields)) {
+    setClauses.push(`${key} = $${idx++}`);
+    params.push(value);
+  }
+  if (setClauses.length === 0) return null;
+  params.push(structureId);
+  const result = await pool.query(
+    `UPDATE structures SET ${setClauses.join(', ')} WHERE structure_id = $${idx}
+     RETURNING structure_id, site_id, client_id, asset_tag, description, qr_code_value, created_at, updated_at`,
+    params,
+  );
+  return result.rows[0] || null;
+}

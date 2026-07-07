@@ -1,0 +1,1850 @@
+{
+  "name": "NALA Asset Integrity Assessment Form",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "NALA Asset Integrity Assessment",
+        "formDescription": "Nerizon – Glencore NALA Structural Integrity Assessment. Page 1: asset details + Category. Page 2 shows the deficiency options specific to the Category you select. P1/P2 (critical) findings require at least one photo.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Site",
+              "fieldType": "dropdown",
+              "fieldName": "site",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Bell Mine"
+                  },
+                  {
+                    "option": "Blackbird Mine"
+                  },
+                  {
+                    "option": "Brenda Mine"
+                  },
+                  {
+                    "option": "Brunswick Mine"
+                  },
+                  {
+                    "option": "Geco/Wilroy Mine"
+                  },
+                  {
+                    "option": "Grey Eagle Mine"
+                  },
+                  {
+                    "option": "Heath Steele Mine"
+                  },
+                  {
+                    "option": "Matagami Mine"
+                  },
+                  {
+                    "option": "Mattabi Mine"
+                  },
+                  {
+                    "option": "Montcalm Mine"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Parent Asset / Building Name",
+              "fieldName": "parentAsset",
+              "placeholder": "e.g. Admin Building",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Asset ID (leave blank if none — 'No ID Yet' will be recorded)",
+              "fieldName": "assetId",
+              "placeholder": "e.g. STR_101"
+            },
+            {
+              "fieldLabel": "PPE Requirements Met",
+              "fieldType": "dropdown",
+              "fieldName": "ppeRequirementsMet",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Yes"
+                  },
+                  {
+                    "option": "No"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Inspection Date",
+              "fieldType": "date",
+              "fieldName": "inspectionDate",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Inspector Name",
+              "fieldName": "inspectorName",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Category (loads the relevant options on the next page)",
+              "fieldType": "dropdown",
+              "fieldName": "category",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Building Envelope"
+                  },
+                  {
+                    "option": "Structural Support"
+                  },
+                  {
+                    "option": "Foundations & Geotechnical"
+                  },
+                  {
+                    "option": "Process Equipment (Mechanical)"
+                  }
+                ]
+              },
+              "requiredField": true
+            }
+          ]
+        },
+        "responseMode": "lastNode",
+        "options": {
+          "appendAttribution": false,
+          "buttonLabel": "Next",
+          "path": "inspection-form",
+          "ignoreBots": true
+        }
+      },
+      "id": "93cb4501-b069-4b39-b8f7-7b8243cc0b1c",
+      "name": "On form submission",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        304
+      ],
+      "webhookId": "07c3bddb-01eb-4d68-9504-bf6fbf337a4b"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $('Deficiency Details').first();\nconst bin = item.binary || {};\nconst keys = Object.keys(bin);\nif (keys.length === 0) {\n  return [{ json: { isPhoto: false } }];\n}\nconst prefix = 'INSP_' + new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14);\nreturn keys.map((k, i) => ({\n  json: { isPhoto: true, uploadName: prefix + '_' + (i + 1) + '_' + (bin[k].fileName || ('photo' + (i + 1) + '.jpg')) },\n  binary: { data: bin[k] }\n}));"
+      },
+      "id": "e5b228c8-dbd9-41b7-9816-321233a0d808",
+      "name": "Prepare Photo Items",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "let uploads = [];\ntry { uploads = $('Upload Photo to OneDrive').all(); } catch (e) { uploads = []; }\nconst links = uploads.map(u => (u.json && (u.json.webUrl || u.json.webURL)) || '').filter(Boolean);\nconst p1 = $('On form submission').first().json;\nconst p2 = $('Deficiency Details').first().json;\nconst p3 = $('Risk Evaluation').first().json;\nlet rev = {};\ntry { rev = $('Review & Confirm').first().json; } catch (e) { rev = {}; }\nconst merged = { ...p1, ...p2, ...p3, ...rev };\nconst photosField = p2.Photos !== undefined ? p2.Photos : undefined;\nconst attachedCount = Array.isArray(photosField) ? photosField.length : (photosField ? 1 : 0);\nreturn [{ json: { ...merged, photoLinks: links.join(', '), photosAttached: attachedCount > 0 } }];"
+      },
+      "id": "7ece162b-2071-45cd-bd1c-ba0f58c1774f",
+      "name": "Aggregate Photo Links",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "aCat",
+              "name": "category",
+              "value": "={{ $json.category ?? $json['Category'] ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "a0",
+              "name": "assetId",
+              "value": "={{ $json.assetId ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "a1",
+              "name": "site",
+              "value": "={{ $json.site ?? $json.Site ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "a2",
+              "name": "parentAsset",
+              "value": "={{ $json.parentAsset ?? $json['Parent Asset / Building Name'] ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "a3",
+              "name": "inspectionDate",
+              "value": "={{ $json.inspectionDate ?? $json['Inspection Date'] ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "a4",
+              "name": "inspectorName",
+              "value": "={{ $json.inspectorName ?? $json['Inspector Name'] ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "a5",
+              "name": "ppeRequirementsMet",
+              "value": "={{ $json.ppeRequirementsMet ?? $json['PPE Requirements Met'] ?? 'No' }}",
+              "type": "string"
+            },
+            {
+              "id": "a6",
+              "name": "componentType",
+              "value": "={{ $json.componentType ?? $json['Component'] ?? $json['Component Type'] ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "a6b",
+              "name": "subComponent",
+              "value": "={{ $json.subComponent ?? $json['Sub-Component'] ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "a7",
+              "name": "deficiencyCategory",
+              "value": "={{ $json.deficiencyCategory ?? $json['Deficiency Category'] ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "a8",
+              "name": "detailedDescription",
+              "value": "={{ $json.detailedDescription ?? $json['Detailed Description (Indications)'] ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "a8b",
+              "name": "mechanisms",
+              "value": "={{ $json.mechanisms ?? $json['Potential Failure Mechanism'] ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "a8c",
+              "name": "vibrationPresent",
+              "value": "={{ $json.vibrationPresent ?? $json['Vibration Present'] ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "aC1",
+              "name": "consequenceSeverity",
+              "value": "={{ $json.consequenceSeverity ?? $json['Consequence / Impact Severity'] ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "aC2",
+              "name": "mostAffectedConsequence",
+              "value": "={{ $json.mostAffectedConsequence ?? $json['Most-Affected Consequence'] ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "aC3",
+              "name": "likelihood",
+              "value": "={{ $json.likelihood ?? $json['Likelihood (probability)'] ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "a9",
+              "name": "priorityRating",
+              "value": "={{ $json.priorityRating ?? $json['Priority Rating (P1 Critical - P5 Good)'] ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "a10",
+              "name": "recommendedAction",
+              "value": "={{ $json.recommendedAction ?? $json['Recommended Action'] ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "a10b",
+              "name": "focusArea",
+              "value": "={{ $json.focusArea ?? $json['Focus Area'] ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "a11",
+              "name": "furtherInvestigationRequired",
+              "value": "={{ $json.furtherInvestigationRequired ?? $json['Further Investigation Required'] ?? 'No' }}",
+              "type": "string"
+            },
+            {
+              "id": "a12",
+              "name": "ndtRequired",
+              "value": "={{ $json.ndtRequired ?? $json['NDT Required'] ?? 'No' }}",
+              "type": "string"
+            },
+            {
+              "id": "a13",
+              "name": "photoLinks",
+              "value": "={{ $json.photoLinks ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "a14",
+              "name": "photosAttached",
+              "value": "={{ $json.photosAttached ?? false }}",
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c475e7ac-7b44-4426-b0ce-80e4275cfca2",
+      "name": "Normalize Payload Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        896,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nconst errors = [];\n\nif (!item.site?.trim()) errors.push('Site is required');\nif (!item.parentAsset?.trim()) errors.push('Parent Asset is required');\nif (!item.inspectionDate?.trim()) errors.push('Inspection Date is required');\nif (!item.inspectorName?.trim()) errors.push('Inspector Name is required');\nif (!item.priorityRating?.trim()) errors.push('Priority Rating is required');\nif (!item.recommendedAction?.trim()) errors.push('Recommended Action is required');\n\nconst priority = (item.priorityRating || '').trim().toUpperCase();\nconst validPriorities = ['P1','P2','P3','P4','P5'];\nif (priority && !validPriorities.includes(priority)) {\n  errors.push('Priority Rating must be P1-P5 — received: ' + priority);\n}\n\nconst isCritical = ['P1','P2'].includes(priority);\nconst hasPhotos = !!(item.photoLinks || '').trim();\nconst photosProvided = item.photosAttached === true || hasPhotos;\nconst hasDeficiency = !!(item.deficiencyCategory || '').trim();\n\nif (isCritical && !photosProvided) {\n  errors.push('At least one photo is required for P1 and P2 (critical) findings');\n}\n\nreturn [{\n  json: {\n    ...item,\n    priorityRating: priority || item.priorityRating,\n    validationPassed: errors.length === 0,\n    validationErrors: errors,\n    isCritical,\n    hasPhotos,\n    photosProvided,\n    hasDeficiency,\n    submittedAt: new Date().toISOString(),\n  }\n}];"
+      },
+      "id": "a9a7063b-4d0f-4bbe-98c2-d65a2aff3eb4",
+      "name": "Validate and Enrich",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.validationPassed }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              },
+              "rightValue": true,
+              "id": "3fdc8d40-316c-489f-b3a1-9206ff45a767"
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "9d6cebec-be42-48b9-a9fc-bf0941cf5a93",
+      "name": "Validation Passed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1344,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://graph.microsoft.com/v1.0/me/drive/root:/NACS/NER-GC%20Doc/Structural%20Integrity/Inspection/Nerizon_Structural_Integrity_Assessment_NALA.xlsx:/workbook/worksheets('Asset%20Registry')/usedRange(valuesOnly=true)",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "5275c466-6745-4aee-a3bd-a914cd11252e",
+      "name": "Read Asset Registry from Excel",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1568,
+        128
+      ],
+      "credentials": {
+        "microsoftGraphSecurityOAuth2Api": {
+          "id": "nNjYzE6xSRLzCFzD",
+          "name": "Microsoft Graph Security OAuth2 API"
+        },
+        "oAuth2Api": {
+          "id": "voYezag2gvVZ6WmP",
+          "name": "NALA_Asset_Integrity"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const registryData = $input.first().json;\nconst form = $('Validate and Enrich').first().json;\n\nconst rows = (registryData.values || []);\nconst SITE_COL = 0;\nconst PARENT_COL = 1;\nconst ASSETID_COL = 2;\n\nconst normalize = (s) => String(s || '').trim().toLowerCase();\nconst formSite = normalize(form.site);\nconst formParent = normalize(form.parentAsset);\nconst formAssetId = normalize(form.assetId);\n\nconst siteFound = rows.some(r => normalize(r[SITE_COL]) === formSite);\nconst assetIdMatch = formAssetId !== '' && rows.some(r => normalize(r[ASSETID_COL]) === formAssetId);\nconst parentAssetMatch = formParent !== '' && rows.some(r => normalize(r[SITE_COL]) === formSite && normalize(r[PARENT_COL]) === formParent);\n\nconst assetFound = assetIdMatch || parentAssetMatch;\nconst assetValid = siteFound && assetFound;\n\nreturn [{\n  json: {\n    ...form,\n    siteFound,\n    assetIdMatch,\n    parentAssetMatch,\n    assetFound,\n    assetValid,\n  }\n}];"
+      },
+      "id": "5d2bd7ab-7e13-4720-bd5e-25e0708dbecb",
+      "name": "Check Asset in Registry",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1792,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $('Check Asset in Registry').item.json.assetValid }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              },
+              "rightValue": true
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "b25ab8d4-7e55-4033-b50e-3ca4d244ee2e",
+      "name": "Asset Found in Registry?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2016,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://graph.microsoft.com/v1.0/me/drive/root:/NACS/NER-GC%20Doc/Structural%20Integrity/Inspection/Nerizon_Structural_Integrity_Assessment_NALA.xlsx:/workbook/worksheets('Inspections')/usedRange(valuesOnly=true)",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "d9e24a6f-98ea-43fe-bad5-c58ed514f881",
+      "name": "Get Inspections Row Count",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2240,
+        48
+      ],
+      "credentials": {
+        "microsoftGraphSecurityOAuth2Api": {
+          "id": "nNjYzE6xSRLzCFzD",
+          "name": "Microsoft Graph Security OAuth2 API"
+        },
+        "oAuth2Api": {
+          "id": "voYezag2gvVZ6WmP",
+          "name": "NALA_Asset_Integrity"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rangeInfo = $input.first().json;\nconst form = $('Check Asset in Registry').first().json;\n\nconst values = rangeInfo.values || [];\nconst INSPECTOR_COL = 6;\nlet targetRow = null;\nfor (let i = 3; i < values.length; i++) {\n  const insp = values[i] && values[i][INSPECTOR_COL];\n  if (insp === null || insp === undefined || String(insp).trim() === '') { targetRow = i + 1; break; }\n}\nif (targetRow === null) targetRow = (values.length || 3) + 1;\nconst nextRow = targetRow;\n\nconst priorityDescriptions = {\n  P1: 'Critical Condition - Immediate action required; repair within 60 days max',\n  P2: 'Poor Condition - Repair actions needed within 12 months',\n  P3: 'Bad Condition - Repairs needed within 24 to 36 months',\n  P4: 'Fair Condition - Monitor before next scheduled inspection',\n  P5: 'Good Condition - No repairs required',\n};\nconst priority = (form.priorityRating || '').toUpperCase();\nconst priorityDescription = priorityDescriptions[priority] || '';\nconst immediateNotification = ['P1','P2'].includes(priority) ? 'Yes' : 'No';\n\nconst consMatch = String(form.consequenceSeverity || '').match(/[1-5]/);\nconst cons = consMatch ? consMatch[0] : '';\nconst likeMatch = String(form.likelihood || '').match(/[A-Ea-e]/);\nconst like = likeMatch ? likeMatch[0].toUpperCase() : '';\nconst grid = {\n  '5': { A:25, B:24, C:22, D:19, E:15 },\n  '4': { A:23, B:21, C:18, D:14, E:10 },\n  '3': { A:20, B:17, C:13, D:9, E:6 },\n  '2': { A:16, B:12, C:8, D:5, E:3 },\n  '1': { A:11, B:7, C:4, D:2, E:1 },\n};\nconst riskRank = (grid[cons] && grid[cons][like] !== undefined) ? grid[cons][like] : '';\nconst riskRating = riskRank === '' ? '' : (riskRank >= 17 ? 'High' : (riskRank >= 7 ? 'Medium' : 'Low'));\n\nconst stamp = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14);\nconst recordId = (form.assetFound ? 'INSP-' : 'REVIEW-') + stamp;\nconst assetId = (form.assetId && String(form.assetId).trim()) ? form.assetId : 'No ID Yet';\nconst baseFocus = form.focusArea || '';\nconst focusArea = form.assetFound ? baseFocus : ((baseFocus ? baseFocus + ' | ' : '') + 'ASSET NOT IN REGISTRY - pending verification');\n\nconst rowValues = [[\n  recordId,\n  form.site,\n  assetId,\n  form.parentAsset,\n  form.category || '',\n  form.inspectionDate,\n  form.inspectorName,\n  form.ppeRequirementsMet,\n  form.componentType,\n  form.subComponent || '',\n  form.deficiencyCategory,\n  form.detailedDescription,\n  form.mechanisms || '',\n  form.vibrationPresent || '',\n  form.consequenceSeverity || '',\n  form.mostAffectedConsequence || '',\n  form.priorityRating,\n  priorityDescription,\n  form.recommendedAction,\n  immediateNotification,\n  form.furtherInvestigationRequired,\n  form.ndtRequired,\n  focusArea,\n  form.likelihood || '',\n  riskRank,\n  riskRating,\n]];\n\nreturn [{\n  json: {\n    ...form,\n    recordId,\n    riskRank,\n    riskRating,\n    nextRow,\n    inspectionsWriteRange: 'A' + nextRow + ':Z' + nextRow,\n    rowValues,\n  }\n}];"
+      },
+      "id": "b2b6fea0-4cef-4d91-969a-d57eb86e1105",
+      "name": "Build Excel Row Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2464,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://graph.microsoft.com/v1.0/me/drive/root:/NACS/NER-GC%20Doc/Structural%20Integrity/Inspection/Nerizon_Structural_Integrity_Assessment_NALA.xlsx:/workbook/worksheets('Inspections')/range(address='{{ $json.inspectionsWriteRange }}')",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"values\": $json.rowValues } }}",
+        "options": {}
+      },
+      "id": "ae11e77e-4669-481f-8579-6555402e17fe",
+      "name": "Write Row to Inspections Sheet",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2688,
+        48
+      ],
+      "credentials": {
+        "microsoftGraphSecurityOAuth2Api": {
+          "id": "nNjYzE6xSRLzCFzD",
+          "name": "Microsoft Graph Security OAuth2 API"
+        },
+        "oAuth2Api": {
+          "id": "voYezag2gvVZ6WmP",
+          "name": "NALA_Asset_Integrity"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $('Validate and Enrich').item.json.isCritical }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              },
+              "rightValue": true
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "6a022a50-9760-40a5-ac17-592ab8432a1e",
+      "name": "Critical Priority P1 or P2?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2912,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "noreply@nerizon.ca",
+        "toEmail": "aaraoye@nerizon.ca",
+        "subject": "=[{{ $(\"Validate and Enrich\").item.json.priorityRating }} CRITICAL] Deficiency at {{ $(\"Validate and Enrich\").item.json.site }} / {{ $(\"Validate and Enrich\").item.json.parentAsset }}",
+        "html": "=<h2 style=\"color:#cc0000\">&#9888; Critical Deficiency Alert</h2><p>Priority <b>{{ $(\"Validate and Enrich\").item.json.priorityRating }}</b> deficiency recorded — immediate review required.</p><table border=\"1\" cellpadding=\"6\" style=\"border-collapse:collapse\"><tr><td><b>Site</b></td><td>{{ $(\"Validate and Enrich\").item.json.site }}</td></tr><tr><td><b>Asset ID</b></td><td>{{ $(\"Validate and Enrich\").item.json.assetId }}</td></tr><tr><td><b>Asset</b></td><td>{{ $(\"Validate and Enrich\").item.json.parentAsset }}</td></tr><tr><td><b>Category</b></td><td>{{ $(\"Validate and Enrich\").item.json.category }}</td></tr><tr><td><b>Component</b></td><td>{{ $(\"Validate and Enrich\").item.json.componentType }}</td></tr><tr><td><b>Deficiency</b></td><td>{{ $(\"Validate and Enrich\").item.json.deficiencyCategory }}</td></tr><tr><td><b>Indication</b></td><td>{{ $(\"Validate and Enrich\").item.json.detailedDescription }}</td></tr><tr><td><b>Consequence</b></td><td>{{ $(\"Validate and Enrich\").item.json.consequenceSeverity }} ({{ $(\"Validate and Enrich\").item.json.mostAffectedConsequence }})</td></tr><tr><td><b>Likelihood</b></td><td>{{ $(\"Validate and Enrich\").item.json.likelihood }}</td></tr><tr><td style=\"background:#ffe0e0\"><b>Risk Score</b></td><td style=\"background:#ffe0e0\"><b>{{ $(\"Build Excel Row Data\").item.json.riskRank }} ({{ $(\"Build Excel Row Data\").item.json.riskRating }})</b></td></tr><tr><td><b>Action Required</b></td><td>{{ $(\"Validate and Enrich\").item.json.recommendedAction }}</td></tr><tr><td><b>Inspector</b></td><td>{{ $(\"Validate and Enrich\").item.json.inspectorName }}</td></tr><tr><td><b>Photos</b></td><td>{{ $(\"Validate and Enrich\").item.json.photoLinks }}</td></tr></table>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "ebcb574a-2bbd-4e96-b2cb-522bbcb3aa3e",
+      "name": "Send Critical P1/P2 Alert",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        3136,
+        0
+      ],
+      "webhookId": "aa551a34-ada4-4ce3-824b-d038684843fd",
+      "credentials": {
+        "smtp": {
+          "id": "fI3eSc0yFlu1UXIX",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "noreply@nerizon.ca",
+        "toEmail": "aaraoye@nerizon.ca",
+        "subject": "=Inspection Logged: {{ $(\"Validate and Enrich\").first().json.site }} / {{ $(\"Validate and Enrich\").first().json.parentAsset }} ({{ $(\"Validate and Enrich\").first().json.priorityRating }})",
+        "html": "=<h2>Inspection Successfully Recorded</h2><p>The inspection has been written to the Structural Integrity workbook.</p><table border=\"1\" cellpadding=\"6\" style=\"border-collapse:collapse\"><tr><td><b>Site</b></td><td>{{ $(\"Validate and Enrich\").first().json.site }}</td></tr><tr><td><b>Asset ID</b></td><td>{{ $(\"Validate and Enrich\").first().json.assetId }}</td></tr><tr><td><b>Inspector</b></td><td>{{ $(\"Validate and Enrich\").first().json.inspectorName }}</td></tr><tr><td><b>Date</b></td><td>{{ $(\"Validate and Enrich\").first().json.inspectionDate }}</td></tr><tr><td><b>Priority</b></td><td>{{ $(\"Validate and Enrich\").first().json.priorityRating }}</td></tr></table>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "2879ba34-7c9f-4462-bbf0-ae266923c8a4",
+      "name": "Send Submission Confirmation",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        3360,
+        48
+      ],
+      "executeOnce": true,
+      "webhookId": "4dd38106-7837-418b-8797-4a4ec8f470d8",
+      "credentials": {
+        "smtp": {
+          "id": "fI3eSc0yFlu1UXIX",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "completionTitle": "Inspection submitted",
+        "completionMessage": "Thank you. Your inspection has been recorded in the Structural Integrity workbook. If the asset was not found in the registry, it was still saved and flagged for verification. Critical (P1/P2) findings are escalated automatically.",
+        "options": {}
+      },
+      "id": "adb4f74c-dbf9-4851-99da-859b3d762f01",
+      "name": "Completion - Recorded",
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.5,
+      "position": [
+        3584,
+        48
+      ],
+      "webhookId": "926e75a8-bc5d-4d21-8a37-015ec61ecfe2"
+    },
+    {
+      "parameters": {
+        "fromEmail": "noreply@nerizon.ca",
+        "toEmail": "aaraoye@nerizon.ca",
+        "subject": "=[REVIEW NEEDED] Unregistered asset saved: {{ $('Check Asset in Registry').item.json.parentAsset }} ({{ $('Check Asset in Registry').item.json.assetId }}) at {{ $('Check Asset in Registry').item.json.site }}",
+        "html": "=<h2>Asset Not in Registry — Saved for Verification</h2><p>A form submission referenced an asset not found in the Asset Registry. It has been <b>written to the Inspections sheet with a REVIEW- record ID</b> and flagged in the Focus Area column.</p><table border=\"1\" cellpadding=\"6\" style=\"border-collapse:collapse\"><tr><td><b>Site</b></td><td>{{ $('Check Asset in Registry').item.json.site }}</td></tr><tr><td><b>Asset ID</b></td><td>{{ $('Check Asset in Registry').item.json.assetId }}</td></tr><tr><td><b>Asset</b></td><td>{{ $('Check Asset in Registry').item.json.parentAsset }}</td></tr><tr><td><b>Inspector</b></td><td>{{ $('Check Asset in Registry').item.json.inspectorName }}</td></tr><tr><td><b>Priority</b></td><td>{{ $('Check Asset in Registry').item.json.priorityRating }}</td></tr><tr><td><b>Site Found</b></td><td>{{ $('Check Asset in Registry').item.json.siteFound }}</td></tr></table><p>Verify the Asset ID and add it to the registry if valid.</p>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "05c6a894-34b6-4af8-a19a-43e4a4c7bb19",
+      "name": "Alert - Asset Not in Registry",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        2240,
+        320
+      ],
+      "webhookId": "c812f2de-3ca1-4363-a25e-fa31ea0e92d0",
+      "credentials": {
+        "smtp": {
+          "id": "fI3eSc0yFlu1UXIX",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "completionTitle": "Submission incomplete",
+        "completionMessage": "=Please go back and correct the following: {{ $json.validationErrors.join(\"; \") }}",
+        "options": {}
+      },
+      "id": "995a7a9c-770d-4500-bf5b-73591847b585",
+      "name": "Completion - Incomplete",
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.5,
+      "position": [
+        1568,
+        368
+      ],
+      "webhookId": "e08ac935-dd3f-4350-9954-64e7f3b14a2c"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.isPhoto }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              },
+              "rightValue": true
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "4f35b1ff-812e-43dd-be55-7cb3399fd241",
+      "name": "Is Real Photo?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://graph.microsoft.com/v1.0/me/drive/root:/NACS/NER-GC%20Doc/Structural%20Integrity/Inspection/Inspection%20Photos/{{ $json.uploadName }}:/content",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "id": "0e59327d-06c8-4703-a19c-176fd7d64501",
+      "name": "Upload Photo to OneDrive",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        896,
+        368
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "microsoftGraphSecurityOAuth2Api": {
+          "id": "nNjYzE6xSRLzCFzD",
+          "name": "Microsoft Graph Security OAuth2 API"
+        },
+        "oAuth2Api": {
+          "id": "voYezag2gvVZ6WmP",
+          "name": "NALA_Asset_Integrity"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "content": "## NALA Inspection Form to Workbook\n\nReplaces Microsoft Forms + Power Automate. Public form URL: /form/inspection-form.\n\nWrites the full A:Y (25-col) Inspections layout in Nerizon_Structural_Integrity_Assessment_NALA_Testing1.xlsx (Test Run folder). Photos upload to an Inspection Photos subfolder; links appear in the alert emails.\n\nBefore activating: confirm the Microsoft Graph + SMTP credentials, create the Inspection Photos subfolder in OneDrive, and test via the Test URL.",
+        "height": 240,
+        "width": 520,
+        "color": 4
+      },
+      "id": "38f69fd0-d0bb-45fb-b8a1-056d4be68648",
+      "name": "Sticky Note f519bbca",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Phase 2\n- Write photo links to the Photo_Register sheet\n- Optional raw-submission log (n8n Data Table)\n- Capture Mechanisms / Sub-Component / Vibration / Impact / Safety / Focus Area and map to cols O-R, L, Y",
+        "height": 200,
+        "width": 440,
+        "color": 3
+      },
+      "id": "2a6ffd7e-e3cf-4654-9535-03cd02623a4e",
+      "name": "Sticky Note 92abc370",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        560,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "setInputs"
+      },
+      "type": "n8n-nodes-base.evaluation",
+      "typeVersion": 4.8,
+      "position": [
+        0,
+        0
+      ],
+      "id": "0b057219-0939-4660-abf7-cdbe69e2a7e8",
+      "name": "Evaluation"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.microsoft.com/v1.0/me/drive/root:/NACS/NER-GC%20Doc/Structural%20Integrity/Inspection/Nerizon_Structural_Integrity_Assessment_NALA.xlsx:/workbook/application/calculate",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"calculationType\": \"Full\" } }}",
+        "options": {}
+      },
+      "id": "9565545e-02b8-467b-b582-a145342d63dc",
+      "name": "Recalculate Workbook",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2800,
+        48
+      ],
+      "credentials": {
+        "oAuth2Api": {
+          "id": "voYezag2gvVZ6WmP",
+          "name": "NALA_Asset_Integrity"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $('Build Excel Row Data').item.json.photoLinks }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "3e7e499f-ca72-44f6-8553-13ddac5115ab",
+      "name": "Has Photos?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2960,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://graph.microsoft.com/v1.0/me/drive/root:/NACS/NER-GC%20Doc/Structural%20Integrity/Inspection/Nerizon_Structural_Integrity_Assessment_NALA.xlsx:/workbook/worksheets('Photo_Register')/usedRange(valuesOnly=true)",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "f4241d8f-c322-4970-bd1c-a69c893d823e",
+      "name": "Get Photo Register Rows",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        3088,
+        -176
+      ],
+      "credentials": {
+        "oAuth2Api": {
+          "id": "voYezag2gvVZ6WmP",
+          "name": "NALA_Asset_Integrity"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rangeInfo = $input.first().json;\nconst rec = $('Build Excel Row Data').first().json;\nconst values = rangeInfo.values || [];\nconst RECID_COL = 0;\nlet targetRow = null;\nfor (let i = 3; i < values.length; i++) {\n  const v = values[i] && values[i][RECID_COL];\n  if (v === null || v === undefined || String(v).trim() === '') { targetRow = i + 1; break; }\n}\nif (targetRow === null) targetRow = (values.length || 3) + 1;\nconst desc = 'Inspection photo(s) - ' + (rec.deficiencyCategory || '');\nconst rowValues = [[ rec.recordId, rec.site, rec.assetId, rec.parentAsset, rec.inspectionDate, rec.inspectorName, desc, rec.photoLinks ]];\nreturn [{ json: { photoWriteRange: 'A' + targetRow + ':H' + targetRow, rowValues } }];"
+      },
+      "id": "052368c4-22b2-406d-9fab-85dde9439a41",
+      "name": "Build Photo Row",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3280,
+        -64
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://graph.microsoft.com/v1.0/me/drive/root:/NACS/NER-GC%20Doc/Structural%20Integrity/Inspection/Nerizon_Structural_Integrity_Assessment_NALA.xlsx:/workbook/worksheets('Photo_Register')/range(address='{{ $json.photoWriteRange }}')",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"values\": $json.rowValues } }}",
+        "options": {}
+      },
+      "id": "59b7d9b8-ab1d-45c4-97d1-0d2d60d3e7c5",
+      "name": "Write Photo Row",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        3440,
+        -64
+      ],
+      "credentials": {
+        "oAuth2Api": {
+          "id": "voYezag2gvVZ6WmP",
+          "name": "NALA_Asset_Integrity"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://graph.microsoft.com/v1.0/me/drive/root:/NACS/NER-GC%20Doc/Structural%20Integrity/Inspection/Nerizon_Structural_Integrity_Assessment_NALA.xlsx:/workbook/worksheets('Taxonomy')/usedRange(valuesOnly=true)",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "533b9069-1785-4ee0-b798-b9ea08b164c2",
+      "name": "Read Taxonomy",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        224,
+        208
+      ],
+      "credentials": {
+        "oAuth2Api": {
+          "id": "voYezag2gvVZ6WmP",
+          "name": "NALA_Asset_Integrity"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const category = ($('On form submission').first().json.category || '').trim();\nconst norm = (s) => String(s == null ? '' : s).trim();\nconst rows = ($input.first().json.values || []);\nconst sel = rows.filter(r => norm(r[0]).toLowerCase() === category.toLowerCase() && norm(r[6]) !== '');\nconst uniq = (idx, excl) => {\n  const out = []; const seen = new Set();\n  for (const r of sel) { const v = norm(r[idx]); if (!v || excl.includes(v) || seen.has(v)) continue; seen.add(v); out.push(v); }\n  return out;\n};\nconst opt = (arr) => ({ values: arr.map(o => ({ option: o })) });\nconst yn = { values: [{ option: 'Yes' }, { option: 'No' }] };\nconst formDefinition = [\n  { fieldName: 'componentType', fieldLabel: 'Component', fieldType: 'dropdown', requiredField: true, fieldOptions: opt(uniq(2, ['ALL'])) },\n  { fieldName: 'subComponent', fieldLabel: 'Sub-Component', fieldType: 'dropdown', requiredField: false, fieldOptions: opt(uniq(3, ['None','ALL'])) },\n  { fieldName: 'focusArea', fieldLabel: 'Focus Area', fieldType: 'dropdown', requiredField: false, fieldOptions: opt(uniq(4, ['None'])) },\n  { fieldName: 'deficiencyCategory', fieldLabel: 'Deficiency Category', fieldType: 'dropdown', requiredField: true, fieldOptions: opt(uniq(5, [])) },\n  { fieldName: 'mechanisms', fieldLabel: 'Potential Failure Mechanism', fieldType: 'text', requiredField: false, placeholder: 'e.g. Shrinkage / aging' },\n  { fieldName: 'detailedDescription', fieldLabel: 'Detailed Description (Indications)', fieldType: 'dropdown', requiredField: true, fieldOptions: opt(uniq(6, [])) },\n  { fieldName: 'vibrationPresent', fieldLabel: 'Vibration Present', fieldType: 'dropdown', requiredField: true, fieldOptions: yn },\n  { fieldName: 'furtherInvestigationRequired', fieldLabel: 'Further Investigation Required', fieldType: 'dropdown', requiredField: true, fieldOptions: yn },\n  { fieldName: 'ndtRequired', fieldLabel: 'NDT Required', fieldType: 'dropdown', requiredField: true, fieldOptions: yn },\n  { fieldName: 'Photos', fieldLabel: 'Site Photos (add up to 5; required for P1/P2 findings)', fieldType: 'file', requiredField: false, multipleFiles: true, acceptFileTypes: '.jpg,.jpeg,.png,.heic,.webp' }\n];\nreturn [{ json: { category, formDefinition } }];"
+      },
+      "id": "d3e8434b-54c8-4248-8c62-d059c1132dde",
+      "name": "Generate Deficiency Fields",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "defineForm": "json",
+        "jsonOutput": "={{ $json.formDefinition }}",
+        "options": {
+          "formTitle": "Deficiency Details",
+          "formDescription": "Options below are specific to the Category selected on the previous page.",
+          "buttonLabel": "Next"
+        }
+      },
+      "id": "032b868c-b815-459b-8a90-4e46f69385e3",
+      "name": "Deficiency Details",
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.5,
+      "position": [
+        448,
+        48
+      ],
+      "webhookId": "34e5f3b9-129b-4f91-9c5c-135cc2fb10e9"
+    },
+    {
+      "parameters": {
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Consequence / Impact Severity",
+              "fieldType": "dropdown",
+              "fieldName": "consequenceSeverity",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "1 - Negligible"
+                  },
+                  {
+                    "option": "2 - Minor"
+                  },
+                  {
+                    "option": "3 - Moderate"
+                  },
+                  {
+                    "option": "4 - Major"
+                  },
+                  {
+                    "option": "5 - Catastrophic"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Most-Affected Consequence",
+              "fieldType": "dropdown",
+              "fieldName": "mostAffectedConsequence",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Health & Safety"
+                  },
+                  {
+                    "option": "Environment"
+                  },
+                  {
+                    "option": "Financial Impact"
+                  },
+                  {
+                    "option": "Image & Reputation / Community"
+                  },
+                  {
+                    "option": "Legal & Compliance"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Likelihood (probability)",
+              "fieldType": "dropdown",
+              "fieldName": "likelihood",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "A - Almost Certain"
+                  },
+                  {
+                    "option": "B - Likely"
+                  },
+                  {
+                    "option": "C - Possible"
+                  },
+                  {
+                    "option": "D - Unlikely"
+                  },
+                  {
+                    "option": "E - Rare"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Recommended Action",
+              "fieldType": "textarea",
+              "fieldName": "recommendedAction",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Priority Rating (P1 Critical - P5 Good)",
+              "fieldType": "dropdown",
+              "fieldName": "priorityRating",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "P1"
+                  },
+                  {
+                    "option": "P2"
+                  },
+                  {
+                    "option": "P3"
+                  },
+                  {
+                    "option": "P4"
+                  },
+                  {
+                    "option": "P5"
+                  }
+                ]
+              },
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "formTitle": "Risk Evaluation & Recommendation",
+          "formDescription": "Risk Level is auto-calculated from Consequence x Likelihood (Glencore matrix).",
+          "buttonLabel": "Next"
+        }
+      },
+      "id": "661ceff1-432c-46aa-bed9-87eabd83db1a",
+      "name": "Risk Evaluation",
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.5,
+      "position": [
+        448,
+        -144
+      ],
+      "webhookId": "8e915284-54df-42bb-944e-8d93d9ab2b2a"
+    },
+    {
+      "parameters": {
+        "formFields": {
+          "values": [
+            {
+              "fieldType": "html",
+              "html": "<h3>Review your inspection</h3><p>Check every value below and edit anything that needs correcting, then press <b>Confirm &amp; Submit</b>. Note: photos added earlier cannot be changed here — restart only if the photos are wrong.</p>"
+            },
+            {
+              "fieldLabel": "Site",
+              "fieldType": "dropdown",
+              "fieldName": "site",
+              "defaultValue": "={{ $('On form submission').item.json.site }}",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Bell Mine"
+                  },
+                  {
+                    "option": "Blackbird Mine"
+                  },
+                  {
+                    "option": "Brenda Mine"
+                  },
+                  {
+                    "option": "Brunswick Mine"
+                  },
+                  {
+                    "option": "Geco/Wilroy Mine"
+                  },
+                  {
+                    "option": "Grey Eagle Mine"
+                  },
+                  {
+                    "option": "Heath Steele Mine"
+                  },
+                  {
+                    "option": "Matagami Mine"
+                  },
+                  {
+                    "option": "Mattabi Mine"
+                  },
+                  {
+                    "option": "Montcalm Mine"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Parent Asset / Building Name",
+              "fieldName": "parentAsset",
+              "defaultValue": "={{ $('On form submission').item.json.parentAsset }}",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Asset ID",
+              "fieldName": "assetId",
+              "defaultValue": "={{ $('On form submission').item.json.assetId }}"
+            },
+            {
+              "fieldLabel": "PPE Requirements Met",
+              "fieldType": "dropdown",
+              "fieldName": "ppeRequirementsMet",
+              "defaultValue": "={{ $('On form submission').item.json.ppeRequirementsMet }}",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Yes"
+                  },
+                  {
+                    "option": "No"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Inspection Date",
+              "fieldType": "date",
+              "fieldName": "inspectionDate",
+              "defaultValue": "={{ $('On form submission').item.json.inspectionDate }}",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Inspector Name",
+              "fieldName": "inspectorName",
+              "defaultValue": "={{ $('On form submission').item.json.inspectorName }}",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Category",
+              "fieldType": "dropdown",
+              "fieldName": "category",
+              "defaultValue": "={{ $('On form submission').item.json.category }}",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Building Envelope"
+                  },
+                  {
+                    "option": "Structural Support"
+                  },
+                  {
+                    "option": "Foundations & Geotechnical"
+                  },
+                  {
+                    "option": "Process Equipment (Mechanical)"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Component",
+              "fieldName": "componentType",
+              "defaultValue": "={{ $('Deficiency Details').item.json.componentType ?? $('Deficiency Details').item.json['Component'] ?? '' }}",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Sub-Component",
+              "fieldName": "subComponent",
+              "defaultValue": "={{ $('Deficiency Details').item.json.subComponent ?? $('Deficiency Details').item.json['Sub-Component'] ?? '' }}"
+            },
+            {
+              "fieldLabel": "Focus Area",
+              "fieldName": "focusArea",
+              "defaultValue": "={{ $('Deficiency Details').item.json.focusArea ?? $('Deficiency Details').item.json['Focus Area'] ?? '' }}"
+            },
+            {
+              "fieldLabel": "Deficiency Category",
+              "fieldName": "deficiencyCategory",
+              "defaultValue": "={{ $('Deficiency Details').item.json.deficiencyCategory ?? $('Deficiency Details').item.json['Deficiency Category'] ?? '' }}",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Potential Failure Mechanism",
+              "fieldName": "mechanisms",
+              "defaultValue": "={{ $('Deficiency Details').item.json.mechanisms ?? $('Deficiency Details').item.json['Potential Failure Mechanism'] ?? '' }}"
+            },
+            {
+              "fieldLabel": "Detailed Description (Indications)",
+              "fieldName": "detailedDescription",
+              "defaultValue": "={{ $('Deficiency Details').item.json.detailedDescription ?? $('Deficiency Details').item.json['Detailed Description (Indications)'] ?? '' }}",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Vibration Present",
+              "fieldType": "dropdown",
+              "fieldName": "vibrationPresent",
+              "defaultValue": "={{ $('Deficiency Details').item.json.vibrationPresent ?? $('Deficiency Details').item.json['Vibration Present'] ?? '' }}",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Yes"
+                  },
+                  {
+                    "option": "No"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Further Investigation Required",
+              "fieldType": "dropdown",
+              "fieldName": "furtherInvestigationRequired",
+              "defaultValue": "={{ $('Deficiency Details').item.json.furtherInvestigationRequired ?? $('Deficiency Details').item.json['Further Investigation Required'] ?? '' }}",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Yes"
+                  },
+                  {
+                    "option": "No"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "NDT Required",
+              "fieldType": "dropdown",
+              "fieldName": "ndtRequired",
+              "defaultValue": "={{ $('Deficiency Details').item.json.ndtRequired ?? $('Deficiency Details').item.json['NDT Required'] ?? '' }}",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Yes"
+                  },
+                  {
+                    "option": "No"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Consequence / Impact Severity",
+              "fieldType": "dropdown",
+              "fieldName": "consequenceSeverity",
+              "defaultValue": "={{ $('Risk Evaluation').item.json.consequenceSeverity ?? $('Risk Evaluation').item.json['Consequence / Impact Severity'] ?? '' }}",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "1 - Negligible"
+                  },
+                  {
+                    "option": "2 - Minor"
+                  },
+                  {
+                    "option": "3 - Moderate"
+                  },
+                  {
+                    "option": "4 - Major"
+                  },
+                  {
+                    "option": "5 - Catastrophic"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Most-Affected Consequence",
+              "fieldType": "dropdown",
+              "fieldName": "mostAffectedConsequence",
+              "defaultValue": "={{ $('Risk Evaluation').item.json.mostAffectedConsequence ?? $('Risk Evaluation').item.json['Most-Affected Consequence'] ?? '' }}",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Health & Safety"
+                  },
+                  {
+                    "option": "Environment"
+                  },
+                  {
+                    "option": "Financial Impact"
+                  },
+                  {
+                    "option": "Image & Reputation / Community"
+                  },
+                  {
+                    "option": "Legal & Compliance"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Likelihood (probability)",
+              "fieldType": "dropdown",
+              "fieldName": "likelihood",
+              "defaultValue": "={{ $('Risk Evaluation').item.json.likelihood ?? $('Risk Evaluation').item.json['Likelihood (probability)'] ?? '' }}",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "A - Almost Certain"
+                  },
+                  {
+                    "option": "B - Likely"
+                  },
+                  {
+                    "option": "C - Possible"
+                  },
+                  {
+                    "option": "D - Unlikely"
+                  },
+                  {
+                    "option": "E - Rare"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Recommended Action",
+              "fieldType": "textarea",
+              "fieldName": "recommendedAction",
+              "defaultValue": "={{ $('Risk Evaluation').item.json.recommendedAction ?? $('Risk Evaluation').item.json['Recommended Action'] ?? '' }}",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Priority Rating (P1 Critical - P5 Good)",
+              "fieldType": "dropdown",
+              "fieldName": "priorityRating",
+              "defaultValue": "={{ $('Risk Evaluation').item.json.priorityRating ?? $('Risk Evaluation').item.json['Priority Rating (P1 Critical - P5 Good)'] ?? '' }}",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "P1"
+                  },
+                  {
+                    "option": "P2"
+                  },
+                  {
+                    "option": "P3"
+                  },
+                  {
+                    "option": "P4"
+                  },
+                  {
+                    "option": "P5"
+                  }
+                ]
+              },
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "formTitle": "Review & Confirm",
+          "formDescription": "Final check before submitting.",
+          "buttonLabel": "Confirm & Submit"
+        }
+      },
+      "id": "c9b0d2f5-fc4a-4078-844f-40789b0f5af0",
+      "name": "Review & Confirm",
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.5,
+      "position": [
+        448,
+        -304
+      ],
+      "webhookId": "19e8e70e-85b3-4269-9b16-d0b8a848c1ee"
+    },
+    {
+      "parameters": {
+        "jsCode": "const reg = $('Read Asset Registry from Excel').first().json;\nconst form = $('Check Asset in Registry').first().json;\nconst values = reg.values || [];\nconst SITE_COL = 0;\nlet targetRow = null;\nfor (let i = 3; i < values.length; i++) {\n  const v = values[i] && values[i][SITE_COL];\n  if (v === null || v === undefined || String(v).trim() === '') { targetRow = i + 1; break; }\n}\nif (targetRow === null) targetRow = (values.length || 3) + 1;\nconst assetId = (form.assetId && String(form.assetId).trim()) ? form.assetId : 'No ID Yet';\nconst rowValues = [[ form.site, form.parentAsset, assetId ]];\nreturn [{ json: { registryWriteRange: 'A' + targetRow + ':C' + targetRow, rowValues } }];"
+      },
+      "id": "e9d3890c-2fe3-4dbd-96d4-1dc4da9d0af5",
+      "name": "Build Registry Row",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2240,
+        448
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://graph.microsoft.com/v1.0/me/drive/root:/NACS/NER-GC%20Doc/Structural%20Integrity/Inspection/Nerizon_Structural_Integrity_Assessment_NALA.xlsx:/workbook/worksheets('Asset%20Registry')/range(address='{{ $json.registryWriteRange }}')",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"values\": $json.rowValues } }}",
+        "options": {}
+      },
+      "id": "b1a66aed-e719-406d-a7a8-8c463029d18e",
+      "name": "Add to Registry",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2432,
+        448
+      ],
+      "credentials": {
+        "oAuth2Api": {
+          "id": "voYezag2gvVZ6WmP",
+          "name": "NALA_Asset_Integrity"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Evaluation": [
+      {
+        "json": {
+          "name": "First item",
+          "code": 1
+        }
+      },
+      {
+        "json": {
+          "name": "Second item",
+          "code": 2
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Aggregate Photo Links": {
+      "main": [
+        [
+          {
+            "node": "Normalize Payload Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Payload Fields": {
+      "main": [
+        [
+          {
+            "node": "Validate and Enrich",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate and Enrich": {
+      "main": [
+        [
+          {
+            "node": "Validation Passed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validation Passed?": {
+      "main": [
+        [
+          {
+            "node": "Read Asset Registry from Excel",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Completion - Incomplete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Asset Registry from Excel": {
+      "main": [
+        [
+          {
+            "node": "Check Asset in Registry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Inspections Row Count": {
+      "main": [
+        [
+          {
+            "node": "Build Excel Row Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Excel Row Data": {
+      "main": [
+        [
+          {
+            "node": "Write Row to Inspections Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Critical Priority P1 or P2?": {
+      "main": [
+        [
+          {
+            "node": "Send Critical P1/P2 Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Submission Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Critical P1/P2 Alert": {
+      "main": [
+        [
+          {
+            "node": "Send Submission Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Submission Confirmation": {
+      "main": [
+        [
+          {
+            "node": "Completion - Recorded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Real Photo?": {
+      "main": [
+        [
+          {
+            "node": "Upload Photo to OneDrive",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Aggregate Photo Links",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Asset in Registry": {
+      "main": [
+        [
+          {
+            "node": "Get Inspections Row Count",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Asset Found in Registry?": {
+      "main": [
+        [
+          {
+            "node": "Critical Priority P1 or P2?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Registry Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alert - Asset Not in Registry": {
+      "main": [
+        [
+          {
+            "node": "Critical Priority P1 or P2?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Row to Inspections Sheet": {
+      "main": [
+        [
+          {
+            "node": "Recalculate Workbook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recalculate Workbook": {
+      "main": [
+        [
+          {
+            "node": "Has Photos?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Photos?": {
+      "main": [
+        [
+          {
+            "node": "Get Photo Register Rows",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Asset Found in Registry?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Photo Register Rows": {
+      "main": [
+        [
+          {
+            "node": "Build Photo Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Photo Row": {
+      "main": [
+        [
+          {
+            "node": "Write Photo Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Photo Row": {
+      "main": [
+        [
+          {
+            "node": "Asset Found in Registry?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Read Taxonomy",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Taxonomy": {
+      "main": [
+        [
+          {
+            "node": "Generate Deficiency Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Deficiency Fields": {
+      "main": [
+        [
+          {
+            "node": "Deficiency Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deficiency Details": {
+      "main": [
+        [
+          {
+            "node": "Risk Evaluation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Risk Evaluation": {
+      "main": [
+        [
+          {
+            "node": "Review & Confirm",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Review & Confirm": {
+      "main": [
+        [
+          {
+            "node": "Prepare Photo Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Registry Row": {
+      "main": [
+        [
+          {
+            "node": "Add to Registry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add to Registry": {
+      "main": [
+        [
+          {
+            "node": "Alert - Asset Not in Registry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Photo Items": {
+      "main": [
+        [
+          {
+            "node": "Is Real Photo?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Photo to OneDrive": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Photo Links",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "timeSavedPerExecution": 2
+  },
+  "versionId": "353eade9-4dc7-4d1b-bdaa-2ef3ea0379e9",
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "instanceId": "81aa4371b01fcc30699e82f74caf3bff10044fe819776ea8ba56cf1bac1aa6ba"
+  },
+  "nodeGroups": [],
+  "id": "2azbbY28Y1OlS1oO",
+  "tags": []
+}
