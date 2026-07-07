@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { useSessionExpiry } from '../lib/useSessionExpiry';
 import TenantContextBadge from '../components/TenantContextBadge';
 import MobileBottomNav from '../components/MobileBottomNav';
+import InstallPrompt from '../components/InstallPrompt';
 
 export default function MobileShell() {
   useSessionExpiry();
@@ -37,6 +38,7 @@ export default function MobileShell() {
         <Outlet />
       </main>
       <MobileBottomNav />
+      <InstallPrompt />
     </div>
   );
 }

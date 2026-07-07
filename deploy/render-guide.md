@@ -108,37 +108,21 @@ npm run seed
 | `JWT_ACCESS_SECRET` | Yes | Secret for signing access tokens |
 | `JWT_REFRESH_SECRET` | Yes | Secret for signing refresh tokens |
 | `CORS_ORIGIN` | Yes | Frontend URL (e.g. `https://structapp-web-client.onrender.com`) |
-| `NODE_ENV` | No | Defaults to `production` |
-| `PORT` | No | Render sets this automatically |
+| `FRONTEND_URL` | Yes | Same as CORS_ORIGIN (used for invite link generation) |
 
-### External services
+### Important: Set VITE_API_URL and FRONTEND_URL manually
 
-These are not hosted on Render — set their env vars in the Render dashboard:
+After the frontend and API server deploy, go to Render Dashboard → each service → Environment → add the required vars. Then trigger a manual deploy (Deploy → Clear build cache & deploy).
 
-**Cloudinary** (image hosting)
-1. Create account at [cloudinary.com](https://cloudinary.com) (free tier — 25GB storage)
-2. Copy `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` from dashboard
-3. Add as env vars to the API server in Render
+**structapp-api:**
+- `DATABASE_URL` — your Supabase connection string
+- `FRONTEND_URL` — `https://structapp-web-client.onrender.com`
+- `CORS_ORIGIN` — `https://structapp-web-client.onrender.com`
+- `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+- `RESEND_API_KEY`
 
-**Resend** (email notifications)
-1. Create account at [resend.com](https://resend.com) (free tier — 100 emails/day)
-2. Generate API key → copy `re_xxxx`
-3. Add `RESEND_API_KEY` as env var to the API server in Render
-
-**AWS S3** (report storage, optional)
-1. Create S3 bucket in AWS Console
-2. Generate IAM credentials with `s3:PutObject` / `s3:GetObject`
-3. Add `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `S3_BUCKET_NAME` as env vars
-
-### Frontend (`apps/web-client`)
-
-| Variable | Required | Description |
-|---|---|---|
-| `VITE_API_URL` | Yes | Backend API URL (e.g. `https://structapp-api.onrender.com`) — **must be set manually** in the Render dashboard; `fromService` references do not work for static sites |
-
-### Important: Set VITE_API_URL manually
-
-After the frontend deploys, go to Render Dashboard → structapp-web-client → Environment → add `VITE_API_URL` with the value of your API server URL (e.g. `https://structapp-api.onrender.com`). Then trigger a manual deploy (Deploy → Clear build cache & deploy).
+**structapp-web-client:**
+- `VITE_API_URL` — `https://structapp-api.onrender.com`
 
 ## Post-Deploy Verification
 

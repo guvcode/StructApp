@@ -1,6 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import multer from 'multer';
-import { processSyncPush, processSyncPull, processPhotoUpload, getSyncState } from '../services/sync';
+import { processSyncPush, processSyncPull, processPhotoUpload, getSyncState, logSyncAction } from '../services/sync';
 import { syncPushSchema, syncPullSchema } from '../contracts/sync';
 import { requireAuth } from '../middleware/auth';
 
