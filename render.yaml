@@ -19,7 +19,7 @@ services:
         fromService:
           name: structapp-web-client
           type: web
-          property: host
+          property: url
       - key: NODE_ENV
         value: production
       - key: CLOUDINARY_CLOUD_NAME
