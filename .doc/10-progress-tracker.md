@@ -290,6 +290,20 @@
 | BL-017 | Test | **hooks/useConnectivity.test.ts** — `vi.mock` hoisting issue with `useConnectivity` import | Low | 2026-07-03 |
 | BL-018 | Test | **hooks/useServiceWorker.test.ts** — import path `../src/hooks/useServiceWorker` doesn't resolve (file doesn't exist) | Low | 2026-07-03 |
 | BL-019 | Test | **db.test.ts** — import path `../apps/web-client/src/lib/db` is wrong relative to test root | Low | 2026-07-03 |
+| BL-020 | Feature | **SyncPage** — mobile push/pull sync UI: connect mockSync local functions to real sync endpoints, show sync status history, add error recovery | Low | 2026-07-07 |
+| BL-021 | Feature | **Offline sync backend** — POST /sync/pull-package returns full taxonomy tree, inspection assignments, reference data; POST /sync/push-outbox processes pending local changes | Medium | 2026-07-07 |
+| BL-022 | Feature | **Calendar view** — implement `InspectionCalendarView.tsx` component (P2): schedule board with day/week/month views, drag-to-reschedule | Low | 2026-07-07 |
+| BL-023 | Feature | **Bulk reassign UI** — implement `BulkReassignDialog.tsx` component: multi-select inspections, reassign to another inspector | Low | 2026-07-07 |
+| BL-024 | Feature | **Inspection mode picker** — implement `InspectionModePicker.tsx`: onsite vs post-inspection mode toggle | Low | 2026-07-07 |
+| BL-025 | Feature | **Unsynced warning dialog** — implement `UnsyncedWarningDialog.tsx`: warn before navigating away with unsaved offline changes | Low | 2026-07-07 |
+| BL-026 | Feature | **Connectivity monitoring** — implement `useConnectivity.ts` hook: real-time online/offline detection, trigger sync on reconnection | Low | 2026-07-07 |
+| BL-027 | Feature | **Audit log viewer** — implement `useAuditLogs.ts` hook: query audit logs with filters, pagination | Low | 2026-07-07 |
+| BL-028 | Feature | **Photo EXIF extraction** — implement `lib/photo/exif.ts`: extract EXIF metadata from captured photos for evidence | Low | 2026-07-07 |
+| BL-029 | Feature | **Route guard utilities** — implement `lib/guard.ts`: reusable auth/role/feature-flag guard functions | Low | 2026-07-07 |
+| BL-030 | Feature | **Service worker optimization** — add proper cache versioning, precache strategy for offline support | Medium | 2026-07-07 |
+| BL-031 | Feature | **HTTPS / TLS** — configure proper TLS termination, HSTS headers for production deployment | Medium | 2026-07-07 |
+| BL-032 | Feature | **Rate limiting** — enforce rate limits on auth endpoints (login, refresh, invite, reset) | Medium | 2026-07-07 |
+| BL-033 | Feature | **Network error handling** — unified toast/retry UI for network failures across all API calls | Low | 2026-07-07 |
 
 ## 10.13 Sprint 6 — Taxonomy & Cascading Deficiency Flow (TAX)
 
