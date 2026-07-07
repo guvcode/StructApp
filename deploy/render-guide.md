@@ -111,6 +111,25 @@ npm run seed
 | `NODE_ENV` | No | Defaults to `production` |
 | `PORT` | No | Render sets this automatically |
 
+### External services
+
+These are not hosted on Render — set their env vars in the Render dashboard:
+
+**Cloudinary** (image hosting)
+1. Create account at [cloudinary.com](https://cloudinary.com) (free tier — 25GB storage)
+2. Copy `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` from dashboard
+3. Add as env vars to the API server in Render
+
+**Resend** (email notifications)
+1. Create account at [resend.com](https://resend.com) (free tier — 100 emails/day)
+2. Generate API key → copy `re_xxxx`
+3. Add `RESEND_API_KEY` as env var to the API server in Render
+
+**AWS S3** (report storage, optional)
+1. Create S3 bucket in AWS Console
+2. Generate IAM credentials with `s3:PutObject` / `s3:GetObject`
+3. Add `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `S3_BUCKET_NAME` as env vars
+
 ### Frontend (`apps/web-client`)
 
 | Variable | Required | Description |
@@ -138,3 +157,4 @@ If the API server cannot connect to Supabase:
 - The frontend static site does not spin down
 - For zero-downtime and no cold starts, upgrade to a paid plan ($7/mo per service)
 - Migrations must be run manually after deploy (not automated via `postDeploy` due to shell limitations)
+- Dependencies are hoisted to the root `node_modules` — the build commands navigate up from `rootDir` to install at the project root before building

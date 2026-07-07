@@ -5,8 +5,8 @@ services:
     region: ohio
     plan: free
     rootDir: apps/api-server
-    buildCommand: npm install
-    startCommand: npm run start
+    buildCommand: cd ../.. && npm install
+    startCommand: npx tsx src/index.ts
     envVars:
       - key: DATABASE_URL
         sync: false
@@ -21,11 +21,19 @@ services:
           property: host
       - key: NODE_ENV
         value: production
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
 
   - type: web
     name: structapp-web-client
     env: static
-    buildCommand: npm install && npm run build
+    buildCommand: cd ../.. && npm install && cd apps/web-client && npx vite build
     staticPublishPath: ./dist
     rootDir: apps/web-client
     envVars:
