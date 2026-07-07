@@ -157,3 +157,4 @@ If the API server cannot connect to Supabase:
 - The frontend static site does not spin down
 - For zero-downtime and no cold starts, upgrade to a paid plan ($7/mo per service)
 - Migrations must be run manually after deploy (not automated via `postDeploy` due to shell limitations)
+- Dependencies are hoisted to the root `node_modules` — the build commands navigate up from `rootDir` to install at the project root before building

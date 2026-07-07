@@ -5,8 +5,8 @@ services:
     region: ohio
     plan: free
     rootDir: apps/api-server
-    buildCommand: npm install
-    startCommand: npm run start
+    buildCommand: cd ../.. && npm install
+    startCommand: npx tsx src/index.ts
     envVars:
       - key: DATABASE_URL
         sync: false
@@ -33,7 +33,7 @@ services:
   - type: web
     name: structapp-web-client
     env: static
-    buildCommand: npm install && npm run build
+    buildCommand: cd ../.. && npm install && cd apps/web-client && npx vite build
     staticPublishPath: ./dist
     rootDir: apps/web-client
     envVars:
