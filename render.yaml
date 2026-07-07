@@ -37,10 +37,7 @@ services:
     rootDir: apps/web-client
     envVars:
       - key: VITE_API_URL
-        fromService:
-          name: structapp-api
-          type: web
-          property: host
+        sync: false
     headers:
       - path: /assets/*
         name: Cache-Control
