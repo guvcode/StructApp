@@ -134,7 +134,11 @@ These are not hosted on Render — set their env vars in the Render dashboard:
 
 | Variable | Required | Description |
 |---|---|---|
-| `VITE_API_URL` | Yes | Backend API URL (e.g. `https://structapp-api.onrender.com`) |
+| `VITE_API_URL` | Yes | Backend API URL (e.g. `https://structapp-api.onrender.com`) — **must be set manually** in the Render dashboard; `fromService` references do not work for static sites |
+
+### Important: Set VITE_API_URL manually
+
+After the frontend deploys, go to Render Dashboard → structapp-web-client → Environment → add `VITE_API_URL` with the value of your API server URL (e.g. `https://structapp-api.onrender.com`). Then trigger a manual deploy (Deploy → Clear build cache & deploy).
 
 ## Post-Deploy Verification
 
