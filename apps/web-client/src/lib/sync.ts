@@ -61,7 +61,8 @@ export async function syncWithAutoRefresh(
       };
     }
 
-    currentToken = refreshResult.data.access_token;
+    if (refreshResult.data?.access_token) {
+      currentToken = refreshResult.data.access_token;
 
     const authState = await db.authState.get('current');
     if (authState) {
