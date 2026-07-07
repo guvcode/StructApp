@@ -24,6 +24,7 @@ services:
 
   - type: web
     name: structapp-web-client
+    env: static
     region: ohio
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
