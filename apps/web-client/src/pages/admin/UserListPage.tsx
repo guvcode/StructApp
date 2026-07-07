@@ -241,9 +241,19 @@ export default function UserListPage() {
                       }).join(', ') || '—'}
                     </td>
                     <td className="py-4">
-                      <span className={`inline-block px-2 py-0.5 text-xs rounded-full ${u.is_active ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
-                        {u.is_active ? 'Active' : 'Inactive'}
-                      </span>
+                      {(() => {
+                        const isActive = u.is_active && (!!u.last_login_at || !!u.invite_accepted_at);
+                        const isInvited = u.is_active && !u.last_login_at && !u.invite_accepted_at;
+                        return (
+                          <span className={`inline-block px-2 py-0.5 text-xs rounded-full border ${
+                            isActive ? 'bg-green-50 text-green-700 border-green-200' :
+                            isInvited ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                            'bg-red-50 text-red-700 border-red-200'
+                          }`}>
+                            {isActive ? 'Active' : isInvited ? 'Invited' : 'Inactive'}
+                          </span>
+                        );
+                      })()}
                     </td>
                     <td className="py-4">
                       {u.is_active ? (

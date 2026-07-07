@@ -20,7 +20,7 @@ function generateInviteToken(userId: string, email: string): string {
 }
 
 function getInviteUrl(token: string): string {
-  const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const baseUrl = process.env.FRONTEND_URL || process.env.CORS_ORIGIN || 'http://localhost:3000';
   return `${baseUrl}/activate?token=${token}`;
 }
 
@@ -32,7 +32,12 @@ const userUpdateSchema = z.object({
   })).optional(),
 });
 
-router.post('/:id/resend-invite', requireAuth, requireRole('Admin'), async (req: Request, res: Response, next: NextFunction) => {
+function requireAdminMw(req: Request, _res: Response, next: NextFunction) {
+  if (req.user?.role !== 'Admin') return _res.status(403).json({ success: false, error_code: 'FORBIDDEN', message: 'Admin access required' });
+  next();
+}
+
+router.post('/:id/resend-invite', requireAdminMw, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = await pool.query(
       'SELECT user_id, email, invite_accepted_at FROM users WHERE user_id = $1',
@@ -79,7 +84,7 @@ router.get('/:id/invite-link', requireAuth, requireRole('Admin'), async (req: Re
   } catch (err) { next(err); }
 });
 
-router.get('/', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+router.get('/', requireAdminMw, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const role = req.query.role as string | undefined;
     const rows = await userService.listUsers(role);
@@ -100,7 +105,7 @@ router.get('/:id', requireAuth, async (req: Request, res: Response, next: NextFu
   } catch (err) { next(err); }
 });
 
-router.patch('/:id', requireAuth, requireRole('Admin', 'Reviewer'), async (req: Request, res: Response, next: NextFunction) => {
+router.patch('/:id', requireAdminMw, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const input = userUpdateSchema.parse(req.body);
     const fields: Record<string, unknown> = {};
@@ -113,7 +118,7 @@ router.patch('/:id', requireAuth, requireRole('Admin', 'Reviewer'), async (req: 
   } catch (err) { next(err); }
 });
 
-router.post('/:id/deactivate', requireAuth, requireRole('Admin'), async (req: Request, res: Response, next: NextFunction) => {
+router.post('/:id/deactivate', requireAdminMw, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const found = await userService.deactivateUser(req.params.id);
     if (!found) return res.status(404).json({ success: false, error_code: 'NOT_FOUND', message: 'User not found' });
