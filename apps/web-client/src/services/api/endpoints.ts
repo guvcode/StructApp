@@ -31,6 +31,7 @@ export const ENDPOINTS = {
   },
   clients: {
     list: `${BASE_URL}/clients`,
+    mine: `${BASE_URL}/clients/mine`,
     byId: (id: string) => `${BASE_URL}/clients/${id}`,
     create: `${BASE_URL}/clients`,
     update: (id: string) => `${BASE_URL}/clients/${id}`,

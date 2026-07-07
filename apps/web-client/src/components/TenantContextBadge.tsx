@@ -7,14 +7,14 @@ export default function TenantContextBadge() {
   const activeClientId = getActiveClientId();
   const session = getSession();
 
-  const { data: clients = [] } = useQuery({
-    queryKey: ['clients'],
-    queryFn: () => apiClient<Array<{ id: string; name: string }>>(ENDPOINTS.clients.list),
+  const { data: myClients = [] } = useQuery({
+    queryKey: ['clients', 'mine'],
+    queryFn: () => apiClient<Array<{ client_id: string; name: string }>>(ENDPOINTS.clients.mine),
     enabled: !!session,
   });
 
   const clientId = activeClientId || session?.user?.client_memberships?.[0]?.client_id;
-  const client = clients.find(c => c.id === clientId);
+  const client = myClients.find(c => c.client_id === clientId);
   const label = client?.name || 'No client';
 
   return (
