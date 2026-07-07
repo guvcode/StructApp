@@ -4,6 +4,7 @@ package-lock.json
 
 # Build output
 dist/
+.vite/
 *.tsbuildinfo
 
 # Compiled test/migration outputs (jest writes .js alongside .ts)
