@@ -3,6 +3,7 @@ import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
+import rateLimit from 'express-rate-limit';
 import { requireAuth, requireRole } from '../middleware/auth';
 import { pool } from '../lib/db';
 import { logger } from '../lib/logger';
