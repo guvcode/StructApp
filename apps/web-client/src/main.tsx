@@ -6,8 +6,6 @@ import { QueryErrorBoundary } from "@/lib/errorBoundary/QueryErrorBoundary";
 import { Toaster } from "react-hot-toast";
 import App from "./App";
 import { useServiceWorker } from "@/hooks/useServiceWorker";
-import { initSentry } from "@/lib/sentry";
-import "./index.css";
 
 initSentry();
 
