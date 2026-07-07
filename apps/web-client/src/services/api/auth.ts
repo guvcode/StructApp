@@ -71,8 +71,8 @@ export async function fetchSession(): Promise<AuthSession | null> {
   return getSession();
 }
 
-export async function inviteUser(email: string, role: string, clientId: string, display_name?: string): Promise<{ user_id: string }> {
-  return apiClient<{ success: boolean; data: { user_id: string } }>(ENDPOINTS.auth.invite, {
+export async function inviteUser(email: string, role: string, clientId: string, display_name?: string): Promise<{ user_id: string; invite_link: string; invite_sent_at: string }> {
+  return apiClient<{ success: boolean; data: { user_id: string; invite_link: string; invite_sent_at: string } }>(ENDPOINTS.auth.invite, {
     method: 'POST',
     body: JSON.stringify({ email, role: mapToBackendRole(role), client_id: clientId, display_name }),
   }).then(r => r.data);
