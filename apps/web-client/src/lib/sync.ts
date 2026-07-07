@@ -63,6 +63,7 @@ export async function syncWithAutoRefresh(
 
     if (refreshResult.data?.access_token) {
       currentToken = refreshResult.data.access_token;
+    }
 
     const authState = await db.authState.get('current');
     if (authState) {
