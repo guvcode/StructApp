@@ -84,6 +84,14 @@ router.get('/:id/invite-link', requireAuth, requireRole('Admin'), async (req: Re
   } catch (err) { next(err); }
 });
 
+router.get('/:id', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const row = await userService.getUserById(req.params.id);
+    if (!row) return res.status(404).json({ success: false, error_code: 'NOT_FOUND', message: 'User not found' });
+    res.json({ success: true, data: { id: row.user_id, email: row.email, display_name: row.display_name, role: row.role, is_active: row.is_active, client_memberships: row.client_memberships } });
+  } catch (err) { next(err); }
+});
+
 router.get('/', requireAdminMw, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const role = req.query.role as string | undefined;
@@ -94,14 +102,6 @@ router.get('/', requireAdminMw, async (req: Request, res: Response, next: NextFu
       client_memberships: r.client_memberships,
     }));
     res.json({ success: true, data: users });
-  } catch (err) { next(err); }
-});
-
-router.get('/:id', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const row = await userService.getUserById(req.params.id);
-    if (!row) return res.status(404).json({ success: false, error_code: 'NOT_FOUND', message: 'User not found' });
-    res.json({ success: true, data: { id: row.user_id, email: row.email, display_name: row.display_name, role: row.role, is_active: row.is_active, client_memberships: row.client_memberships } });
   } catch (err) { next(err); }
 });
 
