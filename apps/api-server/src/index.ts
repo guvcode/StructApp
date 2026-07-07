@@ -57,13 +57,13 @@ app.use('/api/v1/timesheets', requireAuth, requireRole('Admin', 'Reviewer'), tim
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/reports', requireAuth, requireRole('Admin', 'Reviewer'), reportsRouter);
 app.use('/api/v1/imports', requireAuth, requireRole('Admin'), importsRouter);
+app.use('/api/v1/users', requireAuth, usersRouter);
+app.use('/api/v1/clients', requireAuth, requireAdmin, clientsRouter);
+app.use('/api/v1/schedules', requireAuth, requireRole('Admin', 'Contractor'), schedulesRouter);
+app.use('/api/v1/remediation/deficiencies', requireAuth, requireRole('Admin', 'Reviewer', 'Contractor'), remediationRouter);
 app.use('/api/v1', requireAuth, requireRole('Admin'), registerRouter);
 app.use('/api/v1', requireAuth, requireRole('Admin', 'Reviewer'), picklistsRouter);
 app.use('/api/v1', requireAuth, requireRole('Admin'), taxonomyRouter);
-app.use('/api/v1/schedules', requireAuth, requireRole('Admin', 'Contractor'), schedulesRouter);
-app.use('/api/v1/remediation/deficiencies', requireAuth, requireRole('Admin', 'Reviewer', 'Contractor'), remediationRouter);
-app.use('/api/v1/users', requireAuth, usersRouter);
-app.use('/api/v1/clients', requireAuth, requireAdmin, clientsRouter);
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
@@ -71,7 +71,7 @@ app.get('/health', (_req, res) => {
 
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   logger.error({ err }, 'Unhandled error');
-  res.status(500).json({ success: false, error_code: 'INTERNAL_ERROR', message: err.message || 'An unexpected error occurred' });
+  res.status(500).json({ success: false, error_code: 'INTERNAL_ERROR', message: 'An unexpected error occurred' });
 });
 
 startScheduleGenerator(pool);
