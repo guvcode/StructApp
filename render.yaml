@@ -21,6 +21,14 @@ services:
           property: host
       - key: NODE_ENV
         value: production
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
 
   - type: web
     name: structapp-web-client
