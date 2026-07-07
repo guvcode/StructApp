@@ -23,6 +23,7 @@ export async function login(email: string, password: string): Promise<AuthSessio
   // Set session with token immediately so subsequent requests include Authorization
   setSession({
     token: data.access_token,
+    refresh_token: data.refresh_token,
     user: {
       id: data.user_id,
       email,
@@ -54,6 +55,7 @@ export async function login(email: string, password: string): Promise<AuthSessio
 
   const session: AuthSession = {
     token: data.access_token,
+    refresh_token: data.refresh_token,
     user,
     expires_at: new Date(Date.now() + 55 * 60 * 1000).toISOString(),
     active_client_id: data.client_id,

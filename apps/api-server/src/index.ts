@@ -71,7 +71,7 @@ app.get('/health', (_req, res) => {
 
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   logger.error({ err }, 'Unhandled error');
-  res.status(500).json({ success: false, error_code: 'INTERNAL_ERROR', message: 'An unexpected error occurred' });
+  res.status(500).json({ success: false, error_code: 'INTERNAL_ERROR', message: err.message || 'An unexpected error occurred' });
 });
 
 startScheduleGenerator(pool);

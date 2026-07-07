@@ -27,7 +27,7 @@ async function refreshToken(): Promise<boolean> {
       const response = await fetch(ENDPOINTS.auth.refresh, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refresh_token: session.token }),
+        body: JSON.stringify({ refresh_token: session.refresh_token }),
       });
       if (!response.ok) {
         clearSession();

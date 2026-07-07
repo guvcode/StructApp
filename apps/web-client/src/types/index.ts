@@ -418,6 +418,7 @@ export interface InspectionSchedule {
 
 export interface AuthSession {
   token: string;
+  refresh_token: string;
   user: User;
   expires_at: string;
   active_client_id?: string;
