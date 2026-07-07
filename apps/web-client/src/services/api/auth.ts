@@ -11,10 +11,14 @@ export async function login(email: string, password: string): Promise<AuthSessio
     user_id: string;
     client_id: string;
     role: string;
-  }>(ENDPOINTS.auth.login, {
+  } | null>(ENDPOINTS.auth.login, {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   });
+
+  if (!data) {
+    throw new Error('Login failed: unexpected response');
+  }
 
   // Set session with token immediately so subsequent requests include Authorization
   setSession({
