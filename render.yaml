@@ -4,9 +4,8 @@ services:
     env: node
     region: ohio
     plan: free
-    rootDir: apps/api-server
-    buildCommand: cd ../.. && npm install
-    startCommand: npx tsx src/index.ts
+    buildCommand: npm install
+    startCommand: npm run start --workspace=apps/api-server
     envVars:
       - key: DATABASE_URL
         sync: false
