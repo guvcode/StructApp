@@ -1,4 +1,4 @@
-import { updateRemediationStatus, verifyClosure } from '../src/services/deficiencies';
+import { createDeficiency, updateRemediationStatus, verifyClosure } from '../src/services/deficiencies';
 import { pool } from '../src/lib/db';
 
 jest.mock('../src/lib/db', () => ({
@@ -13,6 +13,73 @@ const mockPool = require('../src/lib/db').pool;
 describe('deficiencies service', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  describe('createDeficiency', () => {
+    it('INSERT includes new schema columns (structure_id, created_by, priority_tier, location_desc)', async () => {
+      const mockClient = {
+        query: jest.fn()
+          .mockResolvedValueOnce({}) // BEGIN
+          .mockResolvedValueOnce({}) // set_config 1
+          .mockResolvedValueOnce({}) // set_config 2
+          .mockResolvedValueOnce({ rows: [{ deficiency_id: 'new-id', description: 'test', calculated_priority: 'P3' }] }) // INSERT RETURNING *
+          .mockResolvedValueOnce({}), // COMMIT
+        release: jest.fn(),
+      };
+      mockPool.connect.mockResolvedValue(mockClient);
+
+      const result = await createDeficiency('inspec-123', 'client-1', 'user-1', {
+        description: 'Corrosion on beam',
+        category: 'Structural',
+        priority_tier: 'P2',
+        location_desc: 'Grid B-4, Floor 3',
+        risk_rank: 12,
+        risk_rating: 'Medium',
+      });
+
+      const insertCall = mockClient.query.mock.calls[3];
+      const insertSql = insertCall[0] as string;
+      expect(insertSql).toContain('structure_id');
+      expect(insertSql).toContain('created_by');
+      expect(insertSql).toContain('priority_tier');
+      expect(insertSql).toContain('location_desc');
+
+      expect(result.deficiency_id).toBe('new-id');
+    });
+
+    it('inserts and returns a deficiency with full v4 taxonomy fields', async () => {
+      const mockClient = {
+        query: jest.fn()
+          .mockResolvedValueOnce({}) // BEGIN
+          .mockResolvedValueOnce({}) // set_config 1
+          .mockResolvedValueOnce({}) // set_config 2
+          .mockResolvedValueOnce({
+            rows: [{
+              deficiency_id: 'def-456',
+              inspection_id: 'inspec-123',
+              description: 'test',
+              category: 'Structural',
+              priority_tier: 'P2',
+              calculated_priority: 'P2',
+            }],
+          })
+          .mockResolvedValueOnce({}), // COMMIT
+        release: jest.fn(),
+      };
+      mockPool.connect.mockResolvedValue(mockClient);
+
+      const result = await createDeficiency('inspec-123', 'client-1', 'user-1', {
+        description: 'Crack in beam',
+        category: 'Structural Support',
+        sub_component: 'Steel Framing',
+        priority_tier: 'P1',
+        risk_rank: 20,
+        risk_rating: 'High',
+      });
+
+      expect(result.description).toBe('test');
+      expect(result.calculated_priority).toBe('P2');
+    });
   });
 
   describe('updateRemediationStatus', () => {
