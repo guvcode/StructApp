@@ -33,10 +33,10 @@ export function useUpdateProject() {
   });
 }
 
-export function useSites(projectId?: string) {
+export function useSites(projectId?: string, clientId?: string) {
   return useQuery({
-    queryKey: ['sites', projectId],
-    queryFn: () => api.getSites(projectId),
+    queryKey: ['sites', projectId, clientId],
+    queryFn: () => api.getSites(projectId, clientId),
   });
 }
 
@@ -65,10 +65,10 @@ export function useUpdateSite() {
   });
 }
 
-export function useStructures(siteId?: string) {
+export function useStructures(siteId?: string, clientId?: string) {
   return useQuery({
-    queryKey: ['structures', siteId],
-    queryFn: () => api.getStructures(siteId),
+    queryKey: ['structures', siteId, clientId],
+    queryFn: () => api.getStructures(siteId, clientId),
   });
 }
 
@@ -80,10 +80,10 @@ export function useStructure(id: string | undefined) {
   });
 }
 
-export function useSearchStructures(query: string) {
+export function useSearchStructures(query: string, clientId?: string) {
   return useQuery({
-    queryKey: ['structures', 'search', query],
-    queryFn: () => api.searchStructures(query),
+    queryKey: ['structures', 'search', query, clientId],
+    queryFn: () => api.searchStructures(query, clientId),
     enabled: query.length > 0,
   });
 }

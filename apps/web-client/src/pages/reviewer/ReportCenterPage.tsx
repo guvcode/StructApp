@@ -3,7 +3,7 @@ import { useReportJobs, useGenerateReport, useRetryReportJob } from '../../hooks
 import { useProjects } from '../../hooks/useRegister';
 import type { ReportJob } from '../../types/index';
 import { ReportJobStatus, ReportOutputType } from '../../types/index';
-import { getSession } from '../../lib/authStore';
+import { getSession, getActiveClientId } from '../../lib/authStore';
 import Card from '../../components/Card';
 import Skeleton from '../../components/Skeleton';
 import EmptyState from '../../components/EmptyState';
@@ -19,7 +19,7 @@ const OUTPUT_TYPE_LABELS: Record<string, string> = {
 
 export default function ReportCenterPage() {
   const { data: jobs = [], isLoading, refetch } = useReportJobs();
-  const { data: projects = [] } = useProjects();
+  const { data: projects = [] } = useProjects(getActiveClientId());
   const generateReport = useGenerateReport();
   const retryReportJob = useRetryReportJob();
 
