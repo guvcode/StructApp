@@ -2,8 +2,16 @@ import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query";
 import { handleQueryError } from "./queryClientErrorHandler";
 
 export const queryClient = new QueryClient({
-  queryCache: new QueryCache({ onError: handleQueryError }),
-  mutationCache: new MutationCache({ onError: handleQueryError }),
+  queryCache: new QueryCache({
+    onError: (error: unknown, query) => {
+      handleQueryError(error, query.queryKey);
+    },
+  }),
+  mutationCache: new MutationCache({
+    onError: (error: unknown, _variables: unknown, _context: unknown, mutation) => {
+      handleQueryError(error, mutation.options.mutationKey);
+    },
+  }),
   defaultOptions: {
     queries: {
       staleTime: 30_000,

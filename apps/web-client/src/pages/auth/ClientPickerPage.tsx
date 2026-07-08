@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { getSession, getLandingRoute } from '../../lib/authStore';
+import { getSession, getLandingRoute, getUserRole } from '../../lib/authStore';
 import { apiClient } from '../../services/api/apiClient';
 import { ENDPOINTS } from '../../services/api/endpoints';
 import Card from '../../components/Card';
@@ -17,10 +17,17 @@ export default function ClientPickerPage() {
   const [loading, setLoading] = useState(false);
 
   const session = getSession();
+  const role = getUserRole();
+  const isContractor = role === 'contractor';
 
   const { data: allClients = [] } = useQuery({
-    queryKey: ['clients', 'mine'],
-    queryFn: () => apiClient<Array<{ client_id: string; name: string }>>(ENDPOINTS.clients.mine),
+    queryKey: ['clients', isContractor ? 'with-assigned-inspections' : 'mine'],
+    queryFn: () =>
+      apiClient<Array<{ client_id: string; name: string }>>(
+        isContractor
+          ? ENDPOINTS.clients.withAssignedInspections
+          : ENDPOINTS.clients.mine
+      ),
     enabled: !!session,
   });
 

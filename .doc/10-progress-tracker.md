@@ -16,7 +16,7 @@
 | 3 | 6 | 2 | 1 | 4 | 0 |
 | 4 | 2 | 2 | 0 | 0 | 0 |
 | 5 | 34 | 0 | 0 | 34 | 0 |
-| 6 | 20 | 20 | 0 | 0 | 0 |
+| 6 | 27 | 0 | 0 | 27 | 0 |
 | B1 | 7 | 0 | 0 | 7 | 0 |
 | B2 | 10 | 0 | 0 | 10 | 0 |
 | cross | 4 | 4 | 0 | 0 | 0 |
@@ -330,3 +330,15 @@
 | TAX-618 | Update mock data — add new taxonomy fields + Glencore risk values to all 18 mock deficiency records in `mockDeficiencies.ts`, `mockInspection.ts`, `mockRemediation.ts` | 6 | 🟩 COMPLETED | TAX-606 |
 | TAX-619 | Fix affected tests — update `b6-mobile.test.tsx`, `sync.test.ts`, `b10-remediation.test.ts`, `b1-mock-services.test.ts`, `b1-guard.test.ts` to match new `Deficiency` type shape | 6 | 🟩 COMPLETED | TAX-618 |
 | TAX-620 | Build taxonomy management UI — Admin/Reviewer page for managing hierarchical taxonomy (category tree CRUD with drag-and-drop or parent select); consumes TAX-602 backend; replace superseded `PicklistComponentTypesPage` | 6 | 🟩 COMPLETED | TAX-602 |
+
+## 10.7 Mobile Offline & Client Context
+
+| Feature ID | Component | Sprint | Status | Dependency |
+|---|---|---|---|---|
+| MOB-701 | Client-scoped client picker — contractors see only clients with assigned inspections via new `GET /clients/with-assigned-inspections` endpoint; admin/reviewer continue to see all memberships | 6 | 🟩 COMPLETED | None |
+| MOB-702 | Add `client_id` filter param to `GET /inspections` route — all contractor query calls pass `active_client_id` | 6 | 🟩 COMPLETED | MOB-701 |
+| MOB-703 | Extend sync pull with last 20 inspections per client + associated deficiencies (no images); API `processSyncPull` returns new `inspections` and `deficiencies` arrays | 6 | 🟩 COMPLETED | None |
+| MOB-704 | Dexie v3 schema — add `offlineInspections`, `offlineDeficiencies`, `offlineTaxonomy` tables; `SyncPage` pull handler persists all three to IndexedDB | 6 | 🟩 COMPLETED | MOB-703 |
+| MOB-705 | Dashboard cards show client name, site name, structure ID, status instead of bare UUIDs; offline fallback reads from Dexie | 6 | 🟩 COMPLETED | MOB-704 |
+| MOB-706 | Fix global 403 error toast flood — throttle 403 toasts (10s), suppress background poll errors (`sync:*` keys), add `queryKey` to Sentry tags | 6 | 🟩 COMPLETED | None |
+| MOB-707 | Guard unprotected localStorage/sessionStorage access — wrap all direct Web Storage calls in try/catch to prevent crashes in Safari private browsing | 6 | 🟩 COMPLETED | None |

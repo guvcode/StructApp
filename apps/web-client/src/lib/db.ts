@@ -55,10 +55,61 @@ export type PinOutboxRecord = {
   data: unknown;
 };
 
+export type OfflineInspection = {
+  id: string;
+  structureId: string | null;
+  siteId: string;
+  clientId: string;
+  inspectorId: string;
+  assignedBy: string;
+  status: string;
+  scheduledDate: string | null;
+  createdAt: string;
+  submittedAt: string | null;
+  updatedAt: string;
+  returnedReason: string | null;
+  approvedBy: string | null;
+  approvedAt: string | null;
+};
+
+export type OfflineDeficiency = {
+  deficiencyId: string;
+  inspectionId: string;
+  clientId: string;
+  description: string;
+  calculatedPriority: string;
+  category: string | null;
+  subComponent: string | null;
+  focusArea: string | null;
+  deficiencyCategory: string | null;
+  detailedDescription: string | null;
+  mechanisms: string | null;
+  recommendedAction: string | null;
+  consequenceSeverity: number | null;
+  likelihood: string | null;
+  riskRank: number | null;
+  riskRating: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type OfflineTaxonomy = {
+  nodeId: string;
+  parentId: string | null;
+  level: string;
+  category: string;
+  label: string;
+  displayOrder: number;
+  isActive: boolean;
+};
+
 export class StructAppLocalDB extends Dexie {
   authState!: Table<AuthState, 'current'>;
   deficiencies!: Table<DeficiencyRecord, number>;
   pinOutbox!: Table<PinOutboxRecord, number>;
+  offlineInspections!: Table<OfflineInspection, string>;
+  offlineDeficiencies!: Table<OfflineDeficiency, string>;
+  offlineTaxonomy!: Table<OfflineTaxonomy, string>;
 
   constructor() {
     super('StructAppLocalDB');
@@ -72,6 +123,14 @@ export class StructAppLocalDB extends Dexie {
       deficiencies: '++localId, inspectionId, syncState',
       pinOutbox: '++localId, structureId, pinMode, createdAt',
     }).upgrade(tx => {
+    });
+    this.version(3).stores({
+      authState: 'id, accessToken, refreshToken, clientId, userId, role',
+      deficiencies: '++localId, inspectionId, syncState',
+      pinOutbox: '++localId, structureId, pinMode, createdAt',
+      offlineInspections: 'id, clientId, inspectorId, status, createdAt',
+      offlineDeficiencies: 'deficiencyId, inspectionId, clientId',
+      offlineTaxonomy: 'nodeId, level, category',
     });
   }
 }

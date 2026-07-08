@@ -25,6 +25,21 @@ router.get('/mine', requireAuth, async (req: Request, res: Response, next: NextF
   } catch (err) { next(err); }
 });
 
+router.get('/with-assigned-inspections', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = (req as Request & { user: { sub: string; role: string } }).user.sub;
+    const result = await pool.query(
+      `SELECT DISTINCT c.client_id, c.name
+       FROM clients c
+       JOIN inspections i ON i.client_id = c.client_id
+       WHERE i.inspector_id = $1
+       ORDER BY c.name ASC`,
+      [userId],
+    );
+    res.json({ success: true, data: result.rows });
+  } catch (err) { next(err); }
+});
+
 router.get('/', requireAuth, requireAdmin, async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const rows = await clientService.listClients();

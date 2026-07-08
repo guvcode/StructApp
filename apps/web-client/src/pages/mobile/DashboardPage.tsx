@@ -1,16 +1,59 @@
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useInspectionsByAssignee } from '../../hooks/useInspections';
 import { useSyncState } from '../../hooks/useSync';
-import { getSession } from '../../lib/authStore';
+import { getSession, getActiveClientId } from '../../lib/authStore';
+import { apiClient } from '../../services/api/apiClient';
+import { ENDPOINTS } from '../../services/api/endpoints';
+import { db } from '../../lib/db';
 import Skeleton from '../../components/Skeleton';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
   const session = getSession();
+  const activeClientId = getActiveClientId();
   const userId = session?.user?.id ?? 'u-eleanor';
-  const { data: inspections = [], isLoading, isError } = useInspectionsByAssignee(userId);
+  const online = navigator.onLine;
+
+  const { data: inspections = [], isLoading, isError } = useInspectionsByAssignee(userId, activeClientId);
   const { data: syncState } = useSyncState();
   const pendingCount = syncState?.pendingCount ?? 0;
+
+  const { data: allSites = [] } = useQuery({
+    queryKey: ['sites'],
+    queryFn: () => apiClient<Array<{ id: string; name: string }>>(ENDPOINTS.sites.list),
+    enabled: online,
+  });
+  const siteLookup = useMemo(() => {
+    const map = new Map<string, string>();
+    allSites.forEach(s => map.set(s.id, s.name));
+    return map;
+  }, [allSites]);
+
+  const { data: allClients = [] } = useQuery({
+    queryKey: ['clients', 'mine'],
+    queryFn: () => apiClient<Array<{ client_id: string; name: string }>>(ENDPOINTS.clients.mine),
+    enabled: online,
+  });
+  const clientLookup = useMemo(() => {
+    const map = new Map<string, string>();
+    allClients.forEach(c => map.set(c.client_id, c.name));
+    return map;
+  }, [allClients]);
+
+  const { data: offlineInspections = [] } = useQuery({
+    queryKey: ['offlineInspections', activeClientId],
+    queryFn: async () => {
+      const collection = db.offlineInspections
+        .where('clientId')
+        .equals(activeClientId ?? '');
+      return collection.toArray();
+    },
+    enabled: !online && !!activeClientId,
+  });
+
+  const displayInspections = online ? inspections : offlineInspections;
 
   if (isLoading) return (
     <div className="space-y-4 p-4 animate-fadeIn">
@@ -18,10 +61,14 @@ export default function DashboardPage() {
       <Skeleton className="h-24 w-full rounded-lg" />
     </div>
   );
-  if (isError) return <div className="p-6 text-red-600 text-center">Failed to load dashboard data.</div>;
+  if (isError && online) return <div className="p-6 text-red-600 text-center">Failed to load dashboard data.</div>;
 
-  const assigned = inspections.filter(i => i.status === 'Assigned' || i.status === 'InProgress' || i.status === 'Draft');
-  const returned = inspections.filter(i => i.status === 'Returned');
+  const assigned = displayInspections.filter(
+    (i: { status: string }) => i.status === 'Assigned' || i.status === 'InProgress' || i.status === 'Draft'
+  );
+  const returned = displayInspections.filter(
+    (i: { status: string }) => i.status === 'Returned'
+  );
 
   return (
     <div className="space-y-4 animate-fadeIn">
@@ -36,33 +83,49 @@ export default function DashboardPage() {
       {returned.length > 0 && (
         <div>
           <h3 className="font-semibold text-text-primary mb-1">Returned to You</h3>
-          {returned.map(insp => (
+          {returned.map((insp) => {
+            const i = insp as { id: string; clientId?: string; client_id?: string; siteId?: string; site_id?: string; status: string; scheduledDate?: string | null; scheduled_date?: string; assignee_name?: string; assigned_to?: string };
+            return (
             <button
-              key={insp.id}
-              onClick={() => navigate(`/m/inspections/${insp.id}`)}
+              key={i.id}
+              onClick={() => navigate(`/m/inspections/${i.id}`)}
               className="w-full bg-red-50 border border-red-200 rounded-lg p-3 mb-2 text-left"
-              aria-label={`View returned inspection for ${insp.assignee_name ?? insp.assigned_to}`}
+              aria-label={`View returned inspection`}
             >
-              <p className="text-sm font-semibold text-red-800">{insp.assignee_name ?? insp.assigned_to}</p>
-              <p className="text-xs text-red-600">Returned — due {insp.scheduled_date}</p>
+              <p className="text-sm font-semibold text-red-800">
+                {clientLookup.get(i.clientId ?? i.client_id ?? '') ?? i.assignee_name ?? i.assigned_to}
+              </p>
+              <p className="text-xs text-red-600">
+                {siteLookup.get(i.siteId ?? i.site_id ?? '') ?? i.siteId ?? i.site_id} — due {i.scheduledDate ?? i.scheduled_date}
+              </p>
             </button>
-          ))}
+            );
+          })}
         </div>
       )}
 
       <div>
         <h3 className="font-semibold text-text-primary mb-1">Assigned Inspections ({assigned.length})</h3>
-        {assigned.map(insp => (
+        {assigned.map((insp) => {
+          const i = insp as { id: string; clientId?: string; client_id?: string; siteId?: string; site_id?: string; status: string; scheduledDate?: string | null; scheduled_date?: string; structureId?: string; structure_id?: string };
+          return (
           <button
-            key={insp.id}
-            onClick={() => navigate(`/m/inspections/${insp.id}`)}
+            key={i.id}
+            onClick={() => navigate(`/m/inspections/${i.id}`)}
             className="w-full bg-surface-primary border border-border rounded-lg p-3 mb-2 text-left"
-            aria-label={`View assigned inspection for ${insp.site_id}`}
+            aria-label={`View assigned inspection`}
           >
-            <p className="text-sm font-semibold text-text-primary">{insp.site_id}</p>
-            <p className="text-xs text-text-secondary">{insp.status} — {insp.scheduled_date}</p>
+            <p className="text-sm font-semibold text-text-primary">
+              {clientLookup.get(i.clientId ?? i.client_id ?? '') ?? i.clientId ?? i.client_id}
+            </p>
+            <p className="text-xs text-text-secondary">
+              {siteLookup.get(i.siteId ?? i.site_id ?? '') ?? i.siteId ?? i.site_id}
+              {i.structureId ?? i.structure_id ? ` — ${i.structureId ?? i.structure_id}` : ''}
+            </p>
+            <p className="text-xs text-text-secondary">{i.status} — {i.scheduledDate ?? i.scheduled_date}</p>
           </button>
-        ))}
+          );
+        })}
         {assigned.length === 0 && (
           <p className="text-text-secondary text-sm text-center py-4">No assigned inspections.</p>
         )}

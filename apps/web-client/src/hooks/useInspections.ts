@@ -25,10 +25,10 @@ export function useInspection(id: string | undefined) {
   });
 }
 
-export function useInspectionsByAssignee(userId: string | undefined) {
+export function useInspectionsByAssignee(userId: string | undefined, clientId?: string) {
   return useQuery({
-    queryKey: ['inspections', 'assignee', userId],
-    queryFn: () => api.getInspectionsByAssignee(userId!),
+    queryKey: ['inspections', 'assignee', userId, clientId],
+    queryFn: () => api.getInspectionsByAssignee(userId!, clientId),
     enabled: !!userId,
   });
 }
