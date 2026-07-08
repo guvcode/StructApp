@@ -16,6 +16,7 @@ export const ENDPOINTS = {
     switchClient: `${BASE_URL}/auth/switch-client`,
     forgotPassword: `${BASE_URL}/auth/forgot-password`,
     resetPassword: `${BASE_URL}/auth/reset-password`,
+    pin: `${BASE_URL}/auth/pin`,
   },
   users: {
     list: `${BASE_URL}/users`,
@@ -24,12 +25,14 @@ export const ENDPOINTS = {
     deactivate: (id: string) => `${BASE_URL}/users/${id}/deactivate`,
     byRole: (role: string) => `${BASE_URL}/users?role=${role}`,
     resendInvite: (id: string) => `${BASE_URL}/users/${id}/resend-invite`,
+    inviteLink: (id: string) => `${BASE_URL}/users/${id}/invite-link`,
     revokeInvite: (id: string) => `${BASE_URL}/users/${id}/revoke-invite`,
     resetPassword: (id: string) => `${BASE_URL}/users/${id}/reset-password`,
     resetPin: (id: string) => `${BASE_URL}/users/${id}/reset-pin`,
   },
   clients: {
     list: `${BASE_URL}/clients`,
+    mine: `${BASE_URL}/clients/mine`,
     byId: (id: string) => `${BASE_URL}/clients/${id}`,
     create: `${BASE_URL}/clients`,
     update: (id: string) => `${BASE_URL}/clients/${id}`,
@@ -107,6 +110,7 @@ export const ENDPOINTS = {
     retry: (id: string) => `${BASE_URL}/reports/jobs/${id}/retry`,
   },
   sync: {
+    state: `${BASE_URL}/sync/state`,
     push: `${BASE_URL}/sync/push-outbox`,
     pull: `${BASE_URL}/sync/pull-package`,
   },

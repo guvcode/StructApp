@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useInspection, useDeficienciesForInspection } from '../../hooks/useInspections';
 import { useSubmitInspection } from '../../hooks/useInspections';
-import { usePendingCount } from '../../hooks/useSync';
+import { useSyncState } from '../../hooks/useSync';
 import type { PhotoRecord } from '../../types/index';
 import Skeleton from '../../components/Skeleton';
 
@@ -11,7 +11,8 @@ export default function InspectionSubmitPage() {
   const navigate = useNavigate();
   const { data: inspection, isLoading } = useInspection(id);
   const { data: deficiencies = [] } = useDeficienciesForInspection(id);
-  const { data: pendingCount = 0 } = usePendingCount();
+  const { data: syncState } = useSyncState();
+  const pendingCount = syncState?.pendingCount ?? 0;
   const submitInspection = useSubmitInspection();
   const [noFindings, setNoFindings] = useState(false);
   const [error, setError] = useState('');

@@ -48,6 +48,7 @@ import InviteUserPage from './pages/admin/InviteUserPage';
 import ImportCenterPage from './pages/admin/ImportCenterPage';
 import ImportHistoryPage from './pages/admin/ImportHistoryPage';
 import AuditLogPage from './pages/admin/AuditLogPage';
+import PinSetupPage from './pages/auth/PinSetupPage';
 import ForbiddenPage from './pages/ForbiddenPage';
 import NotFoundPage from './pages/NotFoundPage';
 
@@ -61,6 +62,7 @@ export default function AppRoutes() {
           <Route path="activate" element={<ActivatePage />} />
           <Route path="select-client" element={<ClientPickerPage />} />
           <Route path="session-expired" element={<SessionExpiredPage />} />
+          <Route path="m/setup-pin" element={<PinSetupPage />} />
         </Route>
         <Route element={<MobileShell />}>
           <Route path="m/dashboard" element={<DashboardPage />} />

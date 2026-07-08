@@ -145,6 +145,8 @@ export interface User {
   role: UserRole;
   avatar_url?: string;
   is_active: boolean;
+  last_login_at?: string | null;
+  invite_accepted_at?: string | null;
   client_memberships: ClientMembership[];
 }
 
@@ -416,6 +418,7 @@ export interface InspectionSchedule {
 
 export interface AuthSession {
   token: string;
+  refresh_token: string;
   user: User;
   expires_at: string;
   active_client_id?: string;

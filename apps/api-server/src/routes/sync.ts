@@ -1,12 +1,26 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import multer from 'multer';
-import { processSyncPush, processSyncPull, processPhotoUpload } from '../services/sync';
+import { processSyncPush, processSyncPull, processPhotoUpload, getSyncState, logSyncAction } from '../services/sync';
 import { syncPushSchema, syncPullSchema } from '../contracts/sync';
 import { requireAuth } from '../middleware/auth';
 
 const upload = multer({ storage: multer.memoryStorage() });
 
 export const syncRouter = Router();
+
+syncRouter.get(
+  '/state',
+  requireAuth,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const user = (req as Request & { user: { client_id: string; sub: string } }).user;
+      const state = await getSyncState(user.client_id, user.sub);
+      res.json({ success: true, data: state });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 
 syncRouter.post(
   '/pull-package',

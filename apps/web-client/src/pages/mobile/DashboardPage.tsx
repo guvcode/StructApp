@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useInspectionsByAssignee } from '../../hooks/useInspections';
-import { useSyncState, usePendingCount } from '../../hooks/useSync';
+import { useSyncState } from '../../hooks/useSync';
 import { getSession } from '../../lib/authStore';
 import Skeleton from '../../components/Skeleton';
 
@@ -10,7 +10,7 @@ export default function DashboardPage() {
   const userId = session?.user?.id ?? 'u-eleanor';
   const { data: inspections = [], isLoading, isError } = useInspectionsByAssignee(userId);
   const { data: syncState } = useSyncState();
-  const { data: pendingCount = 0 } = usePendingCount();
+  const pendingCount = syncState?.pendingCount ?? 0;
 
   if (isLoading) return (
     <div className="space-y-4 p-4 animate-fadeIn">

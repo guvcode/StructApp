@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import { z } from 'zod';
 import { pool } from './lib/db';
 import { logger } from './lib/logger';
 import pinoHttp from 'pino-http';
@@ -53,23 +54,26 @@ app.use('/api/v1/photos', requireAuth, requireRole('Contractor'), photosRouter);
 app.use('/api/v1/audit-logs', requireAuth, requireRole('Admin'), auditLogsRouter);
 app.use('/api/v1/job-errors', requireAuth, requireRole('Admin'), jobErrorsRouter);
 app.use('/api/v1/client-errors', requireAuth, requireRole('Admin'), clientErrorsRouter);
-app.use('/api/v1/timesheets', requireAuth, requireRole('Admin', 'Reviewer'), timesheetsRouter);
+app.use('/api/v1/timesheets', requireAuth, requireRole('Admin', 'Reviewer', 'Contractor'), timesheetsRouter);
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/reports', requireAuth, requireRole('Admin', 'Reviewer'), reportsRouter);
 app.use('/api/v1/imports', requireAuth, requireRole('Admin'), importsRouter);
-app.use('/api/v1', requireAuth, requireRole('Admin'), registerRouter);
-app.use('/api/v1', requireAuth, requireRole('Admin', 'Reviewer'), picklistsRouter);
-app.use('/api/v1', requireAuth, requireRole('Admin'), taxonomyRouter);
+app.use('/api/v1/users', requireAuth, usersRouter);
+app.use('/api/v1/clients', requireAuth, clientsRouter);
 app.use('/api/v1/schedules', requireAuth, requireRole('Admin', 'Contractor'), schedulesRouter);
 app.use('/api/v1/remediation/deficiencies', requireAuth, requireRole('Admin', 'Reviewer', 'Contractor'), remediationRouter);
-app.use('/api/v1/users', requireAuth, requireAdmin, usersRouter);
-app.use('/api/v1/clients', requireAuth, requireAdmin, clientsRouter);
+app.use('/api/v1', requireAuth, requireRole('Admin', 'Reviewer', 'Contractor'), registerRouter);
+app.use('/api/v1', requireAuth, requireRole('Admin', 'Reviewer'), picklistsRouter);
+app.use('/api/v1', requireAuth, requireRole('Admin'), taxonomyRouter);
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  if (err instanceof z.ZodError) {
+    return res.status(400).json({ success: false, error_code: 'VALIDATION_ERROR', message: 'Invalid request body', details: err.errors });
+  }
   logger.error({ err }, 'Unhandled error');
   res.status(500).json({ success: false, error_code: 'INTERNAL_ERROR', message: 'An unexpected error occurred' });
 });

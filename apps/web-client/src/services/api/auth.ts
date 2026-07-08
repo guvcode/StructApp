@@ -11,14 +11,19 @@ export async function login(email: string, password: string): Promise<AuthSessio
     user_id: string;
     client_id: string;
     role: string;
-  }>(ENDPOINTS.auth.login, {
+  } | null>(ENDPOINTS.auth.login, {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   });
 
+  if (!data) {
+    throw new Error('Login failed: unexpected response');
+  }
+
   // Set session with token immediately so subsequent requests include Authorization
   setSession({
     token: data.access_token,
+    refresh_token: data.refresh_token,
     user: {
       id: data.user_id,
       email,
@@ -50,6 +55,7 @@ export async function login(email: string, password: string): Promise<AuthSessio
 
   const session: AuthSession = {
     token: data.access_token,
+    refresh_token: data.refresh_token,
     user,
     expires_at: new Date(Date.now() + 55 * 60 * 1000).toISOString(),
     active_client_id: data.client_id,
@@ -67,10 +73,10 @@ export async function fetchSession(): Promise<AuthSession | null> {
   return getSession();
 }
 
-export async function inviteUser(email: string, role: string, clientId: string, display_name?: string): Promise<{ user_id: string }> {
-  return apiClient<{ success: boolean; data: { user_id: string } }>(ENDPOINTS.auth.invite, {
+export async function inviteUser(email: string, role: string, clientId: string, display_name?: string): Promise<{ user_id: string; invite_link: string; invite_sent_at: string }> {
+  return apiClient<{ success: boolean; data: { user_id: string; invite_link: string; invite_sent_at: string } }>(ENDPOINTS.auth.invite, {
     method: 'POST',
-    body: JSON.stringify({ email, role, client_id: clientId, display_name }),
+    body: JSON.stringify({ email, role: mapToBackendRole(role), client_id: clientId, display_name }),
   }).then(r => r.data);
 }
 
@@ -79,4 +85,20 @@ export async function activateInvite(token: string, password: string): Promise<{
     method: 'POST',
     body: JSON.stringify({ token, password }),
   });
+}
+
+export async function syncPinToServer(pinHash: string): Promise<void> {
+  await apiClient(ENDPOINTS.auth.pin, {
+    method: 'POST',
+    body: JSON.stringify({ pin_hash: pinHash }),
+  });
+}
+
+export async function checkServerPin(): Promise<boolean> {
+  const result = await apiClient<{ has_pin: boolean }>(ENDPOINTS.auth.pin);
+  return result?.has_pin ?? false;
+}
+
+export async function clearServerPin(): Promise<void> {
+  await apiClient(ENDPOINTS.auth.pin, { method: 'DELETE' });
 }

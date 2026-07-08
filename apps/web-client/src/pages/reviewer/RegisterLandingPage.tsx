@@ -1,9 +1,10 @@
 import { useRegisterLandingStats } from '../../hooks/useDashboard';
+import { getActiveClientId } from '../../lib/authStore';
 import { Link } from 'react-router-dom';
 import Skeleton from '../../components/Skeleton';
 
 export default function RegisterLandingPage() {
-  const { data, isLoading } = useRegisterLandingStats();
+  const { data, isLoading } = useRegisterLandingStats(getActiveClientId());
 
   if (isLoading) {
     return <div className="p-6 text-text-secondary"><Skeleton className="h-8 w-48 mb-4" /><Skeleton className="h-32 w-full rounded-lg" /></div>;

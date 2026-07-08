@@ -25,9 +25,9 @@ describe('queryClientErrorHandler', () => {
     spy.mockRestore();
   });
 
-  it('clears auth state and redirects on 403', async () => {
+  it('does not clear auth state or redirect on 403', async () => {
     const { db } = await import('../src/lib/db');
-    const spy = vi.spyOn(db.authState, 'clear').mockImplementation(() => {});
+    const clearSpy = vi.spyOn(db.authState, 'clear').mockImplementation(() => {});
 
     let href = '';
     vi.stubGlobal('window', {
@@ -44,9 +44,9 @@ describe('queryClientErrorHandler', () => {
     const { handleQueryError } = await import('../src/lib/queryClientErrorHandler');
     handleQueryError({ status: 403 } as any);
 
-    expect(spy).toHaveBeenCalled();
-    expect(href).toBe('/login');
-    spy.mockRestore();
+    expect(clearSpy).not.toHaveBeenCalled();
+    expect(href).not.toBe('/login');
+    clearSpy.mockRestore();
   });
 
   it('does not clear auth state on non-auth errors', async () => {

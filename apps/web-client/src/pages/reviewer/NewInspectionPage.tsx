@@ -15,9 +15,9 @@ export default function NewInspectionPage() {
   const clientId = getActiveClientId();
   const { data: projects = [], isLoading: projectsLoading } = useProjects(clientId);
   const [selectedProject, setSelectedProject] = useState('');
-  const { data: sites = [] } = useSites(selectedProject || undefined);
+  const { data: sites = [] } = useSites(selectedProject || undefined, clientId);
   const [selectedSite, setSelectedSite] = useState('');
-  const { data: structures = [] } = useStructures(selectedSite || undefined);
+  const { data: structures = [] } = useStructures(selectedSite || undefined, clientId);
   const [selectedStructures, setSelectedStructures] = useState<Set<string>>(new Set());
   const [inspectAll, setInspectAll] = useState(false);
   const [selectedInspector, setSelectedInspector] = useState('');

@@ -1,15 +1,31 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { logger } from '../lib/logger';
-import { requireAuth, requireRole } from '../middleware/auth';
+import { requireAuth, requireRole, requireAdmin } from '../middleware/auth';
 import * as clientService from '../services/clients';
+import { pool } from '../lib/db';
 
 const router = Router();
 
 const clientCreateSchema = z.object({ name: z.string().min(1).max(200), safety_email: z.string().email().optional() });
 const clientUpdateSchema = z.object({ name: z.string().min(1).max(200).optional(), safety_email: z.string().email().optional() });
 
-router.get('/', requireAuth, async (_req: Request, res: Response, next: NextFunction) => {
+router.get('/mine', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = (req as Request & { user: { sub: string } }).user.sub;
+    const result = await pool.query(
+      `SELECT c.client_id, c.name
+       FROM client_memberships cm
+       JOIN clients c ON c.client_id = cm.client_id
+       WHERE cm.user_id = $1
+       ORDER BY cm.created_at ASC`,
+      [userId],
+    );
+    res.json({ success: true, data: result.rows });
+  } catch (err) { next(err); }
+});
+
+router.get('/', requireAuth, requireAdmin, async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const rows = await clientService.listClients();
     const clients = rows.map(r => ({ id: r.client_id, name: r.name, created_at: r.created_at }));
@@ -17,7 +33,7 @@ router.get('/', requireAuth, async (_req: Request, res: Response, next: NextFunc
   } catch (err) { next(err); }
 });
 
-router.get('/:id', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+router.get('/:id', requireAuth, requireAdmin, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const row = await clientService.getClientById(req.params.id);
     if (!row) return res.status(404).json({ success: false, error_code: 'NOT_FOUND', message: 'Client not found' });
@@ -47,7 +63,7 @@ router.patch('/:id', requireAuth, requireRole('Admin'), async (req: Request, res
   } catch (err) { next(err); }
 });
 
-router.get('/:id/projects', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+router.get('/:id/projects', requireAuth, requireAdmin, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const rows = await clientService.getClientProjects(req.params.id);
     const projects = rows.map(r => ({ id: r.project_id, client_id: r.client_id, title: r.title, type: r.type, due_date: r.due_date, created_at: r.created_at }));

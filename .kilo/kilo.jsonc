@@ -1,4 +1,9 @@
 {
   "$schema": "https://app.kilo.ai/config.json",
-  "snapshot": false
+  "snapshot": false,
+  "compaction": {
+    "auto": true,
+    "threshold_percent": 60,
+    "prune": true
+  }
 }

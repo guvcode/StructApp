@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useInspections } from '../../hooks/useInspections';
 import { useSites } from '../../hooks/useRegister';
+import { getActiveClientId } from '../../lib/authStore';
 import { InspectionStatus } from '../../types/index';
 import { ReturnInspectionModal } from '../../components/ReturnInspectionModal';
 import { ApproveInspectionModal } from '../../components/ApproveInspectionModal';
@@ -25,7 +26,7 @@ export default function InspectionListPage() {
 
   useClientScope(() => client.invalidateQueries({ queryKey: ['inspections'] }));
 
-  const { data: allSites = [] } = useSites();
+  const { data: allSites = [] } = useSites(undefined, getActiveClientId());
   const siteLookup = useMemo(() => {
     const map = new Map<string, string>();
     allSites.forEach(s => map.set(s.id, s.name));

@@ -75,7 +75,8 @@ function ProjectEditDrawer({
 }
 
 export default function ProjectListPage() {
-  const { data: projects = [], isLoading, refetch } = useProjects();
+  const clientId = getActiveClientId();
+  const { data: projects = [], isLoading, refetch } = useProjects(clientId);
   const [search, setSearch] = useState('');
   const [editingProject, setEditingProject] = useState<Project | undefined>(undefined);
   const [showCreate, setShowCreate] = useState(false);

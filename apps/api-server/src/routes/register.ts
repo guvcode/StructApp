@@ -6,11 +6,11 @@ import * as registerService from '../services/register';
 const router = Router();
 
 const projectCreateSchema = z.object({
-  client_id: z.string().uuid(), title: z.string().min(1).max(200), type: z.string().min(1).max(100), due_date: z.string(),
+  client_id: z.string().uuid(), name: z.string().min(1).max(255), code: z.string().min(1).max(100), status: z.enum(['active', 'completed', 'on-hold']).optional(), region: z.string().max(255).optional(), start_date: z.string().optional(), end_date: z.string().optional(),
 });
 
 const projectUpdateSchema = z.object({
-  title: z.string().min(1).max(200).optional(), type: z.string().min(1).max(100).optional(), due_date: z.string().optional(),
+  name: z.string().min(1).max(255).optional(), code: z.string().min(1).max(100).optional(), status: z.enum(['active', 'completed', 'on-hold']).optional(), region: z.string().max(255).optional(), start_date: z.string().optional(), end_date: z.string().optional(),
 });
 
 const siteCreateSchema = z.object({
@@ -30,7 +30,7 @@ const structureUpdateSchema = z.object({
 });
 
 function mapProject(r: Record<string, unknown>) {
-  return { id: r.project_id, client_id: r.client_id, title: r.title, type: r.type, due_date: r.due_date, created_at: r.created_at };
+  return { id: r.project_id, client_id: r.client_id, name: r.name, code: r.code, status: r.status, region: r.region || undefined, start_date: r.start_date ? new Date(r.start_date as string).toISOString().split('T')[0] : undefined, end_date: r.end_date ? new Date(r.end_date as string).toISOString().split('T')[0] : undefined, created_at: r.created_at };
 }
 
 function mapSite(r: Record<string, unknown>) {
@@ -68,9 +68,12 @@ router.patch('/projects/:id', requireAuth, requireRole('Admin', 'Reviewer'), asy
   try {
     const input = projectUpdateSchema.parse(req.body);
     const fields: Record<string, unknown> = {};
-    if (input.title) fields.title = input.title;
-    if (input.type) fields.type = input.type;
-    if (input.due_date !== undefined) fields.due_date = input.due_date;
+    if (input.name) fields.name = input.name;
+    if (input.code) fields.code = input.code;
+    if (input.status) fields.status = input.status;
+    if (input.region !== undefined) fields.region = input.region;
+    if (input.start_date !== undefined) fields.start_date = input.start_date;
+    if (input.end_date !== undefined) fields.end_date = input.end_date;
     if (Object.keys(fields).length === 0) return res.status(400).json({ success: false, error_code: 'NO_FIELDS', message: 'No fields to update' });
     const row = await registerService.updateProject(req.params.id, fields);
     if (!row) return res.status(404).json({ success: false, error_code: 'NOT_FOUND', message: 'Project not found' });
@@ -80,7 +83,7 @@ router.patch('/projects/:id', requireAuth, requireRole('Admin', 'Reviewer'), asy
 
 router.get('/sites', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const rows = await registerService.listSites(req.query.project_id as string | undefined);
+    const rows = await registerService.listSites(req.query.project_id as string | undefined, req.query.client_id as string | undefined);
     res.json({ success: true, data: rows.map(mapSite) });
   } catch (err) { next(err); }
 });
@@ -116,7 +119,7 @@ router.patch('/sites/:id', requireAuth, requireRole('Admin', 'Reviewer'), async 
 
 router.get('/structures', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const rows = await registerService.listStructures(req.query.site_id as string | undefined);
+    const rows = await registerService.listStructures(req.query.site_id as string | undefined, req.query.client_id as string | undefined);
     res.json({ success: true, data: rows.map(mapStructure) });
   } catch (err) { next(err); }
 });
@@ -125,7 +128,7 @@ router.get('/structures/search', requireAuth, async (req: Request, res: Response
   try {
     const q = req.query.q as string;
     if (!q) return res.json({ success: true, data: [] });
-    const rows = await registerService.searchStructures(q);
+    const rows = await registerService.searchStructures(q, req.query.client_id as string | undefined);
     res.json({ success: true, data: rows.map(mapStructure) });
   } catch (err) { next(err); }
 });

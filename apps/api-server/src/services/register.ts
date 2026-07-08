@@ -1,28 +1,28 @@
 import { pool } from '../lib/db';
 
 export async function listProjects(clientId?: string): Promise<Array<Record<string, unknown>>> {
-  let query = 'SELECT project_id, client_id, title, type, due_date, created_at, updated_at FROM projects';
+  let query = 'SELECT project_id, client_id, name, code, status, region, start_date, end_date, created_at, updated_at FROM projects';
   const params: unknown[] = [];
   if (clientId) { query += ' WHERE client_id = $1'; params.push(clientId); }
-  query += ' ORDER BY title ASC';
+  query += ' ORDER BY name ASC';
   const result = await pool.query(query, params);
   return result.rows;
 }
 
 export async function getProjectById(projectId: string): Promise<Record<string, unknown> | null> {
   const result = await pool.query(
-    'SELECT project_id, client_id, title, type, due_date, created_at, updated_at FROM projects WHERE project_id = $1',
+    'SELECT project_id, client_id, name, code, status, region, start_date, end_date, created_at, updated_at FROM projects WHERE project_id = $1',
     [projectId],
   );
   return result.rows[0] || null;
 }
 
 export async function createProject(input: {
-  client_id: string; title: string; type: string; due_date: string;
+  client_id: string; name: string; code: string; status?: string; region?: string; start_date?: string; end_date?: string;
 }): Promise<Record<string, unknown>> {
   const result = await pool.query(
-    'INSERT INTO projects (client_id, title, type, due_date) VALUES ($1, $2, $3, $4) RETURNING project_id, client_id, title, type, due_date, created_at, updated_at',
-    [input.client_id, input.title, input.type, input.due_date],
+    'INSERT INTO projects (client_id, name, code, title, type, status, region, start_date, end_date, due_date) VALUES ($1, $2, $3, $2, \'One-Off\', $4, $5, $6, $7, NOW()) RETURNING project_id, client_id, name, code, status, region, start_date, end_date, created_at, updated_at',
+    [input.client_id, input.name, input.code, input.status || 'active', input.region || null, input.start_date || null, input.end_date || null],
   );
   return result.rows[0];
 }
@@ -39,16 +39,19 @@ export async function updateProject(projectId: string, fields: Record<string, un
   params.push(projectId);
   const result = await pool.query(
     `UPDATE projects SET ${setClauses.join(', ')} WHERE project_id = $${idx}
-     RETURNING project_id, client_id, title, type, due_date, created_at, updated_at`,
+     RETURNING project_id, client_id, name, code, status, region, start_date, end_date, created_at, updated_at`,
     params,
   );
   return result.rows[0] || null;
 }
 
-export async function listSites(projectId?: string): Promise<Array<Record<string, unknown>>> {
+export async function listSites(projectId?: string, clientId?: string): Promise<Array<Record<string, unknown>>> {
   let query = 'SELECT site_id, project_id, client_id, name, iana_timezone, created_at, updated_at FROM sites';
   const params: unknown[] = [];
-  if (projectId) { query += ' WHERE project_id = $1'; params.push(projectId); }
+  const conditions: string[] = [];
+  if (projectId) { conditions.push(`project_id = $${params.length + 1}`); params.push(projectId); }
+  if (clientId) { conditions.push(`client_id = $${params.length + 1}`); params.push(clientId); }
+  if (conditions.length) query += ' WHERE ' + conditions.join(' AND ');
   query += ' ORDER BY name ASC';
   const result = await pool.query(query, params);
   return result.rows;
@@ -90,20 +93,24 @@ export async function updateSite(siteId: string, fields: Record<string, unknown>
   return result.rows[0] || null;
 }
 
-export async function listStructures(siteId?: string): Promise<Array<Record<string, unknown>>> {
+export async function listStructures(siteId?: string, clientId?: string): Promise<Array<Record<string, unknown>>> {
   let query = 'SELECT structure_id, site_id, client_id, asset_tag, description, qr_code_value, created_at, updated_at FROM structures';
   const params: unknown[] = [];
-  if (siteId) { query += ' WHERE site_id = $1'; params.push(siteId); }
+  const conditions: string[] = [];
+  if (siteId) { conditions.push(`site_id = $${params.length + 1}`); params.push(siteId); }
+  if (clientId) { conditions.push(`client_id = $${params.length + 1}`); params.push(clientId); }
+  if (conditions.length) query += ' WHERE ' + conditions.join(' AND ');
   query += ' ORDER BY asset_tag ASC';
   const result = await pool.query(query, params);
   return result.rows;
 }
 
-export async function searchStructures(queryStr: string): Promise<Array<Record<string, unknown>>> {
-  const result = await pool.query(
-    "SELECT structure_id, site_id, client_id, asset_tag, description, qr_code_value, created_at, updated_at FROM structures WHERE asset_tag ILIKE $1 OR description ILIKE $1 ORDER BY asset_tag ASC LIMIT 50",
-    [`%${queryStr}%`],
-  );
+export async function searchStructures(queryStr: string, clientId?: string): Promise<Array<Record<string, unknown>>> {
+  const params: unknown[] = [`%${queryStr}%`];
+  let sql = "SELECT structure_id, site_id, client_id, asset_tag, description, qr_code_value, created_at, updated_at FROM structures WHERE (asset_tag ILIKE $1 OR description ILIKE $1)";
+  if (clientId) { sql += ` AND client_id = $2`; params.push(clientId); }
+  sql += ' ORDER BY asset_tag ASC LIMIT 50';
+  const result = await pool.query(sql, params);
   return result.rows;
 }
 

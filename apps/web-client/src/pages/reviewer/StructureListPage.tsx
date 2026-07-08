@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useStructures, useSites, useCreateStructure, useUpdateStructure } from '../../hooks/useRegister';
 import { usePicklists } from '../../hooks/usePicklists';
+import { getActiveClientId } from '../../lib/authStore';
 import type { StructureAsset } from '../../types';
 import RegisterBreadcrumbs from '../../components/RegisterBreadcrumbs';
 import Card from '../../components/Card';
@@ -76,10 +77,11 @@ function StructureEditDrawer({
 }
 
 export default function StructureListPage() {
+  const clientId = getActiveClientId();
   const [siteFilter, setSiteFilter] = useState('');
   const [search, setSearch] = useState('');
-  const { data: structures = [], isLoading, refetch } = useStructures();
-  const { data: sites = [] } = useSites();
+  const { data: structures = [], isLoading, refetch } = useStructures(siteFilter || undefined, clientId);
+  const { data: sites = [] } = useSites(undefined, clientId);
   const { data: structureTypesData = [] } = usePicklists('structure-types');
   const structureTypes = structureTypesData.filter(st => st.isActive).map(st => ({ id: st.id, name: st.name }));
   const [page, setPage] = useState(0);

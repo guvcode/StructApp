@@ -108,14 +108,21 @@ npm run seed
 | `JWT_ACCESS_SECRET` | Yes | Secret for signing access tokens |
 | `JWT_REFRESH_SECRET` | Yes | Secret for signing refresh tokens |
 | `CORS_ORIGIN` | Yes | Frontend URL (e.g. `https://structapp-web-client.onrender.com`) |
-| `NODE_ENV` | No | Defaults to `production` |
-| `PORT` | No | Render sets this automatically |
+| `FRONTEND_URL` | Yes | Same as CORS_ORIGIN (used for invite link generation) |
 
-### Frontend (`apps/web-client`)
+### Important: Set VITE_API_URL and FRONTEND_URL manually
 
-| Variable | Required | Description |
-|---|---|---|
-| `VITE_API_URL` | Yes | Backend API URL (e.g. `https://structapp-api.onrender.com`) |
+After the frontend and API server deploy, go to Render Dashboard → each service → Environment → add the required vars. Then trigger a manual deploy (Deploy → Clear build cache & deploy).
+
+**structapp-api:**
+- `DATABASE_URL` — your Supabase connection string
+- `FRONTEND_URL` — `https://structapp-web-client.onrender.com`
+- `CORS_ORIGIN` — `https://structapp-web-client.onrender.com`
+- `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+- `RESEND_API_KEY`
+
+**structapp-web-client:**
+- `VITE_API_URL` — `https://structapp-api.onrender.com`
 
 ## Post-Deploy Verification
 
@@ -138,3 +145,4 @@ If the API server cannot connect to Supabase:
 - The frontend static site does not spin down
 - For zero-downtime and no cold starts, upgrade to a paid plan ($7/mo per service)
 - Migrations must be run manually after deploy (not automated via `postDeploy` due to shell limitations)
+- Dependencies are hoisted to the root `node_modules` — the build commands navigate up from `rootDir` to install at the project root before building
