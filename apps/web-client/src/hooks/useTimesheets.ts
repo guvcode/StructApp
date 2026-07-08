@@ -35,7 +35,7 @@ export function useCreateTimesheet() {
 export function useCreateTimesheetBatch() {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: (input: { entry_date: string; entries: Array<{ work_type: string; hours: number; notes?: string }> }) =>
+    mutationFn: (input: { entry_date: string; client_id?: string; entries: Array<{ work_type: string; hours: number; notes?: string }> }) =>
       api.createTimesheetBatch(input),
     onSuccess: () => { client.invalidateQueries({ queryKey: ['timesheets'] }); },
   });
