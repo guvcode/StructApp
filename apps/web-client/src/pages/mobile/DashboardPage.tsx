@@ -75,7 +75,7 @@ export default function DashboardPage() {
   if (isError && online) return <div className="p-6 text-red-600 text-center">Failed to load dashboard data.</div>;
 
   const assigned = displayInspections.filter(
-    (i: { status: string }) => i.status === 'Assigned' || i.status === 'InProgress' || i.status === 'Draft'
+    (i: { status: string }) => i.status === 'Assigned' || i.status === 'In Progress' || i.status === 'Draft'
   );
   const returned = displayInspections.filter(
     (i: { status: string }) => i.status === 'Returned'
