@@ -37,7 +37,13 @@ import PicklistLandingPage from './pages/reviewer/PicklistLandingPage';
 import PicklistComponentTypesPage from './pages/reviewer/PicklistComponentTypesPage';
 import PicklistStructureTypesPage from './pages/reviewer/PicklistStructureTypesPage';
 import PicklistWorkTypesPage from './pages/reviewer/PicklistWorkTypesPage';
-import TaxonomyManagementPage from './pages/reviewer/TaxonomyManagementPage';
+import TaxonomyLevelLandingPage from './pages/reviewer/TaxonomyLevelLandingPage';
+import TaxonomyCategoriesPage from './pages/reviewer/taxonomy/TaxonomyCategoriesPage';
+import TaxonomyComponentsPage from './pages/reviewer/taxonomy/TaxonomyComponentsPage';
+import TaxonomySubComponentsPage from './pages/reviewer/taxonomy/TaxonomySubComponentsPage';
+import TaxonomyFocusAreasPage from './pages/reviewer/taxonomy/TaxonomyFocusAreasPage';
+import TaxonomyDeficiencyCategoriesPage from './pages/reviewer/taxonomy/TaxonomyDeficiencyCategoriesPage';
+import TaxonomyDetailedDescriptionsPage from './pages/reviewer/taxonomy/TaxonomyDetailedDescriptionsPage';
 import CalendarPage from './pages/reviewer/CalendarPage';
 import CalendarSchedulesPage from './pages/reviewer/CalendarSchedulesPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
@@ -104,7 +110,13 @@ export default function AppRoutes() {
             <Route path="component-types" element={<PicklistComponentTypesPage />} />
             <Route path="structure-types" element={<PicklistStructureTypesPage />} />
             <Route path="work-types" element={<PicklistWorkTypesPage />} />
-            <Route path="taxonomy" element={<TaxonomyManagementPage />} />
+            <Route path="taxonomy" element={<TaxonomyLevelLandingPage />} />
+            <Route path="taxonomy/categories" element={<TaxonomyCategoriesPage />} />
+            <Route path="taxonomy/components" element={<TaxonomyComponentsPage />} />
+            <Route path="taxonomy/sub-components" element={<TaxonomySubComponentsPage />} />
+            <Route path="taxonomy/focus-areas" element={<TaxonomyFocusAreasPage />} />
+            <Route path="taxonomy/deficiency-categories" element={<TaxonomyDeficiencyCategoriesPage />} />
+            <Route path="taxonomy/detailed-descriptions" element={<TaxonomyDetailedDescriptionsPage />} />
           </Route>
           <Route path="calendar" element={<FeatureFlagGuard flagId="calendar" />}>
             <Route index element={<CalendarPage />} />
