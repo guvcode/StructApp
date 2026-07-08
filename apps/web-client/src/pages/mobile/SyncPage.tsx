@@ -55,6 +55,12 @@ export default function SyncPage() {
       deficiencies: Array<{
         deficiency_id: string; inspection_id: string; client_id: string;
         description: string; calculated_priority: string;
+        category: string | null; sub_component: string | null;
+        focus_area: string | null; deficiency_category: string | null;
+        detailed_description: string | null; mechanisms: string | null;
+        recommended_action: string | null;
+        consequence_severity: number | null; likelihood: string | null;
+        risk_rank: number | null; risk_rating: string | null;
         created_at: string; updated_at: string;
       }>;
     }>(ENDPOINTS.sync.pull, { method: 'POST', body: '{}' }),
@@ -88,17 +94,17 @@ export default function SyncPage() {
             clientId: d.client_id,
             description: d.description,
             calculatedPriority: d.calculated_priority,
-            category: null,
-            subComponent: null,
-            focusArea: null,
-            deficiencyCategory: null,
-            detailedDescription: null,
-            mechanisms: null,
-            recommendedAction: null,
-            consequenceSeverity: null,
-            likelihood: null,
-            riskRank: null,
-            riskRating: null,
+            category: d.category ?? null,
+            subComponent: d.sub_component ?? null,
+            focusArea: d.focus_area ?? null,
+            deficiencyCategory: d.deficiency_category ?? null,
+            detailedDescription: d.detailed_description ?? null,
+            mechanisms: d.mechanisms ?? null,
+            recommendedAction: d.recommended_action ?? null,
+            consequenceSeverity: d.consequence_severity ?? null,
+            likelihood: d.likelihood ?? null,
+            riskRank: d.risk_rank ?? null,
+            riskRating: d.risk_rating ?? null,
             createdAt: d.created_at,
             updatedAt: d.updated_at,
           }))
@@ -138,7 +144,7 @@ export default function SyncPage() {
         </p>
         {syncState && (
           <p className="text-xs text-text-secondary">
-            Last sync: {new Date(syncState.lastSync).toLocaleTimeString()}
+            Last sync: {syncState.lastSync ? new Date(syncState.lastSync).toLocaleTimeString() : 'Never'}
           </p>
         )}
       </div>

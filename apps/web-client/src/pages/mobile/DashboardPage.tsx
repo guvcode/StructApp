@@ -12,8 +12,8 @@ import Skeleton from '../../components/Skeleton';
 export default function DashboardPage() {
   const navigate = useNavigate();
   const session = getSession();
+  const userId = session?.user?.id;
   const activeClientId = getActiveClientId();
-  const userId = session?.user?.id ?? 'u-eleanor';
   const online = navigator.onLine;
 
   const { data: inspections = [], isLoading, isError } = useInspectionsByAssignee(userId, activeClientId);
@@ -93,7 +93,7 @@ export default function DashboardPage() {
               aria-label={`View returned inspection`}
             >
               <p className="text-sm font-semibold text-red-800">
-                {clientLookup.get(i.clientId ?? i.client_id ?? '') ?? i.assignee_name ?? i.assigned_to}
+                {clientLookup.get(i.clientId ?? i.client_id ?? '') ?? 'Unknown client'}
               </p>
               <p className="text-xs text-red-600">
                 {siteLookup.get(i.siteId ?? i.site_id ?? '') ?? i.siteId ?? i.site_id} — due {i.scheduledDate ?? i.scheduled_date}

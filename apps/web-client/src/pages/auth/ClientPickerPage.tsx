@@ -20,7 +20,7 @@ export default function ClientPickerPage() {
   const role = getUserRole();
   const isContractor = role === 'contractor';
 
-  const { data: allClients = [] } = useQuery({
+  const { data: allClients = [], isLoading: clientsLoading, isError: clientsError } = useQuery({
     queryKey: ['clients', isContractor ? 'with-assigned-inspections' : 'mine'],
     queryFn: () =>
       apiClient<Array<{ client_id: string; name: string }>>(
@@ -71,6 +71,11 @@ export default function ClientPickerPage() {
       </div>
       
       <div className="space-y-5">
+        {clientsLoading ? (
+          <p className="text-text-secondary text-sm text-center py-4">Loading clients...</p>
+        ) : clientsError ? (
+          <p className="text-red-600 text-sm text-center py-4">Failed to load clients.</p>
+        ) : (
         <div>
           <label htmlFor="client-search" className="block text-sm font-semibold text-text-primary mb-2">
             Search clients
@@ -85,10 +90,12 @@ export default function ClientPickerPage() {
             disabled={loading}
           />
         </div>
-        
-        {filtered.length === 0 ? (
+        )}
+
+        {!clientsLoading && !clientsError && filtered.length === 0 && (
           <p className="text-text-secondary text-sm text-center py-8">No clients available</p>
-        ) : (
+        )}
+        {!clientsLoading && !clientsError && filtered.length > 0 && (
           <ul className="space-y-3">
             {filtered.map(c => (
               <li key={c.client_id}>
