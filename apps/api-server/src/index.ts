@@ -65,9 +65,9 @@ app.use('/api/v1/users', requireAuth, usersRouter);
 app.use('/api/v1/clients', requireAuth, clientsRouter);
 app.use('/api/v1/schedules', requireAuth, requireRole('Admin', 'Contractor'), schedulesRouter);
 app.use('/api/v1/remediation/deficiencies', requireAuth, requireRole('Admin', 'Reviewer', 'Contractor'), remediationRouter);
+app.use('/api/v1', requireAuth, taxonomyRouter);
 app.use('/api/v1', requireAuth, requireRole('Admin', 'Reviewer', 'Contractor'), registerRouter);
 app.use('/api/v1', requireAuth, requireRole('Admin', 'Reviewer'), picklistsRouter);
-app.use('/api/v1', requireAuth, taxonomyRouter);
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
