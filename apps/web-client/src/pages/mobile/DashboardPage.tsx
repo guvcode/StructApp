@@ -12,6 +12,7 @@ import Skeleton from '../../components/Skeleton';
 export default function DashboardPage() {
   const navigate = useNavigate();
   const session = getSession();
+  const userName = session?.user?.name ?? session?.user?.email ?? 'Inspector';
   const userId = session?.user?.id;
   const activeClientId = getActiveClientId();
   const online = navigator.onLine;
@@ -83,30 +84,39 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-4 animate-fadeIn">
-      <h2 className="text-lg font-bold text-text-primary">Dashboard</h2>
+      <div>
+        <h2 className="text-lg font-bold text-text-primary">Welcome, {userName}</h2>
+        <p className="text-xs text-text-secondary">Dashboard</p>
+      </div>
 
-      <div className="bg-surface-elevated rounded-lg p-4 border border-border/50 shadow-card">
-        <p className="text-sm font-semibold text-text-primary">Pending Sync</p>
-        <p className="text-2xl font-bold text-accent">{pendingCount}</p>
-        <p className="text-xs text-text-secondary">items to sync</p>
+      <div className="bg-surface-elevated rounded-xl p-4 border border-border/50 shadow-card">
+        <div className="flex items-center gap-3">
+          <svg className="w-8 h-8 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v16h16V4H4zm2 2h12v12H6V6zm2 2v2h2V8H8zm0 4v2h2v-2H8zm4-4v6h2V8h-2zm0 8v2h2v-2h-2zm4-8v2h2V8h-2zm0 4v4h2v-4h-2z"/></svg>
+          <div>
+            <p className="text-2xl font-bold text-accent">{pendingCount}</p>
+            <p className="text-xs text-text-secondary">items pending sync</p>
+          </div>
+        </div>
       </div>
 
       {returned.length > 0 && (
         <div>
-          <h3 className="font-semibold text-text-primary mb-1">Returned to You</h3>
+          <h3 className="font-semibold text-text-primary mb-2">Returned to You</h3>
           {returned.map((insp) => {
-            const i = insp as { id: string; clientId?: string; client_id?: string; siteId?: string; site_id?: string; status: string; scheduledDate?: string | null; scheduled_date?: string; assignee_name?: string; assigned_to?: string };
+            const i = insp as { id: string; clientId?: string; client_id?: string; siteId?: string; site_id?: string; status: string; scheduledDate?: string | null; scheduled_date?: string };
             return (
             <button
               key={i.id}
               onClick={() => navigate(`/m/inspections/${i.id}`)}
-              className="w-full bg-red-50 border border-red-200 rounded-lg p-3 mb-2 text-left"
-              aria-label={`View returned inspection`}
+              className="w-full bg-red-50 border border-red-200 rounded-xl p-4 mb-2 text-left shadow-sm"
             >
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-200 text-red-800">Returned</span>
+              </div>
               <p className="text-sm font-semibold text-red-800">
                 {clientLookup.get(i.clientId ?? i.client_id ?? '') ?? 'Unknown client'}
               </p>
-              <p className="text-xs text-red-600">
+              <p className="text-xs text-red-600 mt-0.5">
                 {siteLookup.get(i.siteId ?? i.site_id ?? '') ?? i.siteId ?? i.site_id} — due {i.scheduledDate ?? i.scheduled_date}
               </p>
             </button>
@@ -116,29 +126,37 @@ export default function DashboardPage() {
       )}
 
       <div>
-        <h3 className="font-semibold text-text-primary mb-1">Assigned Inspections ({assigned.length})</h3>
+        <h3 className="font-semibold text-text-primary mb-2">Active Inspections ({assigned.length})</h3>
         {assigned.map((insp) => {
           const i = insp as { id: string; clientId?: string; client_id?: string; siteId?: string; site_id?: string; status: string; scheduledDate?: string | null; scheduled_date?: string; structureId?: string; structure_id?: string };
+          const statusColor = i.status === 'In Progress' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800';
+          const statusLabel = i.status === 'In Progress' ? 'In Progress' : 'Assigned';
           return (
           <button
             key={i.id}
             onClick={() => navigate(`/m/inspections/${i.id}`)}
-            className="w-full bg-surface-primary border border-border rounded-lg p-3 mb-2 text-left"
-            aria-label={`View assigned inspection`}
+            className="w-full bg-surface-primary border border-border rounded-xl p-4 mb-2 text-left shadow-sm hover:shadow-md transition-shadow"
           >
-            <p className="text-sm font-semibold text-text-primary">
+            <div className="flex items-center gap-2 mb-1">
+              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${statusColor}`}>{statusLabel}</span>
+              <span className="text-xs text-text-muted">{i.scheduledDate ?? i.scheduled_date}</span>
+            </div>
+            <p className="text-base font-semibold text-text-primary">
               {clientLookup.get(i.clientId ?? i.client_id ?? '') ?? i.clientId ?? i.client_id}
             </p>
-<p className="text-xs text-text-secondary">
+            <p className="text-sm text-text-secondary mt-0.5">
               {siteLookup.get(i.siteId ?? i.site_id ?? '') ?? i.siteId ?? i.site_id}
-              {structureLookup.get(i.structureId ?? i.structure_id ?? '') ?? i.structureId ?? i.structure_id ? ` — ${structureLookup.get(i.structureId ?? i.structure_id ?? '') ?? i.structureId ?? i.structure_id}` : ''}
+              {structureLookup.get(i.structureId ?? i.structure_id ?? '') ? ` — ${structureLookup.get(i.structureId ?? i.structure_id ?? '')}` : ''}
             </p>
-            <p className="text-xs text-text-secondary">{i.status} — {i.scheduledDate ?? i.scheduled_date}</p>
           </button>
           );
         })}
         {assigned.length === 0 && (
-          <p className="text-text-secondary text-sm text-center py-4">No assigned inspections.</p>
+          <div className="text-center py-10">
+            <svg className="w-12 h-12 mx-auto text-text-muted mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            <p className="text-text-secondary text-sm">No assigned inspections.</p>
+            <p className="text-text-muted text-xs mt-1">Pull the latest data from Sync to check.</p>
+          </div>
         )}
       </div>
 

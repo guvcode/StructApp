@@ -24,6 +24,7 @@ import { taxonomyRouter } from './routes/taxonomy';
 import { auditLogsRouter } from './routes/auditLogs';
 import { jobErrorsRouter } from './routes/jobErrors';
 import { clientErrorsRouter } from './routes/clientErrors';
+import { notificationRouter } from './routes/notifications';
 import { timesheetsRouter } from './routes/timesheets';
 import { authRouter } from './routes/auth';
 import { reportsRouter } from './routes/reports';
@@ -57,6 +58,7 @@ app.use('/api/v1/job-errors', requireAuth, requireRole('Admin'), jobErrorsRouter
 app.use('/api/v1/client-errors', requireAuth, requireRole('Admin'), clientErrorsRouter);
 app.use('/api/v1/timesheets', requireAuth, requireRole('Admin', 'Reviewer', 'Contractor'), timesheetsRouter);
 app.use('/api/v1/auth', authRouter);
+app.use('/api/v1/notifications', requireAuth, requireRole('Admin', 'Reviewer'), notificationRouter);
 app.use('/api/v1/reports', requireAuth, requireRole('Admin', 'Reviewer'), reportsRouter);
 app.use('/api/v1/imports', requireAuth, requireRole('Admin'), importsRouter);
 app.use('/api/v1/users', requireAuth, usersRouter);

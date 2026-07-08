@@ -142,6 +142,11 @@ export const ENDPOINTS = {
     list: `${BASE_URL}/job-errors`,
     dismiss: (id: string) => `${BASE_URL}/job-errors/${id}/dismiss`,
   },
+  notifications: {
+    list: `${BASE_URL}/notifications`,
+    resend: (id: number) => `${BASE_URL}/notifications/${id}/resend`,
+    delete: (id: number) => `${BASE_URL}/notifications/${id}`,
+  },
   calendar: {
     schedules: `${BASE_URL}/schedules`,
     scheduleById: (id: string) => `${BASE_URL}/schedules/${id}`,
