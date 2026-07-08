@@ -27,7 +27,7 @@ export default function NewInspectionPage() {
 
   const { data: inspectors = [] } = useQuery({
     queryKey: ['inspectors'],
-    queryFn: () => apiClient<Array<{ user_id: string; email: string; display_name: string | null; role: string; is_active: boolean }>>(ENDPOINTS.users.list),
+    queryFn: () => apiClient<Array<{ id: string; email: string; display_name: string | null; role: string; is_active: boolean }>>(ENDPOINTS.users.list),
     select: (data) => data.filter(u => u.is_active && (u.role === 'Contractor' || u.role === 'Inspector')),
   });
 
@@ -209,7 +209,7 @@ export default function NewInspectionPage() {
             >
               <option value="">Select inspector...</option>
               {inspectors.map(u => (
-                <option key={u.user_id} value={u.user_id}>{u.display_name || u.email} ({u.role})</option>
+                <option key={u.id} value={u.id}>{u.display_name || u.email} ({u.role})</option>
               ))}
             </select>
           </div>
