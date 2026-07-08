@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "start": "NODE_ENV=production npx tsx src/index.ts",
+    "start": "NODE_TLS_REJECT_UNAUTHORIZED=0 npx tsx ../../node_modules/node-pg-migrate/bin/node-pg-migrate up && NODE_ENV=production npx tsx src/index.ts",
     "build": "tsc",
     "test": "node-pg-migrate up && jest",
     "migrate": "set NODE_TLS_REJECT_UNAUTHORIZED=0 && npx tsx ../../node_modules/node-pg-migrate/bin/node-pg-migrate up",
