@@ -38,10 +38,94 @@ export default function SyncPage() {
   });
 
   const pullMutation = useMutation({
-    mutationFn: () => apiClient(ENDPOINTS.sync.pull, { method: 'POST', body: '{}' }),
-    onSuccess: (data: unknown) => {
-      const result = data as { items?: unknown[] };
-      setMessage(`Pulled ${result.items?.length ?? 0} new item(s).`);
+    mutationFn: () => apiClient<{
+      structures: unknown[];
+      sites: unknown[];
+      projects: unknown[];
+      component_types: unknown[];
+      work_types: unknown[];
+      taxonomy: unknown[];
+      inspections: Array<{
+        inspection_id: string; structure_id: string | null; site_id: string;
+        client_id: string; inspector_id: string; assigned_by: string;
+        status: string; scheduled_date: string | null; created_at: string;
+        submitted_at: string | null; updated_at: string; returned_reason: string | null;
+        approved_by: string | null; approved_at: string | null;
+      }>;
+      deficiencies: Array<{
+        deficiency_id: string; inspection_id: string; client_id: string;
+        description: string; calculated_priority: string;
+        category: string | null; sub_component: string | null;
+        focus_area: string | null; deficiency_category: string | null;
+        detailed_description: string | null; mechanisms: string | null;
+        recommended_action: string | null;
+        consequence_severity: number | null; likelihood: string | null;
+        risk_rank: number | null; risk_rating: string | null;
+        created_at: string; updated_at: string;
+      }>;
+    }>(ENDPOINTS.sync.pull, { method: 'POST', body: '{}' }),
+    onSuccess: async (data) => {
+      const { db } = await import('../../lib/db');
+      if (data.inspections?.length) {
+        await db.offlineInspections.bulkPut(
+          data.inspections.map(i => ({
+            id: i.inspection_id,
+            structureId: i.structure_id,
+            siteId: i.site_id,
+            clientId: i.client_id,
+            inspectorId: i.inspector_id,
+            assignedBy: i.assigned_by,
+            status: i.status,
+            scheduledDate: i.scheduled_date,
+            createdAt: i.created_at,
+            submittedAt: i.submitted_at,
+            updatedAt: i.updated_at,
+            returnedReason: i.returned_reason,
+            approvedBy: i.approved_by,
+            approvedAt: i.approved_at,
+          }))
+        );
+      }
+      if (data.deficiencies?.length) {
+        await db.offlineDeficiencies.bulkPut(
+          data.deficiencies.map(d => ({
+            deficiencyId: d.deficiency_id,
+            inspectionId: d.inspection_id,
+            clientId: d.client_id,
+            description: d.description,
+            calculatedPriority: d.calculated_priority,
+            category: d.category ?? null,
+            subComponent: d.sub_component ?? null,
+            focusArea: d.focus_area ?? null,
+            deficiencyCategory: d.deficiency_category ?? null,
+            detailedDescription: d.detailed_description ?? null,
+            mechanisms: d.mechanisms ?? null,
+            recommendedAction: d.recommended_action ?? null,
+            consequenceSeverity: d.consequence_severity ?? null,
+            likelihood: d.likelihood ?? null,
+            riskRank: d.risk_rank ?? null,
+            riskRating: d.risk_rating ?? null,
+            createdAt: d.created_at,
+            updatedAt: d.updated_at,
+          }))
+        );
+      }
+      if (data.taxonomy?.length) {
+        const taxonomyData = data.taxonomy as Array<{ node_id: string; parent_id: string | null; level: string; category: string; label: string; display_order: number; is_active: boolean }>;
+        await db.offlineTaxonomy.bulkPut(
+          taxonomyData.map(t => ({
+            nodeId: t.node_id,
+            parentId: t.parent_id,
+            level: t.level,
+            category: t.category,
+            label: t.label,
+            displayOrder: t.display_order,
+            isActive: t.is_active,
+          }))
+        );
+      }
+      setMessage(`Pulled ${data.inspections?.length ?? 0} inspections, ${data.deficiencies?.length ?? 0} deficiencies.`);
+      clearQueue();
       load();
     },
     onError: () => setError('Pull failed. Please try again.'),
@@ -60,7 +144,7 @@ export default function SyncPage() {
         </p>
         {syncState && (
           <p className="text-xs text-text-secondary">
-            Last sync: {new Date(syncState.lastSync).toLocaleTimeString()}
+            Last sync: {syncState.lastSync ? new Date(syncState.lastSync).toLocaleTimeString() : 'Never'}
           </p>
         )}
       </div>

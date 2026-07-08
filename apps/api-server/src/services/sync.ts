@@ -223,6 +223,23 @@ export async function processSyncPull(
     node_id: string; parent_id: string | null; level: string;
     category: string; label: string; display_order: number; is_active: boolean;
   }>;
+  inspections: Array<{
+    inspection_id: string; structure_id: string | null; site_id: string;
+    client_id: string; inspector_id: string; assigned_by: string;
+    status: string; scheduled_date: string | null; created_at: string;
+    submitted_at: string | null; updated_at: string; returned_reason: string | null;
+    approved_by: string | null; approved_at: string | null;
+  }>;
+  deficiencies: Array<{
+    deficiency_id: string; inspection_id: string; client_id: string;
+    description: string; calculated_priority: string; category: string | null;
+    sub_component: string | null; focus_area: string | null;
+    deficiency_category: string | null; detailed_description: string | null;
+    mechanisms: string | null; recommended_action: string | null;
+    consequence_severity: number | null; likelihood: string | null;
+    risk_rank: number | null; risk_rating: string | null;
+    created_at: string; updated_at: string;
+  }>;
 }> {
   const client = await pool.connect();
   try {
@@ -230,13 +247,39 @@ export async function processSyncPull(
     await client.query("SELECT set_config('app.current_client_id', $1, true)", [clientId]);
     await client.query("SELECT set_config('app.bypass_tenant_check', 'true', true)");
 
-    const [structuresResult, sitesResult, projectsResult, componentTypesResult, workTypesResult, taxonomyResult] = await Promise.all([
+    const [structuresResult, sitesResult, projectsResult, componentTypesResult, workTypesResult, taxonomyResult, inspectionsResult, deficienciesResult] = await Promise.all([
       client.query('SELECT structure_id, asset_tag, description, qr_code_value FROM structures WHERE client_id = $1', [clientId]),
       client.query('SELECT site_id, name, project_id FROM sites WHERE client_id = $1', [clientId]),
       client.query('SELECT project_id, title, type FROM projects WHERE client_id = $1', [clientId]),
       client.query('SELECT component_type_id, name FROM component_types WHERE client_id = $1 AND is_active = TRUE', [clientId]),
       client.query('SELECT work_type_id, name FROM work_types WHERE client_id = $1 AND is_active = TRUE', [clientId]),
       client.query('SELECT node_id, parent_id, level, category, label, display_order, is_active FROM deficiency_taxonomy WHERE client_id = $1 AND is_active = TRUE ORDER BY display_order, label', [clientId]),
+      client.query(
+        `SELECT inspection_id, structure_id, site_id, client_id, inspector_id,
+                assigned_by, status, scheduled_date, created_at, submitted_at,
+                updated_at, returned_reason, approved_by, approved_at
+         FROM inspections
+         WHERE client_id = $1
+         ORDER BY created_at DESC
+         LIMIT 20`,
+        [clientId]
+      ),
+      client.query(
+        `SELECT d.deficiency_id, d.inspection_id, d.client_id, d.description,
+                d.calculated_priority, d.category, d.sub_component, d.focus_area,
+                d.deficiency_category, d.detailed_description, d.mechanisms,
+                d.recommended_action, d.consequence_severity, d.likelihood,
+                d.risk_rank, d.risk_rating, d.created_at, d.updated_at
+         FROM deficiency_records d
+         JOIN (
+           SELECT inspection_id FROM inspections
+           WHERE client_id = $1
+           ORDER BY created_at DESC
+           LIMIT 20
+         ) i ON d.inspection_id = i.inspection_id
+         WHERE d.client_id = $1`,
+        [clientId]
+      ),
     ]);
 
     await client.query('COMMIT');
@@ -247,6 +290,8 @@ export async function processSyncPull(
       component_types: componentTypesResult.rows,
       work_types: workTypesResult.rows,
       taxonomy: taxonomyResult.rows,
+      inspections: inspectionsResult.rows,
+      deficiencies: deficienciesResult.rows,
     };
   } finally {
     client.release();

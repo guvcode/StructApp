@@ -17,7 +17,10 @@ function getFirstClientId(session: import('../../types').AuthSession): string | 
 async function redirectAfterLogin(session: import('../../types').AuthSession, navigate: ReturnType<typeof useNavigate>) {
   const hasPin = await hasLocalPin();
   if (!hasPin && navigator.onLine && session.user.role === 'contractor') {
-    sessionStorage.setItem('pin_setup_prompt', 'true');
+    try {
+      sessionStorage.setItem('pin_setup_prompt', 'true');
+    } catch {
+    }
   }
   const membershipCount = getClientMembershipCount(session);
   if (membershipCount <= 1) {

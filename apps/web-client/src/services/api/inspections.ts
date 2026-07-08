@@ -22,8 +22,10 @@ export async function getInspectionsBySite(siteId: string): Promise<Inspection[]
   return apiClient(ENDPOINTS.inspections.bySite(siteId));
 }
 
-export async function getInspectionsByAssignee(userId: string): Promise<Inspection[]> {
-  return apiClient(ENDPOINTS.inspections.byAssignee(userId));
+export async function getInspectionsByAssignee(userId: string, clientId?: string): Promise<Inspection[]> {
+  const params = new URLSearchParams({ assignee: userId });
+  if (clientId) params.set('client_id', clientId);
+  return apiClient(`${ENDPOINTS.inspections.list}?${params.toString()}`);
 }
 
 export async function createInspections(input: { structure_ids: string[]; site_id: string; inspector_id: string }): Promise<Inspection[]> {

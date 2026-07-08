@@ -15,7 +15,7 @@ router.get(
   requireAuth,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { site_id, assignee, status, scheduled_date_from, scheduled_date_to } = req.query as Record<string, string | undefined>;
+      const { site_id, assignee, status, scheduled_date_from, scheduled_date_to, client_id } = req.query as Record<string, string | undefined>;
       let query = `
         SELECT i.inspection_id, i.structure_id, i.client_id, i.inspector_id,
                i.assigned_by, i.status, i.scheduled_date, i.submitted_at, i.created_at,
@@ -32,6 +32,7 @@ router.get(
       if (status) { query += ` AND i.status = $${idx++}`; params.push(status); }
       if (scheduled_date_from) { query += ` AND i.scheduled_date >= $${idx++}`; params.push(scheduled_date_from); }
       if (scheduled_date_to) { query += ` AND i.scheduled_date <= $${idx++}`; params.push(scheduled_date_to); }
+      if (client_id) { query += ` AND i.client_id = $${idx++}`; params.push(client_id); }
       query += ' ORDER BY i.created_at DESC';
 
       const result = await pool.query(query, params);

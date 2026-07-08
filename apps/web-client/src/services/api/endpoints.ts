@@ -33,6 +33,7 @@ export const ENDPOINTS = {
   clients: {
     list: `${BASE_URL}/clients`,
     mine: `${BASE_URL}/clients/mine`,
+    withAssignedInspections: `${BASE_URL}/clients/with-assigned-inspections`,
     byId: (id: string) => `${BASE_URL}/clients/${id}`,
     create: `${BASE_URL}/clients`,
     update: (id: string) => `${BASE_URL}/clients/${id}`,

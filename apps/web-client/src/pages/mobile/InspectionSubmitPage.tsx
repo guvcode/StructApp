@@ -24,8 +24,13 @@ export default function InspectionSubmitPage() {
   const criticalDefs = deficiencies.filter(d => d.priority_tier === 'P1' || d.priority_tier === 'P2');
 
   const missingPhotoCriticalDefs = criticalDefs.filter(d => {
-    const photos = JSON.parse(localStorage.getItem(`photos-${d.id}`) ?? '[]') as PhotoRecord[];
-    return photos.length === 0;
+    try {
+      const raw = localStorage.getItem(`photos-${d.id}`);
+      const photos = raw ? (JSON.parse(raw) as PhotoRecord[]) : [];
+      return photos.length === 0;
+    } catch {
+      return true;
+    }
   });
 
   const canSubmit = (hasDeficiencies || noFindings) && pendingCount === 0 && missingPhotoCriticalDefs.length === 0;
