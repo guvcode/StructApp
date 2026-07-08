@@ -7,13 +7,13 @@ export const up = (pgm: Migrator) => {
     WHERE a.inspection_id < b.inspection_id
       AND a.structure_id = b.structure_id
       AND a.inspector_id = b.inspector_id
-      AND a.status IN ('Assigned', 'InProgress')
-      AND b.status IN ('Assigned', 'InProgress')
+      AND a.status IN ('Assigned', 'In Progress')
+      AND b.status IN ('Assigned', 'In Progress')
   `);
 
   pgm.createIndex('inspections', ['structure_id', 'inspector_id'], {
     unique: true,
-    where: "status IN ('Assigned', 'InProgress')",
+    where: "status IN ('Assigned', 'In Progress')",
     name: 'idx_inspections_active_duplicate_guard',
   });
 };
