@@ -50,8 +50,13 @@ export default function NewInspectionPage() {
         inspector_id: selectedInspector,
       });
       setSuccess(true);
-    } catch {
-      setError('Failed to create inspections.');
+    } catch (err) {
+      const apiErr = err as { error_code?: string };
+      if (apiErr.error_code === 'DUPLICATE_INSPECTION') {
+        setError('One or more structures already have an active inspection assigned to this inspector.');
+      } else {
+        setError('Failed to create inspections.');
+      }
     }
   };
 

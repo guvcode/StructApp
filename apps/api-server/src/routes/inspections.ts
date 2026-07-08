@@ -150,6 +150,13 @@ router.post(
       );
       res.json({ success: true, data: result });
     } catch (err) {
+      if (err instanceof Error && err.message === 'DUPLICATE_INSPECTION') {
+        return res.status(409).json({
+          success: false,
+          error_code: 'DUPLICATE_INSPECTION',
+          message: 'This structure already has an active inspection assigned to this inspector.',
+        });
+      }
       next(err);
     }
   }

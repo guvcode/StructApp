@@ -15,11 +15,21 @@ export async function createInspection(
     await client.query("SELECT set_config('app.current_client_id', $1, true)", [clientId]);
     await client.query("SELECT set_config('app.bypass_tenant_check', 'true', true)");
 
-    const result = await client.query(
-      `INSERT INTO inspections (structure_id, inspector_id, assigned_by, assigned_at, status, client_id, inspection_mode)
-       VALUES ($1, $2, $3, NOW(), 'Assigned', $4, $5) RETURNING inspection_id, status`,
-      [structureId, inspectorId, assignedBy, clientId, inspectionMode]
-    );
+    let result;
+    try {
+      result = await client.query(
+        `INSERT INTO inspections (structure_id, inspector_id, assigned_by, assigned_at, status, client_id, inspection_mode)
+         VALUES ($1, $2, $3, NOW(), 'Assigned', $4, $5) RETURNING inspection_id, status`,
+        [structureId, inspectorId, assignedBy, clientId, inspectionMode]
+      );
+    } catch (insertErr) {
+      const msg = (insertErr as Error).message;
+      if (msg.includes('duplicate key') && msg.includes('idx_inspections_active_duplicate_guard')) {
+        await client.query('ROLLBACK');
+        throw new Error('DUPLICATE_INSPECTION');
+      }
+      throw insertErr;
+    }
 
     await client.query(
       `INSERT INTO system_audit_logs (table_name, record_id, action, old_values, new_values, performed_by)

@@ -396,6 +396,22 @@ describe('inspections service', () => {
       expect(result.status).toBe('Assigned');
       expect(notifyInspectionAssigned).toHaveBeenCalled();
     });
+
+    it('throws DUPLICATE_INSPECTION when a duplicate active inspection exists', async () => {
+      const mockClient = {
+        query: jest.fn()
+          .mockResolvedValueOnce({}) // BEGIN
+          .mockResolvedValueOnce({}) // set_config
+          .mockResolvedValueOnce({}) // set_config
+          .mockRejectedValueOnce(new Error('duplicate key value violates unique constraint "idx_inspections_active_duplicate_guard"')), // INSERT fails
+        release: jest.fn(),
+      };
+      mockPool.connect.mockResolvedValue(mockClient);
+
+      await expect(
+        createInspection('struct-1', 'inspector-1', 'user-1', 'client-1')
+      ).rejects.toThrow('DUPLICATE_INSPECTION');
+    });
   });
 
   describe('updateInspectionMode', () => {
