@@ -124,7 +124,6 @@ const menuSections: MenuSection[] = [
   { label: 'Categories', route: '/categories', roles: ['reviewer', 'admin'], phase: 'P1', submenu: [
     { label: 'Component Types', route: '/categories/component-types' },
     { label: 'Work Types', route: '/categories/work-types' },
-    { label: 'Structure Types', route: '/categories/structure-types' },
   ]},
   { label: 'Audit Logs', route: '/admin/audit-logs', roles: ['admin', 'reviewer'], phase: 'P1' },
   { label: 'Email Queue', route: '/admin/email-queue', roles: ['admin', 'reviewer'], phase: 'P1' },

@@ -35,7 +35,6 @@ import NewInspectionPage from './pages/reviewer/NewInspectionPage';
 import ReportCenterPage from './pages/reviewer/ReportCenterPage';
 import PicklistLandingPage from './pages/reviewer/PicklistLandingPage';
 import PicklistComponentTypesPage from './pages/reviewer/PicklistComponentTypesPage';
-import PicklistStructureTypesPage from './pages/reviewer/PicklistStructureTypesPage';
 import PicklistWorkTypesPage from './pages/reviewer/PicklistWorkTypesPage';
 import TaxonomyLevelLandingPage from './pages/reviewer/TaxonomyLevelLandingPage';
 import TaxonomyCategoriesPage from './pages/reviewer/taxonomy/TaxonomyCategoriesPage';
@@ -109,7 +108,6 @@ export default function AppRoutes() {
 <Route path="categories" element={<FeatureFlagGuard flagId="picklists" />}>
             <Route index element={<PicklistLandingPage />} />
             <Route path="component-types" element={<PicklistComponentTypesPage />} />
-            <Route path="structure-types" element={<PicklistStructureTypesPage />} />
             <Route path="work-types" element={<PicklistWorkTypesPage />} />
             <Route path="taxonomy" element={<TaxonomyLevelLandingPage />} />
             <Route path="taxonomy/categories" element={<TaxonomyCategoriesPage />} />
