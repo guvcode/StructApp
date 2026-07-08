@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useSites, useProjects, useCreateSite, useUpdateSite } from '../../hooks/useRegister';
+import { getActiveClientId } from '../../lib/authStore';
 import type { Site } from '../../types';
 import RegisterBreadcrumbs from '../../components/RegisterBreadcrumbs';
 import Card from '../../components/Card';
@@ -74,9 +75,10 @@ function SiteEditDrawer({
 }
 
 export default function SiteListPage() {
+  const clientId = getActiveClientId();
   const [projectFilter, setProjectFilter] = useState('');
-  const { data: sites = [], isLoading, refetch } = useSites(projectFilter || undefined);
-  const { data: projects = [] } = useProjects();
+  const { data: sites = [], isLoading, refetch } = useSites(projectFilter || undefined, clientId);
+  const { data: projects = [] } = useProjects(clientId);
   const [search, setSearch] = useState('');
   const [editingSite, setEditingSite] = useState<Site | undefined>(undefined);
   const [showCreate, setShowCreate] = useState(false);

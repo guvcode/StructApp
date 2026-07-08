@@ -1,4 +1,5 @@
 import { useReviewerDashboardStats } from '../../hooks/useDashboard';
+import { getActiveClientId } from '../../lib/authStore';
 import { InspectionStatus } from '../../types/index';
 import Card from '../../components/Card';
 import Skeleton, { StatCardSkeleton } from '../../components/Skeleton';
@@ -14,7 +15,7 @@ const STATUS_BAR_COLORS: Record<string, string> = {
 };
 
 export default function ReviewerDashboardPage() {
-  const { data, isLoading, isError } = useReviewerDashboardStats();
+  const { data, isLoading, isError } = useReviewerDashboardStats(getActiveClientId());
 
   if (isLoading) {
     return (

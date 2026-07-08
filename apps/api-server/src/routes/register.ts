@@ -83,7 +83,7 @@ router.patch('/projects/:id', requireAuth, requireRole('Admin', 'Reviewer'), asy
 
 router.get('/sites', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const rows = await registerService.listSites(req.query.project_id as string | undefined);
+    const rows = await registerService.listSites(req.query.project_id as string | undefined, req.query.client_id as string | undefined);
     res.json({ success: true, data: rows.map(mapSite) });
   } catch (err) { next(err); }
 });
@@ -119,7 +119,7 @@ router.patch('/sites/:id', requireAuth, requireRole('Admin', 'Reviewer'), async 
 
 router.get('/structures', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const rows = await registerService.listStructures(req.query.site_id as string | undefined);
+    const rows = await registerService.listStructures(req.query.site_id as string | undefined, req.query.client_id as string | undefined);
     res.json({ success: true, data: rows.map(mapStructure) });
   } catch (err) { next(err); }
 });
@@ -128,7 +128,7 @@ router.get('/structures/search', requireAuth, async (req: Request, res: Response
   try {
     const q = req.query.q as string;
     if (!q) return res.json({ success: true, data: [] });
-    const rows = await registerService.searchStructures(q);
+    const rows = await registerService.searchStructures(q, req.query.client_id as string | undefined);
     res.json({ success: true, data: rows.map(mapStructure) });
   } catch (err) { next(err); }
 });

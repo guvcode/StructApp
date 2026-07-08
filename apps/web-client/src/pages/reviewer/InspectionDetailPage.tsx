@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useInspection, useDeficienciesForInspection } from '../../hooks/useInspections';
 import { useSites, useStructures } from '../../hooks/useRegister';
-import { getUserRole } from '../../lib/authStore';
+import { getUserRole, getActiveClientId } from '../../lib/authStore';
 import { InspectionStatus } from '../../types/index';
 import Card from '../../components/Card';
 import Skeleton from '../../components/Skeleton';
@@ -23,8 +23,8 @@ export default function InspectionDetailPage() {
 
   const role = getUserRole();
 
-  const { data: allSites = [] } = useSites();
-  const { data: allStructures = [] } = useStructures();
+  const { data: allSites = [] } = useSites(undefined, getActiveClientId());
+  const { data: allStructures = [] } = useStructures(undefined, getActiveClientId());
   const siteLookup = useMemo(() => {
     const map = new Map<string, string>();
     allSites.forEach(s => map.set(s.id, s.name));

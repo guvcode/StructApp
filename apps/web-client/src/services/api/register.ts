@@ -34,8 +34,12 @@ export async function updateProject(id: string, input: Partial<{
   });
 }
 
-export async function getSites(projectId?: string): Promise<Site[]> {
-  const url = projectId ? `${ENDPOINTS.sites.list}?project_id=${projectId}` : ENDPOINTS.sites.list;
+export async function getSites(projectId?: string, clientId?: string): Promise<Site[]> {
+  const params = new URLSearchParams();
+  if (projectId) params.set('project_id', projectId);
+  if (clientId) params.set('client_id', clientId);
+  const qs = params.toString();
+  const url = qs ? `${ENDPOINTS.sites.list}?${qs}` : ENDPOINTS.sites.list;
   return apiClient(url);
 }
 
@@ -65,8 +69,12 @@ export async function updateSite(id: string, input: Partial<{
   });
 }
 
-export async function getStructures(siteId?: string): Promise<StructureAsset[]> {
-  const url = siteId ? `${ENDPOINTS.structures.list}?site_id=${siteId}` : ENDPOINTS.structures.list;
+export async function getStructures(siteId?: string, clientId?: string): Promise<StructureAsset[]> {
+  const params = new URLSearchParams();
+  if (siteId) params.set('site_id', siteId);
+  if (clientId) params.set('client_id', clientId);
+  const qs = params.toString();
+  const url = qs ? `${ENDPOINTS.structures.list}?${qs}` : ENDPOINTS.structures.list;
   return apiClient(url);
 }
 
@@ -96,6 +104,7 @@ export async function updateStructure(id: string, input: Partial<{
   });
 }
 
-export async function searchStructures(query: string): Promise<StructureAsset[]> {
-  return apiClient(ENDPOINTS.structures.search(query));
+export async function searchStructures(query: string, clientId?: string): Promise<StructureAsset[]> {
+  const url = clientId ? `${ENDPOINTS.structures.search(query)}&client_id=${encodeURIComponent(clientId)}` : ENDPOINTS.structures.search(query);
+  return apiClient(url);
 }

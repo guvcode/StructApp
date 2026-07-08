@@ -18,9 +18,9 @@ export function useAdminDashboardStats() {
   });
 }
 
-export function useReviewerDashboardStats() {
+export function useReviewerDashboardStats(clientId?: string) {
   return useQuery({
-    queryKey: ['dashboard', 'reviewer'],
+    queryKey: ['dashboard', 'reviewer', clientId],
     queryFn: async () => {
       const [inspections, deficiencies] = await Promise.all([
         apiInspections.getInspections(),
@@ -35,14 +35,14 @@ export function useReviewerDashboardStats() {
   });
 }
 
-export function useRegisterLandingStats() {
+export function useRegisterLandingStats(clientId?: string) {
   return useQuery({
-    queryKey: ['dashboard', 'register'],
+    queryKey: ['dashboard', 'register', clientId],
     queryFn: async () => {
       const [projects, sites, structures] = await Promise.all([
-        apiRegister.getProjects(),
-        apiRegister.getSites(),
-        apiRegister.getStructures(),
+        apiRegister.getProjects(clientId),
+        apiRegister.getSites(undefined, clientId),
+        apiRegister.getStructures(undefined, clientId),
       ]);
       return { projects, sites, structures };
     },
