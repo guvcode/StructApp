@@ -1,33 +1,11 @@
 import { useState } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../services/api/apiClient';
 import { ENDPOINTS } from '../../services/api/endpoints';
 import { calculateGlencoreRisk } from '../../utils/riskCalculator';
+import { db } from '../../lib/db';
 import Skeleton from '../../components/Skeleton';
-
-const TAXONOMY: Record<string, Array<{ label: string; children: Array<{ label: string; children: Array<{ label: string; children: Array<{ label: string; children: Array<{ label: string }> }> }> }> }>> = {
-  'Building Envelope': [
-    { label: 'Roofing', children: [{ label: 'Membrane', children: [{ label: 'Waterproofing', children: [{ label: 'Blistering', children: [{ label: 'Localized blistering on roof membrane' }] }, { label: 'Tears/Punctures', children: [{ label: 'Mechanical damage to membrane' }] }] }] }, { label: 'Drainage', children: [{ label: 'Ponding Water', children: [{ label: 'Standing water > 48hrs', children: [{ label: 'Ponding water on low-slope roof' }] }] }] }] },
-    { label: 'Cladding', children: [{ label: 'Panel Seals', children: [{ label: 'Joint Sealant Failure', children: [{ label: 'Cracked/separated sealant', children: [{ label: 'Sealant失效 at panel joints' }] }] }] }] },
-    { label: 'Coating', children: [{ label: 'Paint System', children: [{ label: 'Coating Failure', children: [{ label: 'Peeling/Delamination', children: [{ label: 'Paint peeling on exposed steel' }] }] }] }] },
-  ],
-  'Structural Support': [
-    { label: 'Steel Framing', children: [{ label: 'Columns', children: [{ label: 'Welded Connections', children: [{ label: 'Fatigue Crack', children: [{ label: 'Hairline crack at weld toe' }] }, { label: 'Corrosion at Base', children: [{ label: 'Section loss at column base plate' }] }] }] }, { label: 'Bolted Connections', children: [{ label: 'Loose Bolts', children: [{ label: 'Multiple loose anchor bolts', children: [{ label: 'Anchor bolts below specified torque' }] }] }] }] },
-    { label: 'Cable System', children: [{ label: 'Suspension Cables', children: [{ label: 'Corrosion Protection', children: [{ label: 'Corrosion', children: [{ label: 'Active corrosion on main cables' }] }] }] }] },
-    { label: 'Expansion Joints', children: [{ label: 'Deck Joints', children: [{ label: 'Excessive Gap', children: [{ label: 'Joint gap exceeds specification', children: [{ label: 'Measured gap > max allowable' }] }] }] }] },
-    { label: 'Guardrails', children: [{ label: 'Handrails', children: [{ label: 'Loose Connection', children: [{ label: 'Loose railing connection', children: [{ label: 'Handrail bolts require tightening' }] }] }] }] },
-  ],
-  'Foundations & Geotechnical': [
-    { label: 'Concrete Foundation', children: [{ label: 'Footings', children: [{ label: 'Settlement', children: [{ label: 'Settlement Crack', children: [{ label: 'Minor settling crack in foundation wall' }] }] }] }] },
-    { label: 'Retaining Walls', children: [{ label: 'Wall Panels', children: [{ label: 'Structural Cracks', children: [{ label: 'Hairline Crack', children: [{ label: 'Crack in retaining wall < 2mm' }] }] }] }] },
-  ],
-  'Process Equipment': [
-    { label: 'Pressure Vessels', children: [{ label: 'Vessel Shell', children: [{ label: 'Inspection Status', children: [{ label: 'Inspection Overdue', children: [{ label: 'Annual inspection sticker expired' }] }] }] }] },
-    { label: 'Pipe Supports', children: [{ label: 'Brackets', children: [{ label: 'Corrosion Protection', children: [{ label: 'Corrosion', children: [{ label: 'Section loss on pipe support bracket' }] }] }] }] },
-    { label: 'Piping', children: [{ label: 'Pipe Wall', children: [{ label: 'Wall Thickness', children: [{ label: 'General Corrosion', children: [{ label: 'Uniform wall thinning detected' }] }] }] }] },
-  ],
-};
 
 const LIKELIHOOD_OPTIONS = ['A', 'B', 'C', 'D', 'E'] as const;
 const PRIORITY_OPTIONS = ['P1', 'P2', 'P3', 'P4', 'P5'] as const;
@@ -35,6 +13,7 @@ const PRIORITY_OPTIONS = ['P1', 'P2', 'P3', 'P4', 'P5'] as const;
 export default function DeficiencyDetailPage() {
   const { localId } = useParams<{ localId: string }>();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const inspectionId = searchParams.get('inspection_id') ?? '';
   const isNew = localId === 'new';
   const [saved, setSaved] = useState(false);
@@ -59,7 +38,33 @@ export default function DeficiencyDetailPage() {
     enabled: !!inspection?.structure_id || !!inspection?.structureId,
   });
 
-  const [category, setCategory] = useState('');
+  const { data: taxonomyNodes = [] } = useQuery({
+    queryKey: ['taxonomy', 'offline'],
+    queryFn: async () => {
+      const nodes = await db.offlineTaxonomy.toArray();
+      if (nodes.length > 0) return nodes;
+      const online = await apiClient<Array<{ node_id: string; parent_id: string | null; level: string; label: string }>>(ENDPOINTS.taxonomy.list);
+      await db.offlineTaxonomy.bulkPut(
+        online.map(n => ({
+          nodeId: n.node_id,
+          parentId: n.parent_id,
+          level: n.level,
+          category: '',
+          label: n.label,
+          displayOrder: 0,
+          isActive: true,
+        }))
+      );
+      return db.offlineTaxonomy.toArray();
+    },
+  });
+
+  const categories = taxonomyNodes.filter(n => n.level === 'category').map(n => n.label);
+  const getChildren = (parentId: string | null) => taxonomyNodes.filter(n => n.parentId === parentId);
+
+  const firstCategory = categories.length > 0 ? categories[0] : '';
+
+  const [category, setCategory] = useState(firstCategory);
   const [component, setComponent] = useState('');
   const [subComponent, setSubComponent] = useState('');
   const [focusArea, setFocusArea] = useState('');
@@ -77,19 +82,16 @@ export default function DeficiencyDetailPage() {
   const [componentNote, setComponentNote] = useState('');
   const [locationDesc, setLocationDesc] = useState('');
 
-  useQuery({
-    queryKey: ['deficiency', localId],
-    queryFn: () => apiClient(ENDPOINTS.deficiencies.byId(localId!)),
-    enabled: !!localId && !isNew,
-    retry: false,
-  });
-
-  const categories = Object.keys(TAXONOMY);
-  const components = category ? TAXONOMY[category].map(c => c.label) : [];
-  const subComponents = category && component ? TAXONOMY[category].find(c => c.label === component)?.children.map(sc => sc.label) ?? [] : [];
-  const focusAreas = category && component && subComponent ? TAXONOMY[category].find(c => c.label === component)?.children.find(sc => sc.label === subComponent)?.children.map(fa => fa.label) ?? [] : [];
-  const deficiencyCategories = category && component && subComponent && focusArea ? TAXONOMY[category].find(c => c.label === component)?.children.find(sc => sc.label === subComponent)?.children.find(fa => fa.label === focusArea)?.children.map(dc => dc.label) ?? [] : [];
-  const detailedDescriptions = category && component && subComponent && focusArea && deficiencyCategory ? TAXONOMY[category].find(c => c.label === component)?.children.find(sc => sc.label === subComponent)?.children.find(fa => fa.label === focusArea)?.children.find(dc => dc.label === deficiencyCategory)?.children.map(dd => dd.label) ?? [] : [];
+  const categoryNode = taxonomyNodes.find(n => n.label === category && n.level === 'category');
+  const components = categoryNode ? getChildren(categoryNode.nodeId).map(n => n.label) : [];
+  const componentNode = taxonomyNodes.find(n => n.label === component && n.parentId === categoryNode?.nodeId);
+  const subComponents = componentNode ? getChildren(componentNode.nodeId).map(n => n.label) : [];
+  const subComponentNode = taxonomyNodes.find(n => n.label === subComponent && n.parentId === componentNode?.nodeId);
+  const focusAreas = subComponentNode ? getChildren(subComponentNode.nodeId).map(n => n.label) : [];
+  const focusAreaNode = taxonomyNodes.find(n => n.label === focusArea && n.parentId === subComponentNode?.nodeId);
+  const deficiencyCategories = focusAreaNode ? getChildren(focusAreaNode.nodeId).map(n => n.label) : [];
+  const deficiencyCategoryNode = taxonomyNodes.find(n => n.label === deficiencyCategory && n.parentId === focusAreaNode?.nodeId);
+  const detailedDescriptions = deficiencyCategoryNode ? getChildren(deficiencyCategoryNode.nodeId).map(n => n.label) : [];
 
   const glencoreResult = consequenceSeverity && likelihood
     ? calculateGlencoreRisk(consequenceSeverity as 1|2|3|4|5, likelihood as 'A'|'B'|'C'|'D'|'E')
@@ -147,7 +149,6 @@ export default function DeficiencyDetailPage() {
       <div>
         <label className="block text-sm font-medium text-text-primary mb-1">Category</label>
         <select value={category} onChange={e => { setCategory(e.target.value); setComponent(''); setSubComponent(''); setFocusArea(''); setDeficiencyCategory(''); setDetailedDescription(''); }} className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary">
-          <option value="">Select category...</option>
           {categories.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
       </div>
@@ -288,6 +289,21 @@ export default function DeficiencyDetailPage() {
         <input value={componentNote} onChange={e => setComponentNote(e.target.value)} className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary" />
       </div>
 
+      <div className="border-t border-border pt-4">
+        <p className="text-sm font-semibold text-text-primary mb-3">Photos</p>
+        {localId && localId !== 'new' && (
+          <button
+            onClick={() => navigate(`/m/deficiencies/${localId}/photos`)}
+            className="w-full px-4 py-2 border border-accent text-accent rounded-lg text-sm"
+          >
+            Manage Photos
+          </button>
+        )}
+        {isNew && (
+          <p className="text-xs text-text-secondary">Save the deficiency first, then add photos.</p>
+        )}
+      </div>
+
       <button
         onClick={() => saveMutation.mutate()}
         disabled={saving || !category}
@@ -299,6 +315,10 @@ export default function DeficiencyDetailPage() {
 
       {saved && (
         <div className="bg-green-100 text-green-800 p-2 rounded text-sm text-center">Saved locally.</div>
+      )}
+
+      {error && (
+        <div className="bg-red-100 text-red-800 p-2 rounded text-sm text-center">{error}</div>
       )}
     </div>
   );
