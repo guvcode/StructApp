@@ -22,11 +22,11 @@ const siteUpdateSchema = z.object({
 });
 
 const structureCreateSchema = z.object({
-  site_id: z.string().uuid(), asset_tag: z.string().min(1).max(100), description: z.string().min(1), qr_code_value: z.string().optional(),
+  site_id: z.string().uuid(), name: z.string().min(1).max(255), type: z.string().min(1).max(100), identifier: z.string().min(1).max(100),
 });
 
 const structureUpdateSchema = z.object({
-  asset_tag: z.string().min(1).max(100).optional(), description: z.string().min(1).optional(), qr_code_value: z.string().optional(),
+  name: z.string().min(1).max(255).optional(), type: z.string().min(1).max(100).optional(), identifier: z.string().min(1).max(100).optional(),
 });
 
 function mapProject(r: Record<string, unknown>) {
@@ -38,7 +38,7 @@ function mapSite(r: Record<string, unknown>) {
 }
 
 function mapStructure(r: Record<string, unknown>) {
-  return { id: r.structure_id, site_id: r.site_id, client_id: r.client_id, asset_tag: r.asset_tag, description: r.description, qr_code_value: r.qr_code_value || undefined, created_at: r.created_at };
+  return { id: r.structure_id, site_id: r.site_id, client_id: r.client_id, name: r.name, type: r.type, identifier: r.identifier, created_at: r.created_at };
 }
 
 router.get('/projects', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
@@ -153,9 +153,9 @@ router.patch('/structures/:id', requireAuth, requireRole('Admin', 'Reviewer'), a
   try {
     const input = structureUpdateSchema.parse(req.body);
     const fields: Record<string, unknown> = {};
-    if (input.asset_tag) fields.asset_tag = input.asset_tag;
-    if (input.description) fields.description = input.description;
-    if (input.qr_code_value !== undefined) fields.qr_code_value = input.qr_code_value;
+    if (input.name) fields.name = input.name;
+    if (input.type) fields.type = input.type;
+    if (input.identifier !== undefined) fields.identifier = input.identifier;
     if (Object.keys(fields).length === 0) return res.status(400).json({ success: false, error_code: 'NO_FIELDS', message: 'No fields to update' });
     const row = await registerService.updateStructure(req.params.id, fields);
     if (!row) return res.status(404).json({ success: false, error_code: 'NOT_FOUND', message: 'Structure not found' });

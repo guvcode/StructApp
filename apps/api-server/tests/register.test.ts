@@ -66,8 +66,8 @@ describe('register service', () => {
     });
 
     test('createSite inserts and returns site', async () => {
-      mockPool.query.mockResolvedValueOnce({ rows: [{ site_id: 's-new', name: 'New Site', project_id: 'p1', address: '123 St', status: 'active' }] });
-      const result = await createSite({ project_id: 'p1', name: 'New Site', address: '123 St' });
+      mockPool.query.mockResolvedValueOnce({ rows: [{ site_id: 's-new', name: 'New Site', project_id: 'p1', iana_timezone: 'UTC' }] });
+      const result = await createSite({ project_id: 'p1', name: 'New Site' });
       expect(result.site_id).toBe('s-new');
     });
 
