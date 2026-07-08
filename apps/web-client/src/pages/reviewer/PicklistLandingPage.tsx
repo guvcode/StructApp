@@ -8,12 +8,11 @@ import Skeleton from '../../components/Skeleton';
 export default function PicklistLandingPage() {
   const { data: ct = [] } = usePicklists('component-types');
   const { data: wt = [] } = usePicklists('work-types');
-  const { data: st = [] } = usePicklists('structure-types');
   const { data: taxonomyNodes = [] } = useQuery<Array<unknown>>({
     queryKey: ['taxonomy'],
     queryFn: () => apiClient<Array<unknown>>(ENDPOINTS.taxonomy.list),
   });
-  const loading = ct.length === 0 && wt.length === 0 && st.length === 0;
+  const loading = ct.length === 0 && wt.length === 0;
 
   if (loading) {
     return (
@@ -47,20 +46,12 @@ export default function PicklistLandingPage() {
           <p className="text-text-secondary text-sm mt-1">Manage work types</p>
         </Link>
         <Link
-          to="/categories/structure-types"
-          className="block p-6 bg-surface-primary rounded-lg border border-border hover:shadow-md transition-shadow"
-        >
-          <h3 className="text-lg font-semibold text-text-primary">Structure Types</h3>
-          <p className="text-3xl font-bold text-accent mt-2">{st.length}</p>
-          <p className="text-text-secondary text-sm mt-1">Manage structure types</p>
-        </Link>
-        <Link
           to="/categories/taxonomy"
           className="block p-6 bg-surface-primary rounded-lg border border-border hover:shadow-md transition-shadow"
         >
           <h3 className="text-lg font-semibold text-text-primary">Deficiency Taxonomy</h3>
           <p className="text-3xl font-bold text-accent mt-2">{(taxonomyNodes as Array<unknown>).length}</p>
-          <p className="text-text-secondary text-sm mt-1">Manage taxonomy tree</p>
+          <p className="text-text-secondary text-sm mt-1">Manage categories, components, sub-components, focus areas, and detailed descriptions</p>
         </Link>
       </div>
     </div>
