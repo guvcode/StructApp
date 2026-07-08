@@ -6,7 +6,7 @@ import { useUsers, useUpdateUser, useDeactivateUser } from '../../hooks/useUsers
 import { useClients } from '../../hooks/useClients';
 import { resendInvite, getInviteLink } from '../../services/api/users';
 import type { User } from '../../types';
-import { UserRole } from '../../types';
+import { UserRole, mapToBackendRole } from '../../types';
 import Card from '../../components/Card';
 import Skeleton from '../../components/Skeleton';
 import EditDrawer from '../../components/EditDrawer';
@@ -91,7 +91,7 @@ function UserEditDrawer({
     await updateUserMutation.mutateAsync({
       id: user.id,
       input: {
-        role,
+        role: mapToBackendRole(role),
         client_memberships: memberships.map(clientId => ({
           client_id: clientId,
           client_role: 'secondary' as const,
