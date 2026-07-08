@@ -4,6 +4,7 @@ import { requireAuth, requireRole } from '../middleware/auth';
 import { requireAdmin } from '../middleware/requireAdmin';
 import { approveInspection, returnInspection, reopenInspection, submitInspection } from '../services/inspections-workflow';
 import { createInspection, rescheduleInspection, reassignInspection, updateInspectionMode } from '../services/inspections-admin';
+import { createDeficiency } from '../services/deficiencies';
 import { inspectionReturnSchema, inspectionRescheduleSchema, inspectionReassignSchema, inspectionReopenSchema, inspectionSubmitSchema, inspectionCreateSchema, inspectionModeUpdateSchema } from '../contracts/inspections';
 import { pool } from '../lib/db';
 import { logger } from '../lib/logger';
@@ -472,6 +473,21 @@ router.post(
           });
         }
       }
+      next(err);
+    }
+  }
+);
+
+router.post(
+  '/:id/deficiencies',
+  requireAuth,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const user = (req as Request & { user: { sub: string; client_id: string } }).user;
+      const inspectionId = req.params.id;
+      const deficiency = await createDeficiency(inspectionId, user.client_id, user.sub, req.body);
+      res.json({ success: true, data: deficiency });
+    } catch (err) {
       next(err);
     }
   }
