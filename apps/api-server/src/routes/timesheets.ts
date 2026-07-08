@@ -16,6 +16,7 @@ const batchEntrySchema = z.object({
 const batchCreateSchema = z.object({
   entry_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   entries: z.array(batchEntrySchema).min(1).max(20),
+  client_id: z.string().optional(),
 });
 
 const groupApproveSchema = z.object({ entry_ids: z.array(z.string().uuid()).min(1), approver_name: z.string().min(1) });
@@ -39,7 +40,8 @@ router.post('/batch', requireAuth, async (req: Request, res: Response, next: Nex
     if (!parsed.success) {
       return res.status(422).json({ success: false, error_code: 'VALIDATION_ERROR', message: 'Invalid batch data', details: parsed.error.flatten() });
     }
-    const result = await createTimesheetBatch(user.sub, user.client_id, parsed.data.entry_date, parsed.data.entries);
+    const clientId = parsed.data.client_id || user.client_id;
+    const result = await createTimesheetBatch(user.sub, clientId, parsed.data.entry_date, parsed.data.entries);
     res.json({ success: true, data: result });
   } catch (err) {
     next(err);

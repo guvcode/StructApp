@@ -7,7 +7,7 @@ import { useCreateTimesheetBatch } from '../../hooks/useTimesheets';
 import type { Timesheet } from '../../types/index';
 import { TimesheetStatus } from '../../types/index';
 import Skeleton from '../../components/Skeleton';
-import { getSession } from '../../lib/authStore';
+import { getSession, getActiveClientId } from '../../lib/authStore';
 
 const WORK_TYPES = ['Field Inspection', 'Report Writing', 'Equipment Check', 'Office Work', 'Travel'];
 
@@ -78,16 +78,17 @@ export default function TimesheetDetailPage() {
     setError('');
 
     if (isNew) {
-      batchMutation.mutate({
+      const input: { entry_date: string; entries: Array<{ work_type: string; hours: number; notes?: string }> } = {
         entry_date: entryDate,
         entries: validRows.map(r => {
           const e: { work_type: string; hours: number; notes?: string } = { work_type: r.workType, hours: parseFloat(r.hours) };
           if (r.notes) e.notes = r.notes;
           return e;
         }),
-      }, {
-        onSuccess: () => navigate('/m/timesheets'),
-      });
+      };
+      const activeClientId = getActiveClientId();
+      if (activeClientId) (input as { client_id?: string }).client_id = activeClientId;
+      batchMutation.mutate(input, { onSuccess: () => navigate('/m/timesheets') });
     } else if (id && validRows[0]) {
       const session = getSession();
       const first = validRows[0];
