@@ -104,6 +104,7 @@ export default function AppRoutes() {
             <Route path="component-types" element={<PicklistComponentTypesPage />} />
             <Route path="structure-types" element={<PicklistStructureTypesPage />} />
             <Route path="work-types" element={<PicklistWorkTypesPage />} />
+            <Route path="taxonomy" element={<TaxonomyManagementPage />} />
           </Route>
           <Route path="calendar" element={<FeatureFlagGuard flagId="calendar" />}>
             <Route index element={<CalendarPage />} />
