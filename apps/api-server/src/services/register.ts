@@ -21,7 +21,7 @@ export async function createProject(input: {
   client_id: string; name: string; code: string; status?: string; region?: string; start_date?: string; end_date?: string;
 }): Promise<Record<string, unknown>> {
   const result = await pool.query(
-    'INSERT INTO projects (client_id, name, code, status, region, start_date, end_date) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING project_id, client_id, name, code, status, region, start_date, end_date, created_at, updated_at',
+    'INSERT INTO projects (client_id, name, code, title, type, status, region, start_date, end_date, due_date) VALUES ($1, $2, $3, $2, \'One-Off\', $4, $5, $6, $7, NOW()) RETURNING project_id, client_id, name, code, status, region, start_date, end_date, created_at, updated_at',
     [input.client_id, input.name, input.code, input.status || 'active', input.region || null, input.start_date || null, input.end_date || null],
   );
   return result.rows[0];
