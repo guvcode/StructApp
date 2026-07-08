@@ -16,7 +16,7 @@
 | 3 | 6 | 2 | 1 | 4 | 0 |
 | 4 | 2 | 2 | 0 | 0 | 0 |
 | 5 | 34 | 0 | 0 | 34 | 0 |
-| 6 | 27 | 0 | 0 | 27 | 0 |
+| 6 | 30 | 0 | 0 | 30 | 0 |
 | B1 | 7 | 0 | 0 | 7 | 0 |
 | B2 | 10 | 0 | 0 | 10 | 0 |
 | cross | 4 | 4 | 0 | 0 | 0 |
@@ -342,3 +342,11 @@
 | MOB-705 | Dashboard cards show client name, site name, structure ID, status instead of bare UUIDs; offline fallback reads from Dexie | 6 | 🟩 COMPLETED | MOB-704 |
 | MOB-706 | Fix global 403 error toast flood — throttle 403 toasts (10s), suppress background poll errors (`sync:*` keys), add `queryKey` to Sentry tags | 6 | 🟩 COMPLETED | None |
 | MOB-707 | Guard unprotected localStorage/sessionStorage access — wrap all direct Web Storage calls in try/catch to prevent crashes in Safari private browsing | 6 | 🟩 COMPLETED | None |
+
+### 10.8 Duplicate Inspection Prevention
+
+| Feature ID | Component | Sprint | Status | Dependency |
+|---|---|---|---|---|
+| INSP-801 | Migration: cleanup existing duplicate inspections + partial unique index `idx_inspections_active_duplicate_guard` on `(structure_id, inspector_id) WHERE status IN ('Assigned', 'InProgress')` | 6 | 🟩 COMPLETED | None |
+| INSP-802 | Backend: catch unique violation in `createInspection` service → throw `DUPLICATE_INSPECTION`; route handler returns 409 with `error_code: 'DUPLICATE_INSPECTION'` | 6 | 🟩 COMPLETED | INSP-801 |
+| INSP-803 | Frontend: `NewInspectionPage` shows specific error message when duplicate is detected | 6 | 🟩 COMPLETED | INSP-802 |
