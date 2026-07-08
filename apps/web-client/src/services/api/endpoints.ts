@@ -95,6 +95,7 @@ export const ENDPOINTS = {
     list: `${BASE_URL}/timesheets`,
     byId: (id: string) => `${BASE_URL}/timesheets/${id}`,
     create: `${BASE_URL}/timesheets`,
+    batch: `${BASE_URL}/timesheets/batch`,
     update: (id: string) => `${BASE_URL}/timesheets/${id}`,
     submit: (id: string) => `${BASE_URL}/timesheets/${id}/submit`,
     delete: (id: string) => `${BASE_URL}/timesheets/${id}`,

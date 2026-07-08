@@ -1,11 +1,22 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
-import { getTimesheetsForInspector } from '../services/timesheets';
+import { getTimesheetsForInspector, createTimesheetBatch } from '../services/timesheets';
 import { requireAuth, requireRole } from '../middleware/auth';
 import { pool } from '../lib/db';
 import { logger } from '../lib/logger';
 
 const router = Router();
+
+const batchEntrySchema = z.object({
+  work_type: z.string().min(1),
+  hours: z.number().positive().max(24),
+  notes: z.string().optional(),
+});
+
+const batchCreateSchema = z.object({
+  entry_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  entries: z.array(batchEntrySchema).min(1).max(20),
+});
 
 const groupApproveSchema = z.object({ entry_ids: z.array(z.string().uuid()).min(1), approver_name: z.string().min(1) });
 const groupRejectSchema = z.object({ entry_ids: z.array(z.string().uuid()).min(1), reason: z.string().min(1) });
@@ -16,6 +27,20 @@ router.get('/', requireAuth, async (req: Request, res: Response, next: NextFunct
     const clientId = req.user!.client_id;
     const entries = await getTimesheetsForInspector(inspectorId, clientId);
     res.json({ success: true, data: entries });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/batch', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user = req.user!;
+    const parsed = batchCreateSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(422).json({ success: false, error_code: 'VALIDATION_ERROR', message: 'Invalid batch data', details: parsed.error.flatten() });
+    }
+    const result = await createTimesheetBatch(user.sub, user.client_id, parsed.data.entry_date, parsed.data.entries);
+    res.json({ success: true, data: result });
   } catch (err) {
     next(err);
   }

@@ -42,6 +42,17 @@ export default function DashboardPage() {
     return map;
   }, [allClients]);
 
+  const { data: allStructures = [] } = useQuery({
+    queryKey: ['structures'],
+    queryFn: () => apiClient<Array<{ id: string; name: string; identifier: string }>>(ENDPOINTS.structures.list),
+    enabled: online,
+  });
+  const structureLookup = useMemo(() => {
+    const map = new Map<string, string>();
+    allStructures.forEach(s => map.set(s.id, s.name || s.identifier));
+    return map;
+  }, [allStructures]);
+
   const { data: offlineInspections = [] } = useQuery({
     queryKey: ['offlineInspections', activeClientId],
     queryFn: async () => {
@@ -118,9 +129,9 @@ export default function DashboardPage() {
             <p className="text-sm font-semibold text-text-primary">
               {clientLookup.get(i.clientId ?? i.client_id ?? '') ?? i.clientId ?? i.client_id}
             </p>
-            <p className="text-xs text-text-secondary">
+<p className="text-xs text-text-secondary">
               {siteLookup.get(i.siteId ?? i.site_id ?? '') ?? i.siteId ?? i.site_id}
-              {i.structureId ?? i.structure_id ? ` — ${i.structureId ?? i.structure_id}` : ''}
+              {structureLookup.get(i.structureId ?? i.structure_id ?? '') ?? i.structureId ?? i.structure_id ? ` — ${structureLookup.get(i.structureId ?? i.structure_id ?? '') ?? i.structureId ?? i.structure_id}` : ''}
             </p>
             <p className="text-xs text-text-secondary">{i.status} — {i.scheduledDate ?? i.scheduled_date}</p>
           </button>

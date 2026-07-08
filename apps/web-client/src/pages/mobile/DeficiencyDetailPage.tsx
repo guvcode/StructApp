@@ -41,6 +41,24 @@ export default function DeficiencyDetailPage() {
   const [loading, setLoading] = useState(!isNew);
   const [error, setError] = useState('');
 
+  const { data: inspection } = useQuery({
+    queryKey: ['inspections', inspectionId],
+    queryFn: () => apiClient<{ site_id?: string; siteId?: string; structure_id?: string; structureId?: string; status: string }>(ENDPOINTS.inspections.byId(inspectionId)),
+    enabled: !!inspectionId,
+  });
+
+  const { data: site } = useQuery({
+    queryKey: ['sites', inspection?.site_id ?? inspection?.siteId],
+    queryFn: () => apiClient<{ id: string; name: string }>(ENDPOINTS.sites.byId(inspection!.site_id ?? inspection!.siteId!)),
+    enabled: !!inspection?.site_id || !!inspection?.siteId,
+  });
+
+  const { data: structure } = useQuery({
+    queryKey: ['structures', inspection?.structure_id ?? inspection?.structureId],
+    queryFn: () => apiClient<{ id: string; name: string; identifier: string }>(ENDPOINTS.structures.byId(inspection!.structure_id ?? inspection!.structureId!)),
+    enabled: !!inspection?.structure_id || !!inspection?.structureId,
+  });
+
   const [category, setCategory] = useState('');
   const [component, setComponent] = useState('');
   const [subComponent, setSubComponent] = useState('');
@@ -116,6 +134,14 @@ export default function DeficiencyDetailPage() {
 
   return (
     <div className="space-y-4">
+      {inspection && (
+        <div className="bg-surface-secondary rounded-lg p-3 border border-border text-sm">
+          <p className="text-text-primary font-medium">
+            {site?.name ?? 'Site'} — {structure?.name ?? structure?.identifier ?? inspection.structure_id ?? inspection.structureId}
+          </p>
+          <p className="text-text-secondary text-xs">{inspection.status}</p>
+        </div>
+      )}
       <h2 className="text-lg font-bold text-text-primary">{isNew ? 'New Deficiency' : 'Edit Deficiency'}</h2>
 
       <div>
