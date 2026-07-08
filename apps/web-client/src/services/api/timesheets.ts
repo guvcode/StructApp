@@ -26,6 +26,13 @@ export async function createTimesheet(data: Partial<Timesheet>): Promise<Timeshe
   });
 }
 
+export async function createTimesheetBatch(input: { entry_date: string; entries: Array<{ work_type: string; hours: number; notes?: string }> }): Promise<{ count: number }> {
+  return apiClient(ENDPOINTS.timesheets.batch, {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}
+
 export async function updateTimesheet(id: string, data: Partial<Timesheet>): Promise<Timesheet> {
   return apiClient(ENDPOINTS.timesheets.update(id), {
     method: 'PATCH',

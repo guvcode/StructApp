@@ -1,4 +1,3 @@
-import { db } from './db';
 import { clearSession } from './authStore';
 import * as Sentry from '@sentry/react';
 import toast from 'react-hot-toast';
@@ -32,7 +31,6 @@ export function handleQueryError(error: unknown, queryKey?: unknown): void {
   }
 
   if (status === 401) {
-    db.authState.clear();
     clearSession();
     if (typeof window !== 'undefined') {
       window.location.href = '/login';

@@ -1,6 +1,7 @@
 import { apiClient } from './apiClient';
 import { ENDPOINTS } from './endpoints';
 import { getSession, setSession, clearSession } from '../../lib/authStore';
+import { db } from '../../lib/db';
 import type { AuthSession, User } from '../../types';
 import { mapBackendRole, mapToBackendRole } from '../../types';
 
@@ -62,6 +63,19 @@ export async function login(email: string, password: string): Promise<AuthSessio
   };
 
   setSession(session);
+
+  try {
+    await db.authState.put({
+      id: 'current' as const,
+      accessToken: data.access_token,
+      refreshToken: data.refresh_token,
+      clientId: data.client_id,
+      userId: data.user_id,
+      role: mapBackendRole(data.role) as 'Admin' | 'Reviewer' | 'Contractor',
+    });
+  } catch {
+  }
+
   return session;
 }
 

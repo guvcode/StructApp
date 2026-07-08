@@ -1,5 +1,11 @@
 import { pool } from '../lib/db';
 
+interface BatchEntryInput {
+  work_type: string;
+  hours: number;
+  notes?: string;
+}
+
 export interface TimesheetEntryRow {
   entry_id: string;
   user_id: string;
@@ -75,4 +81,32 @@ function derivePreInspection(row: Omit<TimesheetEntryRow, 'pre_inspection'>): bo
   }
 
   return false;
+}
+
+export async function createTimesheetBatch(
+  userId: string,
+  clientId: string,
+  entryDate: string,
+  entries: BatchEntryInput[]
+): Promise<{ count: number }> {
+  const conn = await pool.connect();
+  try {
+    await conn.query('BEGIN');
+    let count = 0;
+    for (const entry of entries) {
+      await conn.query(
+        `INSERT INTO timesheet_entries (user_id, client_id, entry_date, work_type, hours_logged, description, status)
+         VALUES ($1, $2, $3, $4, $5, $6, 'Draft')`,
+        [userId, clientId, entryDate, entry.work_type, entry.hours, entry.notes ?? null]
+      );
+      count++;
+    }
+    await conn.query('COMMIT');
+    return { count };
+  } catch (err) {
+    await conn.query('ROLLBACK');
+    throw err;
+  } finally {
+    conn.release();
+  }
 }
