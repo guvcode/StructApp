@@ -1,6 +1,6 @@
 import { pool } from '../lib/db';
 import { logger } from '../lib/logger';
-import { notifyInspectionReturned, notifyInspectionSubmitted, notifyInspectionAssigned, notifyInspectionReassigned, resendAdapter } from './notifications';
+import { enqueueNotification } from './notificationQueue';
 
 export async function approveInspection(
   inspectionId: string,
@@ -95,9 +95,13 @@ export async function returnInspection(
     await client.query('COMMIT');
 
     try {
-      await notifyInspectionReturned(resendAdapter, inspection.inspector_id, { inspectionId, returnedReason });
-    } catch (notifyErr) {
-      logger.error({ err: notifyErr }, 'Notification failed, but inspection returned successfully');
+      await enqueueNotification('inspection_returned', {
+        inspection_id: inspectionId,
+        inspector_id: inspection.inspector_id,
+        returned_reason: returnedReason,
+      });
+    } catch (enqueueErr) {
+      logger.warn({ err: enqueueErr }, 'Failed to enqueue inspection_returned notification');
     }
 
     return { inspection_id: inspectionId, status: 'Returned', returned_at: new Date().toISOString() };
@@ -204,8 +208,11 @@ export async function submitInspection(
 
     await client.query('COMMIT');
 
-    if (reviewers.rows.length > 0) {
-      await notifyInspectionSubmitted(resendAdapter, reviewers.rows, clientId);
+    try {
+      const reviewerIds = reviewers.rows.map(r => r.email);
+      await enqueueNotification('inspection_submitted', { reviewer_emails: reviewerIds });
+    } catch (enqueueErr) {
+      logger.warn({ err: enqueueErr }, 'Failed to enqueue inspection_submitted notification');
     }
 
     return result.rows[0];

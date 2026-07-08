@@ -2,7 +2,7 @@ import { deficiencySyncSchema, type SyncPushInput, type DeficiencySyncInput } fr
 import { pool } from '../lib/db';
 import { calculateGlencoreRisk } from '../utils/riskCalculator';
 import { uploadToCloudinary } from './cloudinary';
-import { notifyP1Deficiency, resendAdapter, messagebirdAdapter } from './notifications';
+import { enqueueNotification } from './notificationQueue';
 
 export type SyncPushResult = {
   synced_deficiencies: Array<{ local_id: string; server_id: string }>;
@@ -15,24 +15,9 @@ export async function notifyP1AfterCommit(
 ): Promise<void> {
   for (const def of p1Deficiencies) {
     try {
-      const clientResult = await pool.query(
-        'SELECT safety_contact_email FROM clients WHERE client_id = $1',
-        [clientId]
-      );
-      const reviewerResult = await pool.query(
-        "SELECT phone_number FROM users WHERE client_id = $1::uuid AND role = 'Reviewer' LIMIT 1",
-        [clientId]
-      );
-
-      await notifyP1Deficiency(
-        resendAdapter,
-        messagebirdAdapter,
-        { component: def.component },
-        { safety_contact_email: clientResult.rows[0]?.safety_contact_email || '' },
-        { phone_number: reviewerResult.rows[0]?.phone_number }
-      );
-    } catch (err) {
-      // Fire-and-forget: notification failure should not affect sync response
+      await enqueueNotification('p1_deficiency', { client_id: clientId, component: def.component });
+    } catch {
+      // Fire-and-forget: queue failure should not affect sync response
     }
   }
 }

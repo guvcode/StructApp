@@ -6,6 +6,7 @@ import { pool } from './lib/db';
 import { logger } from './lib/logger';
 import pinoHttp from 'pino-http';
 import { startScheduleGenerator } from './jobs/scheduleGenerator';
+import { startNotificationProcessor } from './jobs/notificationProcessor';
 import { requireAuth, requireRole, requireAdmin } from './middleware/auth';
 
 import { usersRouter } from './routes/users';
@@ -79,6 +80,7 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
 });
 
 startScheduleGenerator(pool);
+startNotificationProcessor();
 
 app.listen(PORT, () => {
   logger.info(`Server running on port ${PORT}`);
