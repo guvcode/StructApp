@@ -57,6 +57,7 @@ import AuditLogPage from './pages/admin/AuditLogPage';
 import PinSetupPage from './pages/auth/PinSetupPage';
 import ForbiddenPage from './pages/ForbiddenPage';
 import NotFoundPage from './pages/NotFoundPage';
+import EmailQueuePage from './pages/admin/EmailQueuePage';
 
 export default function AppRoutes() {
   return (
@@ -134,6 +135,7 @@ export default function AppRoutes() {
           <Route path="admin/audit-logs" element={<FeatureFlagGuard flagId="audit_logs" />}>
             <Route index element={<AuditLogPage />} />
           </Route>
+          <Route path="admin/email-queue" element={<EmailQueuePage />} />
         </Route>
       </Route>
       <Route path="*" element={<NotFoundPage />} />

@@ -4,6 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useInspections } from '../../hooks/useInspections';
 import { useSites } from '../../hooks/useRegister';
 import { getActiveClientId } from '../../lib/authStore';
+import { apiClient } from '../../services/api/apiClient';
+import { ENDPOINTS } from '../../services/api/endpoints';
 import { InspectionStatus } from '../../types/index';
 import { ReturnInspectionModal } from '../../components/ReturnInspectionModal';
 import { ApproveInspectionModal } from '../../components/ApproveInspectionModal';
@@ -32,6 +34,16 @@ export default function InspectionListPage() {
     allSites.forEach(s => map.set(s.id, s.name));
     return map;
   }, [allSites]);
+
+  const { data: allStructures = [] } = useQuery({
+    queryKey: ['structures'],
+    queryFn: () => apiClient<Array<{ id: string; name: string; identifier: string }>>(ENDPOINTS.structures.list),
+  });
+  const structureLookup = useMemo(() => {
+    const map = new Map<string, string>();
+    allStructures.forEach(s => map.set(s.id, s.name || s.identifier));
+    return map;
+  }, [allStructures]);
 
   function getSiteName(siteId: string): string {
     return siteLookup.get(siteId) || siteId;
@@ -116,7 +128,9 @@ export default function InspectionListPage() {
               <table className="w-full text-sm" aria-label="Inspections table">
                 <thead>
                   <tr className="border-b border-border text-left">
-                    <th className="px-6 py-3 text-text-secondary font-semibold">Assignee</th>
+                    <th className="px-6 py-3 text-text-secondary font-semibold">Site</th>
+                    <th className="py-3 text-text-secondary font-semibold">Structure</th>
+                    <th className="py-3 text-text-secondary font-semibold">Assignee</th>
                     <th className="py-3 text-text-secondary font-semibold">Status</th>
                     <th className="py-3 text-text-secondary font-semibold">Scheduled</th>
                     <th className="py-3 text-text-secondary font-semibold">Notes</th>
@@ -129,7 +143,9 @@ export default function InspectionListPage() {
                     const isApproved = insp.status === InspectionStatus.Approved;
                     return (
                       <tr key={insp.id} className="border-b border-border hover:bg-surface-hover transition-colors">
-                        <td className="px-6 py-4 text-text-primary font-medium">{insp.assignee_name ?? insp.assigned_to}</td>
+                        <td className="px-6 py-4 text-text-primary font-medium">{getSiteName(insp.site_id)}</td>
+                        <td className="py-4 text-text-primary">{structureLookup.get(insp.structure_id ?? '') ?? insp.structure_id ?? '—'}</td>
+                        <td className="py-4 text-text-primary">{insp.assignee_name ?? insp.assigned_to}</td>
                         <td className="py-4">
                           <StatusBadge label={insp.status} map={INSPECTION_STATUS_STYLES} />
                         </td>
