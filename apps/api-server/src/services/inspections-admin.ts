@@ -29,9 +29,13 @@ export async function createInspection(
 
     await client.query('COMMIT');
 
-    const inspector = await client.query('SELECT email FROM users WHERE user_id = $1', [inspectorId]);
-    if (inspector.rows.length > 0) {
-      await notifyInspectionAssigned(resendAdapter, { email: inspector.rows[0].email }, { asset_tag: structureId });
+    try {
+      const inspector = await client.query('SELECT email FROM users WHERE user_id = $1', [inspectorId]);
+      if (inspector.rows.length > 0) {
+        await notifyInspectionAssigned(resendAdapter, { email: inspector.rows[0].email }, { asset_tag: structureId });
+      }
+    } catch (notifyErr) {
+      logger.warn({ err: notifyErr }, 'Inspection created but notification failed');
     }
 
     return result.rows[0];
@@ -124,18 +128,22 @@ export async function reassignInspection(
 
     await client.query('COMMIT');
 
-    const inspectionDetails = await client.query(
-      `SELECT s.structure_id, i.scheduled_date FROM inspections i
-       JOIN structures s ON i.structure_id = s.structure_id WHERE i.inspection_id = $1`,
-      [inspectionId]
-    );
+    try {
+      const inspectionDetails = await client.query(
+        `SELECT s.structure_id, i.scheduled_date FROM inspections i
+         JOIN structures s ON i.structure_id = s.structure_id WHERE i.inspection_id = $1`,
+        [inspectionId]
+      );
 
-    if (inspectionDetails.rows.length > 0) {
-      await notifyInspectionReassigned(resendAdapter, inspection.inspector_id, {
-        structureId: inspectionDetails.rows[0].structure_id,
-        scheduledDate: inspectionDetails.rows[0].scheduled_date,
-        reason,
-      });
+      if (inspectionDetails.rows.length > 0) {
+        await notifyInspectionReassigned(resendAdapter, inspection.inspector_id, {
+          structureId: inspectionDetails.rows[0].structure_id,
+          scheduledDate: inspectionDetails.rows[0].scheduled_date,
+          reason,
+        });
+      }
+    } catch (notifyErr) {
+      logger.warn({ err: notifyErr }, 'Inspection reassigned but notification failed');
     }
 
     return result.rows[0];
