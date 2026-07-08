@@ -31,7 +31,7 @@ export async function createInspections(input: { structure_ids: string[]; site_i
     input.structure_ids.map(structure_id =>
       apiClient<Inspection>(ENDPOINTS.inspections.create, {
         method: 'POST',
-        body: JSON.stringify({ structure_id, inspector_id: input.inspector_id, site_id: input.site_id }),
+        body: JSON.stringify({ structure_id, inspector_id: input.inspector_id }),
       })
     ),
   );
