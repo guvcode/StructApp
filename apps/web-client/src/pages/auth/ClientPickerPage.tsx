@@ -38,6 +38,10 @@ export default function ClientPickerPage() {
   }, [allClients]);
 
   const clients = useMemo<ClientOption[]>(() => {
+    if (allClients.length === 0) return [];
+    if (isContractor) {
+      return allClients.map(c => ({ client_id: c.client_id, display_name: c.name }));
+    }
     if (!session?.user?.client_memberships) return [];
     return session.user.client_memberships
       .map(m => {
@@ -45,7 +49,7 @@ export default function ClientPickerPage() {
         return name ? { client_id: m.client_id, display_name: name } : null;
       })
       .filter((c): c is ClientOption => c !== null);
-  }, [session, clientLookup]);
+  }, [session, clientLookup, allClients, isContractor]);
 
   if (!session) {
     navigate('/login', { replace: true });
