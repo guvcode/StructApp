@@ -3,7 +3,7 @@ import { getUserRole } from '../lib/authStore';
 import { useSessionExpiry } from '../lib/useSessionExpiry';
 import DesktopSidebar from '../components/DesktopSidebar';
 import LogoutButton from '../components/LogoutButton';
-import AdminClientSwitcher from '../components/AdminClientSwitcher';
+import TenantContextBadge from '../components/TenantContextBadge';
 import type { UserRole } from '../types/index';
 
 export default function DesktopShell() {
@@ -22,7 +22,7 @@ export default function DesktopShell() {
         </div>
         
         <div className="flex items-center gap-4 shrink-0 whitespace-nowrap">
-          {role === 'admin' && <AdminClientSwitcher />}
+          <TenantContextBadge />
           <div className="flex items-center gap-2 px-3 py-1.5 bg-surface-secondary rounded-lg border border-border">
             <div className="w-2 h-2 rounded-full bg-green-500"></div>
             <span className="text-sm font-medium text-text-primary capitalize">{role}</span>
