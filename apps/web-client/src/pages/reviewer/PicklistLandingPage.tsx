@@ -27,7 +27,7 @@ export default function PicklistLandingPage() {
 
   return (
     <div className="p-6 animate-fadeIn">
-      <h2 className="text-2xl font-bold text-text-primary mb-6">Categories</h2>
+      <h2 className="text-2xl font-bold text-text-primary mb-6">Register</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Link
           to="/categories/component-types"
@@ -51,7 +51,7 @@ export default function PicklistLandingPage() {
         >
           <h3 className="text-lg font-semibold text-text-primary">Deficiency Taxonomy</h3>
           <p className="text-3xl font-bold text-accent mt-2">{(taxonomyNodes as Array<unknown>).length}</p>
-          <p className="text-text-secondary text-sm mt-1">Manage categories, components, sub-components, focus areas, and detailed descriptions</p>
+          <p className="text-text-secondary text-sm mt-1">Manage categories, components, sub-components, and detailed descriptions</p>
         </Link>
       </div>
     </div>

@@ -115,10 +115,13 @@ const menuSections: MenuSection[] = [
     { label: 'Pending Review', route: '/timesheets/review?status=Submitted' },
     { label: 'History', route: '/timesheets/review' },
   ]},
-  { label: 'Register', route: '/register', roles: ['reviewer', 'admin'], phase: 'P0', submenu: [
+{ label: 'Register', route: '/register', roles: ['reviewer', 'admin'], phase: 'P0', submenu: [
     { label: 'Projects', route: '/register/projects' },
     { label: 'Sites', route: '/register/sites' },
     { label: 'Structures', route: '/register/structures' },
+    { label: 'Component Types', route: '/categories/component-types' },
+    { label: 'Work Types', route: '/categories/work-types' },
+    { label: 'Other Taxonomies', route: '/categories/taxonomy' },
   ]},
   { label: 'Reports', route: '/reports', roles: ['reviewer', 'admin'], phase: 'P1' },
   { label: 'Categories', route: '/categories', roles: ['reviewer', 'admin'], phase: 'P1', submenu: [
