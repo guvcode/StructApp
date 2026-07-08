@@ -19,14 +19,14 @@ export default function ClientPickerPage() {
   const session = getSession();
 
   const { data: allClients = [] } = useQuery({
-    queryKey: ['clients'],
-    queryFn: () => apiClient<Array<{ id: string; name: string }>>(ENDPOINTS.clients.list),
+    queryKey: ['clients', 'mine'],
+    queryFn: () => apiClient<Array<{ client_id: string; name: string }>>(ENDPOINTS.clients.mine),
     enabled: !!session,
   });
 
   const clientLookup = useMemo(() => {
     const map = new Map<string, string>();
-    allClients.forEach(c => map.set(c.id, c.name));
+    allClients.forEach(c => map.set(c.client_id, c.name));
     return map;
   }, [allClients]);
 
