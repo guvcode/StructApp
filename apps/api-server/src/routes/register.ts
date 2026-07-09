@@ -109,6 +109,9 @@ router.patch('/sites/:id', requireAuth, requireRole('Admin', 'Reviewer'), async 
     const input = siteUpdateSchema.parse(req.body);
     const fields: Record<string, unknown> = {};
     if (input.name) fields.name = input.name;
+    if (input.address !== undefined) fields.address = input.address;
+    if (input.status !== undefined) fields.status = input.status;
+    if (input.safety_email !== undefined) fields.safety_email = input.safety_email;
     if (input.iana_timezone !== undefined) fields.iana_timezone = input.iana_timezone;
     if (Object.keys(fields).length === 0) return res.status(400).json({ success: false, error_code: 'NO_FIELDS', message: 'No fields to update' });
     const row = await registerService.updateSite(req.params.id, fields);
