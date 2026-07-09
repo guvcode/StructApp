@@ -14,11 +14,11 @@ const projectUpdateSchema = z.object({
 });
 
 const siteCreateSchema = z.object({
-  project_id: z.string().uuid(), name: z.string().min(1).max(200), address: z.string().optional(), status: z.enum(['active', 'completed', 'on-hold']).optional(), safety_email: z.string().email().optional().or(z.literal('')), iana_timezone: z.string().optional(),
+  project_id: z.string().uuid(), name: z.string().min(1).max(200), address: z.string().optional(), status: z.enum(['active', 'completed', 'on-hold']).optional(), iana_timezone: z.string().optional(),
 });
 
 const siteUpdateSchema = z.object({
-  name: z.string().min(1).max(200).optional(), address: z.string().optional(), status: z.enum(['active', 'completed', 'on-hold']).optional(), safety_email: z.string().email().optional().or(z.literal('')), iana_timezone: z.string().optional(),
+  name: z.string().min(1).max(200).optional(), address: z.string().optional(), status: z.enum(['active', 'completed', 'on-hold']).optional(), iana_timezone: z.string().optional(),
 });
 
 const structureCreateSchema = z.object({
@@ -34,7 +34,7 @@ function mapProject(r: Record<string, unknown>) {
 }
 
 function mapSite(r: Record<string, unknown>) {
-  return { id: r.site_id, project_id: r.project_id, client_id: r.client_id, name: r.name, address: r.address || undefined, status: r.status || 'active', safety_email: r.safety_email || undefined, iana_timezone: r.iana_timezone, created_at: r.created_at };
+  return { id: r.site_id, project_id: r.project_id, client_id: r.client_id, name: r.name, address: r.address || undefined, status: r.status || 'active', iana_timezone: r.iana_timezone, created_at: r.created_at };
 }
 
 function mapStructure(r: Record<string, unknown>) {
@@ -111,7 +111,6 @@ router.patch('/sites/:id', requireAuth, requireRole('Admin', 'Reviewer'), async 
     if (input.name) fields.name = input.name;
     if (input.address !== undefined) fields.address = input.address;
     if (input.status !== undefined) fields.status = input.status;
-    if (input.safety_email !== undefined) fields.safety_email = input.safety_email;
     if (input.iana_timezone !== undefined) fields.iana_timezone = input.iana_timezone;
     if (Object.keys(fields).length === 0) return res.status(400).json({ success: false, error_code: 'NO_FIELDS', message: 'No fields to update' });
     const row = await registerService.updateSite(req.params.id, fields);

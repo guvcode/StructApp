@@ -59,18 +59,18 @@ export async function listSites(projectId?: string, clientId?: string): Promise<
 
 export async function getSiteById(siteId: string): Promise<Record<string, unknown> | null> {
   const result = await pool.query(
-    'SELECT site_id, project_id, client_id, name, address, status, safety_email, iana_timezone, created_at, updated_at FROM sites WHERE site_id = $1',
+    'SELECT site_id, project_id, client_id, name, address, status, iana_timezone, created_at, updated_at FROM sites WHERE site_id = $1',
     [siteId],
   );
   return result.rows[0] || null;
 }
 
 export async function createSite(input: {
-  project_id: string; name: string; address?: string; status?: string; safety_email?: string; iana_timezone?: string;
+  project_id: string; name: string; address?: string; status?: string; iana_timezone?: string;
 }): Promise<Record<string, unknown>> {
   const result = await pool.query(
-    'INSERT INTO sites (project_id, name, address, status, safety_email, iana_timezone) VALUES ($1, $2, $3, $4, $5, $6) RETURNING site_id, project_id, client_id, name, address, status, safety_email, iana_timezone, created_at, updated_at',
-    [input.project_id, input.name, input.address || null, input.status || 'active', input.safety_email || null, input.iana_timezone || 'UTC'],
+    'INSERT INTO sites (project_id, name, address, status, iana_timezone) VALUES ($1, $2, $3, $4, $5) RETURNING site_id, project_id, client_id, name, address, status, iana_timezone, created_at, updated_at',
+    [input.project_id, input.name, input.address || null, input.status || 'active', input.iana_timezone || 'UTC'],
   );
   return result.rows[0];
 }
