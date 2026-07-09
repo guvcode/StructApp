@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { apiClient } from '../../services/api/apiClient';
 import { ENDPOINTS } from '../../services/api/endpoints';
 import { useOfflinePhotos } from '../../hooks/useOfflinePhotos';
@@ -16,6 +16,8 @@ export default function DeficiencyPhotosPage() {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     setError('');
@@ -117,7 +119,22 @@ export default function DeficiencyPhotosPage() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-bold text-text-primary">Photo Manager / Evidence</h2>
+      <div className="flex items-center gap-3">
+        <button
+          onClick={() => {
+            if (!localId || localId === 'new') {
+              navigate(-1);
+            } else {
+              navigate(`/m/deficiencies/${localId}?inspection_id=${deficiency?.inspection_id ?? ''}`);
+            }
+          }}
+          className="p-1 -ml-1 text-text-primary hover:text-accent"
+          aria-label="Back to deficiency detail"
+        >
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+        </button>
+        <h2 className="text-lg font-bold text-text-primary">Photo Manager / Evidence</h2>
+      </div>
       {deficiency && (
         <p className="text-sm text-text-secondary">{deficiency.title}</p>
       )}
@@ -226,6 +243,21 @@ export default function DeficiencyPhotosPage() {
           </div>
         ))}
       </div>
+
+      {!isReadOnly && (
+        <button
+          onClick={() => {
+            if (!localId || localId === 'new') {
+              navigate(-1);
+            } else {
+              navigate(`/m/deficiencies/${localId}?inspection_id=${deficiency?.inspection_id ?? ''}`);
+            }
+          }}
+          className="w-full px-4 py-3 bg-accent text-white rounded-lg text-sm font-medium"
+        >
+          Back to Details
+        </button>
+      )}
     </div>
   );
 }
