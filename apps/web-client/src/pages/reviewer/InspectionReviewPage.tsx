@@ -27,7 +27,7 @@ export default function InspectionReviewPage() {
 
   const isApproved = inspection.status === InspectionStatus.Approved;
   const isAdmin = role === 'admin';
-  const selectedDeficiency = deficiencies.find(d => d.id === selectedDef) ?? null;
+  const selectedDeficiency = deficiencies.find(d => d.id === selectedDef || (d as unknown as Record<string, unknown>).deficiency_id === selectedDef) ?? null;
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
@@ -43,12 +43,14 @@ export default function InspectionReviewPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="space-y-2">
-          {deficiencies.map(def => (
+          {deficiencies.map(def => {
+            const defId = def.id || (def as unknown as Record<string, unknown>).deficiency_id as string;
+            return (
             <button
-              key={def.id}
-              onClick={() => setSelectedDef(def.id)}
+              key={defId}
+              onClick={() => setSelectedDef(defId)}
               aria-label={`Select deficiency: ${def.title}`}
-              className={`w-full text-left p-3 rounded-lg border transition-colors ${selectedDef === def.id ? 'border-accent bg-accent/5' : 'border-border bg-surface-primary hover:border-accent/50'}`}
+              className={`w-full text-left p-3 rounded-lg border transition-colors ${selectedDef === defId ? 'border-accent bg-accent/5' : 'border-border bg-surface-primary hover:border-accent/50'}`}
             >
               <p className="font-medium text-text-primary">{def.title}</p>
               <div className="flex gap-2 mt-1">
@@ -56,7 +58,8 @@ export default function InspectionReviewPage() {
                 <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-text-secondary">{def.status}</span>
               </div>
             </button>
-          ))}
+            );
+          })}
           {deficiencies.length === 0 && <p className="text-text-secondary text-sm">No deficiencies for this inspection.</p>}
         </div>
 

@@ -224,7 +224,7 @@ export default function DeficiencyDetailPage() {
 
       {showOverride && (
         <PriorityOverridePanel
-          deficiencyId={deficiency.id}
+          deficiencyId={deficiency.id || (deficiency as unknown as Record<string, unknown>).deficiency_id as string}
           currentTier={deficiency.priority_tier}
           onClose={() => setShowOverride(false)}
           onOverride={() => { setShowOverride(false); refetch(); }}

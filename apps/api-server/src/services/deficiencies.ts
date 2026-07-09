@@ -41,7 +41,7 @@ export async function listDeficienciesByInspection(
     await client.query("SELECT set_config('app.bypass_tenant_check', 'true', true)");
 
     const result = await client.query(
-      `SELECT * FROM deficiency_records WHERE inspection_id = $1 ORDER BY created_at ASC`,
+      `SELECT *, deficiency_id AS id FROM deficiency_records WHERE inspection_id = $1 ORDER BY created_at ASC`,
       [inspectionId]
     );
     await client.query('COMMIT');
@@ -65,7 +65,7 @@ export async function getDeficiencyById(
     await client.query("SELECT set_config('app.bypass_tenant_check', 'true', true)");
 
     const result = await client.query(
-      'SELECT * FROM deficiency_records WHERE deficiency_id = $1',
+      'SELECT *, deficiency_id AS id FROM deficiency_records WHERE deficiency_id = $1',
       [deficiencyId]
     );
     await client.query('COMMIT');
@@ -110,7 +110,7 @@ export async function createDeficiency(
         $18, $19, $20,
         COALESCE($18::VARCHAR, $21),
         $22, $23
-      ) RETURNING *`,
+      ) RETURNING *, deficiency_id AS id`,
       [
         inspectionId,
         clientId,
@@ -186,7 +186,7 @@ export async function updateDeficiency(
 
     vals.push(deficiencyId);
     const result = await client.query(
-      `UPDATE deficiency_records SET ${sets.join(', ')}, updated_at = NOW() WHERE deficiency_id = $${idx} RETURNING *`,
+      `UPDATE deficiency_records SET ${sets.join(', ')}, updated_at = NOW() WHERE deficiency_id = $${idx} RETURNING *, deficiency_id AS id`,
       vals
     );
     await client.query('COMMIT');
