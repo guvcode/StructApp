@@ -15,6 +15,7 @@ export default function ClientPickerPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
+  const isOffline = !navigator.onLine;
 
   const session = getSession();
   const role = getUserRole();
@@ -28,7 +29,7 @@ export default function ClientPickerPage() {
           ? ENDPOINTS.clients.withAssignedInspections
           : ENDPOINTS.clients.mine
       ),
-    enabled: !!session,
+    enabled: !!session && !isOffline,
   });
 
   const clientLookup = useMemo(() => {
@@ -38,6 +39,12 @@ export default function ClientPickerPage() {
   }, [allClients]);
 
   const clients = useMemo<ClientOption[]>(() => {
+    if (isOffline && session?.user?.client_memberships) {
+      return session.user.client_memberships.map(m => ({
+        client_id: m.client_id,
+        display_name: m.client_id,
+      }));
+    }
     if (allClients.length === 0) return [];
     if (isContractor) {
       return allClients.map(c => ({ client_id: c.client_id, display_name: c.name }));
