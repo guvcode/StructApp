@@ -26,7 +26,6 @@ function SiteEditDrawer({
   const [name, setName] = useState(site?.name || '');
   const [address, setAddress] = useState(site?.address || '');
   const [status, setStatus] = useState(site?.status || 'active');
-  const [safetyEmail, setSafetyEmail] = useState(site?.safety_email || '');
   const [selectedProjectId, setSelectedProjectId] = useState(site?.project_id || projectId || '');
   const createSite = useCreateSite();
   const updateSite = useUpdateSite();
@@ -34,15 +33,9 @@ function SiteEditDrawer({
 
   const handleSave = async () => {
     if (site) {
-      const input: { name: string; address: string; status: string; safety_email?: string } =
-        { name, address, status };
-      if (safetyEmail) input.safety_email = safetyEmail;
-      await updateSite.mutateAsync({ id: site.id, input });
+      await updateSite.mutateAsync({ id: site.id, input: { name, address, status } });
     } else {
-      const input: { project_id: string; name: string; address: string; status: string; safety_email?: string } =
-        { project_id: selectedProjectId, name, address, status };
-      if (safetyEmail) input.safety_email = safetyEmail;
-      await createSite.mutateAsync(input);
+      await createSite.mutateAsync({ project_id: selectedProjectId, name, address, status });
     }
     onSaved();
     onClose();
@@ -65,10 +58,6 @@ function SiteEditDrawer({
           <option value="completed">Completed</option>
           <option value="on-hold">On Hold</option>
         </select>
-      </div>
-      <div>
-        <label className="block text-sm font-semibold text-text-primary mb-2">Safety Email</label>
-        <input type="email" value={safetyEmail} onChange={e => setSafetyEmail(e.target.value)} placeholder="safety@example.com" className="w-full px-4 py-3 border border-border rounded-lg bg-surface-primary text-text-primary focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all" />
       </div>
       {!site && (
         <div>

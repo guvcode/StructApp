@@ -3,19 +3,20 @@ import { pool } from '../lib/db';
 export type ClientRow = {
   client_id: string;
   name: string;
+  safety_contact_email?: string;
   created_at: string;
 };
 
 export async function listClients(): Promise<ClientRow[]> {
   const result = await pool.query(
-    'SELECT client_id, name, created_at FROM clients ORDER BY name ASC',
+    'SELECT client_id, name, safety_contact_email, created_at FROM clients ORDER BY name ASC',
   );
   return result.rows;
 }
 
 export async function getClientById(clientId: string): Promise<ClientRow | null> {
   const result = await pool.query(
-    'SELECT client_id, name, created_at FROM clients WHERE client_id = $1',
+    'SELECT client_id, name, safety_contact_email, created_at FROM clients WHERE client_id = $1',
     [clientId],
   );
   return result.rows[0] || null;
@@ -25,7 +26,7 @@ export async function createClient(name: string, _safetyEmail?: string): Promise
   const result = await pool.query(
     `INSERT INTO clients (name, safety_contact_email)
      VALUES ($1, $2)
-     RETURNING client_id, name, created_at`,
+     RETURNING client_id, name, safety_contact_email, created_at`,
     [name, _safetyEmail || null],
   );
   return result.rows[0];
@@ -43,7 +44,7 @@ export async function updateClient(clientId: string, fields: Record<string, unkn
   params.push(clientId);
   const result = await pool.query(
     `UPDATE clients SET ${setClauses.join(', ')} WHERE client_id = $${idx}
-     RETURNING client_id, name, created_at`,
+     RETURNING client_id, name, safety_contact_email, created_at`,
     params,
   );
   return result.rows[0] || null;

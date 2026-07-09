@@ -43,7 +43,7 @@ router.get('/with-assigned-inspections', requireAuth, async (req: Request, res: 
 router.get('/', requireAuth, requireAdmin, async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const rows = await clientService.listClients();
-    const clients = rows.map(r => ({ id: r.client_id, name: r.name, created_at: r.created_at }));
+    const clients = rows.map(r => ({ id: r.client_id, name: r.name, safety_email: r.safety_contact_email || null, created_at: r.created_at }));
     res.json({ success: true, data: clients });
   } catch (err) { next(err); }
 });
@@ -52,7 +52,7 @@ router.get('/:id', requireAuth, requireAdmin, async (req: Request, res: Response
   try {
     const row = await clientService.getClientById(req.params.id);
     if (!row) return res.status(404).json({ success: false, error_code: 'NOT_FOUND', message: 'Client not found' });
-    res.json({ success: true, data: { id: row.client_id, name: row.name, created_at: row.created_at } });
+    res.json({ success: true, data: { id: row.client_id, name: row.name, safety_email: row.safety_contact_email || null, created_at: row.created_at } });
   } catch (err) { next(err); }
 });
 
@@ -61,7 +61,7 @@ router.post('/', requireAuth, requireRole('Admin'), async (req: Request, res: Re
     const input = clientCreateSchema.parse(req.body);
     const row = await clientService.createClient(input.name, input.safety_email);
     logger.info('Client created', { clientId: row.client_id, name: row.name });
-    res.status(201).json({ success: true, data: { id: row.client_id, name: row.name, created_at: row.created_at } });
+    res.status(201).json({ success: true, data: { id: row.client_id, name: row.name, safety_email: row.safety_contact_email || null, created_at: row.created_at } });
   } catch (err) { next(err); }
 });
 
@@ -74,7 +74,7 @@ router.patch('/:id', requireAuth, requireRole('Admin'), async (req: Request, res
     if (Object.keys(fields).length === 0) return res.status(400).json({ success: false, error_code: 'NO_FIELDS', message: 'No fields to update' });
     const row = await clientService.updateClient(req.params.id, fields);
     if (!row) return res.status(404).json({ success: false, error_code: 'NOT_FOUND', message: 'Client not found' });
-    res.json({ success: true, data: { id: row.client_id, name: row.name, created_at: row.created_at } });
+    res.json({ success: true, data: { id: row.client_id, name: row.name, safety_email: row.safety_contact_email || null, created_at: row.created_at } });
   } catch (err) { next(err); }
 });
 

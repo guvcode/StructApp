@@ -124,10 +124,6 @@ const menuSections: MenuSection[] = [
     { label: 'Other Taxonomies', route: '/categories/taxonomy' },
   ]},
   { label: 'Reports', route: '/reports', roles: ['reviewer', 'admin'], phase: 'P1' },
-  { label: 'Categories', route: '/categories', roles: ['reviewer', 'admin'], phase: 'P1', submenu: [
-    { label: 'Component Types', route: '/categories/component-types' },
-    { label: 'Work Types', route: '/categories/work-types' },
-  ]},
   { label: 'Audit Logs', route: '/admin/audit-logs', roles: ['admin', 'reviewer'], phase: 'P1' },
   { label: 'Email Queue', route: '/admin/email-queue', roles: ['admin', 'reviewer'], phase: 'P1' },
   { label: 'Imports', route: '/admin/imports', roles: ['admin'], phase: 'P2', submenu: [
