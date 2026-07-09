@@ -86,7 +86,7 @@ export async function uploadPhotoToCloudinary(
   const formData = new FormData();
   formData.append('file', strippedBlob, file.name);
   formData.append('upload_preset', UPLOAD_PRESET);
-  formData.append('public_id', `${folderPath}/${Date.now()}`);
+  formData.append('folder', folderPath);
 
   const response = await fetch(UPLOAD_URL, { method: 'POST', body: formData });
   if (!response.ok) {
