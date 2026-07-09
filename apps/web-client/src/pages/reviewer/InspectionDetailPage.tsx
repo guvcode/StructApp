@@ -36,7 +36,7 @@ export default function InspectionDetailPage() {
     return map;
   }, [allStructures]);
 
-  const site = inspection ? siteLookup.get(inspection.site_id) : undefined;
+  const site = inspection ? (inspection.site_name || siteLookup.get(inspection.site_id)) : undefined;
   const structure = inspection?.structure_id ? structureLookup.get(inspection.structure_id) : null;
 
   if (isLoading) {

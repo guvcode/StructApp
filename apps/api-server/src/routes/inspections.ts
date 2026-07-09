@@ -18,17 +18,20 @@ router.get(
     try {
       const { site_id, assignee, status, scheduled_date_from, scheduled_date_to, client_id } = req.query as Record<string, string | undefined>;
       let query = `
-        SELECT i.inspection_id, i.site_id, i.structure_id, i.client_id, i.inspector_id,
+        SELECT i.inspection_id, s.site_id, i.structure_id, i.client_id, i.inspector_id,
                i.assigned_by, i.status, i.scheduled_date, i.submitted_at, i.created_at,
                i.updated_at, i.returned_reason, i.approved_by, i.approved_at,
                i.reopened_by, i.reopened_at, i.reopen_reason, i.schedule_id,
+               st.name as site_name,
                u.display_name as assignee_name, u.email as assignee_email
         FROM inspections i
+        LEFT JOIN structures s ON i.structure_id = s.structure_id
+        LEFT JOIN sites st ON s.site_id = st.site_id
         LEFT JOIN users u ON i.inspector_id = u.user_id
         WHERE 1=1`;
       const params: unknown[] = [];
       let idx = 1;
-      if (site_id) { query += ` AND i.site_id = $${idx++}`; params.push(site_id); }
+      if (site_id) { query += ` AND s.site_id = $${idx++}`; params.push(site_id); }
       if (assignee) { query += ` AND i.inspector_id = $${idx++}`; params.push(assignee); }
       if (status) { query += ` AND i.status = $${idx++}`; params.push(status); }
       if (scheduled_date_from) { query += ` AND i.scheduled_date >= $${idx++}`; params.push(scheduled_date_from); }
@@ -51,12 +54,15 @@ router.get(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await pool.query(
-`SELECT i.inspection_id, i.site_id, i.structure_id, i.client_id, i.inspector_id,
+`SELECT i.inspection_id, s.site_id, i.structure_id, i.client_id, i.inspector_id,
                i.assigned_by, i.status, i.scheduled_date, i.submitted_at, i.created_at,
                i.updated_at, i.returned_reason, i.approved_by, i.approved_at,
                i.reopened_by, i.reopened_at, i.reopen_reason, i.schedule_id,
+               st.name as site_name,
                u.display_name as assignee_name, u.email as assignee_email
          FROM inspections i
+         LEFT JOIN structures s ON i.structure_id = s.structure_id
+         LEFT JOIN sites st ON s.site_id = st.site_id
          LEFT JOIN users u ON i.inspector_id = u.user_id
          WHERE i.inspection_id = $1`,
         [req.params.id],
@@ -565,6 +571,7 @@ function mapInspectionRow(row: Record<string, unknown>) {
   return {
     id: row.inspection_id,
     site_id: row.site_id || undefined,
+    site_name: row.site_name || undefined,
     structure_id: row.structure_id || undefined,
     client_id: row.client_id,
     assigned_to: row.inspector_id,
