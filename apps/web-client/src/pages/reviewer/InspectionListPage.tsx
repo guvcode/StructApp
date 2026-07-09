@@ -45,8 +45,8 @@ export default function InspectionListPage() {
     return map;
   }, [allStructures]);
 
-  function getSiteName(siteId: string): string {
-    return siteLookup.get(siteId) || siteId;
+  function getSiteName(insp: { site_id: string; site_name?: string }): string {
+    return insp.site_name || siteLookup.get(insp.site_id) || insp.site_id;
   }
 
   const filtered = statusFilter === 'all'
@@ -67,7 +67,7 @@ export default function InspectionListPage() {
   if (isError) return <div className="p-6 text-red-600 text-center">{(error as Error)?.message || 'Failed to load inspections.'}</div>;
 
   const grouped = sortedFiltered.reduce<Record<string, typeof inspections>>((acc, insp) => {
-    const siteName = getSiteName(insp.site_id);
+    const siteName = getSiteName(insp);
     if (!acc[siteName]) acc[siteName] = [];
     acc[siteName].push(insp);
     return acc;
@@ -143,7 +143,7 @@ export default function InspectionListPage() {
                     const isApproved = insp.status === InspectionStatus.Approved;
                     return (
                       <tr key={insp.id} className="border-b border-border hover:bg-surface-hover transition-colors">
-                        <td className="px-6 py-4 text-text-primary font-medium">{getSiteName(insp.site_id)}</td>
+                        <td className="px-6 py-4 text-text-primary font-medium">{getSiteName(insp)}</td>
                         <td className="py-4 text-text-primary">{structureLookup.get(insp.structure_id ?? '') ?? insp.structure_id ?? '—'}</td>
                         <td className="py-4 text-text-primary">{insp.assignee_name ? `${insp.assignee_name}${insp.assignee_email ? ` (${insp.assignee_email})` : ''}` : insp.assigned_to}</td>
                         <td className="py-4">

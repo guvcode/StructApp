@@ -195,6 +195,7 @@ export interface StructureAsset {
 export interface Inspection {
   id: string;
   site_id: string;
+  site_name?: string;
   structure_id?: string;
   client_id: string;
   assigned_to: string;
