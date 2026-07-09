@@ -13,7 +13,7 @@ export interface TimesheetEntryRow {
   inspection_id: string | null;
   client_id: string;
   work_type: string;
-  hours_logged: string;
+  hours: string;
   entry_date: string;
   pre_inspection: boolean;
   status: string;
@@ -38,7 +38,7 @@ export async function getTimesheetsForInspector(
       te.inspection_id,
       te.client_id,
       te.work_type,
-      te.hours_logged,
+      te.hours_logged AS hours,
       te.entry_date,
       te.status,
       te.rejection_reason,
@@ -95,7 +95,7 @@ export async function getTimesheetById(
       te.inspection_id,
       te.client_id,
       te.work_type,
-      te.hours_logged,
+      te.hours_logged AS hours,
       te.entry_date,
       te.status,
       te.rejection_reason,
@@ -121,7 +121,7 @@ export async function updateTimesheet(
   clientId: string,
   userId: string,
   data: { work_type?: string; hours?: number; description?: string }
-): Promise<{ entry_id: string; work_type: string; hours_logged: string }> {
+): Promise<{ entry_id: string; work_type: string; hours: string }> {
   const conn = await pool.connect();
   try {
     await conn.query('BEGIN');
@@ -144,7 +144,7 @@ export async function updateTimesheet(
 
     vals.push(entryId);
     const result = await conn.query(
-      `UPDATE timesheet_entries SET ${sets.join(', ')}, updated_at = NOW() WHERE entry_id = $${idx} RETURNING entry_id, work_type, hours_logged`,
+      `UPDATE timesheet_entries SET ${sets.join(', ')}, updated_at = NOW() WHERE entry_id = $${idx} RETURNING entry_id, work_type, hours_logged AS hours`,
       vals
     );
     await conn.query('COMMIT');

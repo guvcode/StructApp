@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../services/api/apiClient';
 import { ENDPOINTS } from '../../services/api/endpoints';
-import { useCreateTimesheetBatch } from '../../hooks/useTimesheets';
+import { useCreateTimesheetBatch, useSubmitTimesheet } from '../../hooks/useTimesheets';
 import type { Timesheet } from '../../types/index';
 import { TimesheetStatus } from '../../types/index';
 import Skeleton from '../../components/Skeleton';
-import { getSession, getActiveClientId } from '../../lib/authStore';
+import { getActiveClientId } from '../../lib/authStore';
 
 const WORK_TYPES = ['Field Inspection', 'Report Writing', 'Equipment Check', 'Office Work', 'Travel'];
 
@@ -42,12 +42,7 @@ export default function TimesheetDetailPage() {
   }, [original]);
 
   const batchMutation = useCreateTimesheetBatch();
-
-  const submitMutation = useMutation({
-    mutationFn: () => apiClient(ENDPOINTS.timesheets.submit(id!), { method: 'POST' }),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['timesheets'] }); navigate('/m/timesheets'); },
-    onError: () => setError('Failed to submit timesheet.'),
-  });
+  const submitMutation = useSubmitTimesheet();
 
   const isReadOnly = original ? original.status !== TimesheetStatus.Draft : false;
   const saving = batchMutation.isPending || submitMutation.isPending || savingUpdate;
@@ -96,7 +91,6 @@ export default function TimesheetDetailPage() {
     } else if (id && validRows[0]) {
       setSavingUpdate(true);
       try {
-        const session = getSession();
         const first = validRows[0];
         const body = { entry_date: entryDate, hours: parseFloat(first.hours), work_type: first.workType, description: first.notes };
         await apiClient(ENDPOINTS.timesheets.update(id), { method: 'PATCH', body: JSON.stringify(body) });
@@ -112,7 +106,10 @@ export default function TimesheetDetailPage() {
 
   const handleSubmit = () => {
     if (!id || isNew) return;
-    submitMutation.mutate();
+    submitMutation.mutate(id, {
+      onSuccess: () => navigate('/m/timesheets'),
+      onError: () => setError('Failed to submit timesheet.'),
+    });
   };
 
   if (isLoading) return <div className="p-4"><Skeleton className="h-6 w-32 mx-auto mb-2" /><Skeleton className="h-48 w-full rounded-lg" /></div>;
