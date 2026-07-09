@@ -108,6 +108,26 @@ export type OfflineClient = {
   name: string;
 };
 
+export type OfflinePhoto = {
+  photoId: string;
+  deficiencyLocalId: string;
+  deficiencyServerId?: string;
+  filename: string;
+  fileData: string;
+  caption: string;
+  exif?: {
+    originalFilename?: string;
+    capturedAt?: string;
+    cameraMake?: string;
+    cameraModel?: string;
+    rawExifPayload?: string;
+  };
+  cloudinaryUrl?: string;
+  serverPhotoId?: string;
+  syncState: 'pending' | 'synced' | 'failed';
+  createdAt: string;
+};
+
 export class StructAppLocalDB extends Dexie {
   authState!: Table<AuthState, 'current'>;
   deficiencies!: Table<DeficiencyRecord, number>;
@@ -116,6 +136,7 @@ export class StructAppLocalDB extends Dexie {
   offlineDeficiencies!: Table<OfflineDeficiency, string>;
   offlineTaxonomy!: Table<OfflineTaxonomy, string>;
   offlineClients!: Table<OfflineClient, string>;
+  offlinePhotos!: Table<OfflinePhoto, string>;
 
   constructor() {
     super('StructAppLocalDB');
@@ -146,6 +167,16 @@ export class StructAppLocalDB extends Dexie {
       offlineDeficiencies: 'deficiencyId, inspectionId, clientId',
       offlineTaxonomy: 'nodeId, level, category',
       offlineClients: 'client_id',
+    });
+    this.version(5).stores({
+      authState: 'id, accessToken, refreshToken, clientId, userId, role',
+      deficiencies: '++localId, inspectionId, syncState',
+      pinOutbox: '++localId, structureId, pinMode, createdAt',
+      offlineInspections: 'id, clientId, inspectorId, status, createdAt',
+      offlineDeficiencies: 'deficiencyId, inspectionId, clientId',
+      offlineTaxonomy: 'nodeId, level, category',
+      offlineClients: 'client_id',
+      offlinePhotos: 'photoId, deficiencyLocalId, syncState',
     });
   }
 }

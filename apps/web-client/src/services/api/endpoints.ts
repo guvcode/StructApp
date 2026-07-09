@@ -82,6 +82,8 @@ export const ENDPOINTS = {
     overridePriority: (id: string) => `${BASE_URL}/deficiencies/${id}/override-priority`,
     updateComponentNotes: (id: string) => `${BASE_URL}/deficiencies/${id}/component-notes`,
     verifyClosure: (id: string) => `${BASE_URL}/deficiencies/${id}/verify-closure`,
+    photos: (id: string) => `${BASE_URL}/deficiencies/${id}/photos`,
+    addPhoto: (id: string) => `${BASE_URL}/deficiencies/${id}/photos`,
   },
   remediation: {
     list: `${BASE_URL}/remediation/deficiencies`,

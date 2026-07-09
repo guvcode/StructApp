@@ -3,15 +3,17 @@ import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 import { apiClient } from '../../services/api/apiClient';
 import { ENDPOINTS } from '../../services/api/endpoints';
-import { useLocalState } from '../../lib/useLocalState';
-import type { PhotoRecord } from '../../types/index';
-import { SyncState } from '../../types/index';
+import { useOfflinePhotos } from '../../hooks/useOfflinePhotos';
+import { uploadPhotoToCloudinary } from '../../lib/photoUpload';
+import { getActiveClientId } from '../../lib/authStore';
+import type { OfflinePhoto } from '../../lib/db';
 
 export default function DeficiencyPhotosPage() {
   const { localId } = useParams<{ localId: string }>();
-  const { value: photos, save: setPhotos } = useLocalState<PhotoRecord[]>(`photos-${localId}`);
+  const { photos, isLoaded, addPhoto, removePhoto } = useOfflinePhotos(localId);
   const [caption, setCaption] = useState('');
   const [error, setError] = useState('');
+  const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: deficiency } = useQuery({
@@ -29,40 +31,84 @@ export default function DeficiencyPhotosPage() {
   });
   const isReadOnly = inspection?.status === 'Submitted' || inspection?.status === 'Approved';
 
-  const currentPhotos = photos ?? [];
-
-  const handleFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
       setError('Please select an image file.');
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = reader.result as string;
-      const newPhoto: PhotoRecord = {
-        id: `photo-${Date.now()}`,
-        deficiency_local_id: localId ?? '',
-        dataUrl,
+
+    setUploading(true);
+    setError('');
+
+    try {
+      // If the deficiency has a server ID, upload immediately
+      const isSaved = localId && localId !== 'new';
+      let cloudinaryUrl: string | undefined;
+      let exifData: OfflinePhoto['exif'] = undefined;
+
+      if (isSaved && deficiency?.inspection_id) {
+        // Upload to Cloudinary with EXIF stripping
+        const clientId = getActiveClientId() || 'unknown';
+        const folderPath = `structapp/${clientId}/inspections/${deficiency.inspection_id}/deficiencies/${localId}`;
+        const result = await uploadPhotoToCloudinary(file, folderPath);
+        cloudinaryUrl = result.cloudinaryUrl;
+        exifData = result.exif ?? undefined;
+
+        // Save to API
+        const body: Record<string, unknown> = {
+          storage_url: cloudinaryUrl,
+          caption: caption.trim() || file.name,
+        };
+        if (exifData) {
+          const exifBody: Record<string, unknown> = {
+            original_filename: exifData.originalFilename,
+            captured_at: exifData.capturedAt,
+            raw_exif_payload: exifData.rawExifPayload,
+          };
+          if (exifData.cameraMake) exifBody.camera_make = exifData.cameraMake;
+          if (exifData.cameraModel) exifBody.camera_model = exifData.cameraModel;
+          body.exif = exifBody;
+        }
+        await apiClient(ENDPOINTS.deficiencies.addPhoto(localId!), {
+          method: 'POST',
+          body: JSON.stringify(body),
+        });
+      }
+
+      // Read file as base64 for local storage (EXIF already stripped by upload if saved, otherwise raw)
+      const dataUrl = await fileToDataUrl(file);
+
+      const newPhoto: OfflinePhoto = {
+        photoId: `photo-${Date.now()}`,
+        deficiencyLocalId: localId ?? '',
+        filename: file.name,
+        fileData: dataUrl,
         caption: caption.trim() || file.name,
-        purpose: 'evidence',
-        created_at: new Date().toISOString(),
-        sync_state: SyncState.pending,
-      };
-      setPhotos([...currentPhotos, newPhoto]);
+        cloudinaryUrl,
+        syncState: isSaved ? 'synced' : 'pending',
+        createdAt: new Date().toISOString(),
+      } as OfflinePhoto;
+      if (exifData) (newPhoto as Record<string, unknown>).exif = exifData;
+
+      await addPhoto(newPhoto);
       setCaption('');
-      setError('');
-    };
-    reader.onerror = () => setError('Failed to read the selected image.');
-    reader.readAsDataURL(file);
-    // Reset the input so the same file can be re-selected
-    e.target.value = '';
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to process photo');
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
   };
 
-  const handleRemove = (photoId: string) => {
-    setPhotos(currentPhotos.filter(p => p.id !== photoId));
+  const handleRemove = async (photoId: string) => {
+    await removePhoto(photoId);
   };
+
+  if (!isLoaded) {
+    return <div className="p-4 text-text-secondary text-sm">Loading photos...</div>;
+  }
 
   return (
     <div className="space-y-4">
@@ -71,7 +117,7 @@ export default function DeficiencyPhotosPage() {
         <p className="text-sm text-text-secondary">{deficiency.title}</p>
       )}
 
-      {deficiency && (deficiency.priority_tier === 'P1' || deficiency.priority_tier === 'P2') && currentPhotos.length === 0 && (
+      {deficiency && (deficiency.priority_tier === 'P1' || deficiency.priority_tier === 'P2') && photos.length === 0 && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
           This {deficiency.priority_tier} finding requires at least one photo before submission.
         </div>
@@ -92,7 +138,7 @@ export default function DeficiencyPhotosPage() {
           ref={fileInputRef}
           onChange={handleFileSelected}
           className="hidden"
-          aria-label="Select photo from gallery"
+          aria-label="Take photo or choose from gallery"
         />
         <div className="flex gap-2">
           <input
@@ -105,36 +151,38 @@ export default function DeficiencyPhotosPage() {
         <div className="flex gap-2">
           <button
             onClick={() => fileInputRef.current?.click()}
-            disabled={currentPhotos.length >= 5}
+            disabled={uploading}
             className="flex-1 px-4 py-3 bg-accent text-white rounded-lg text-sm font-medium disabled:opacity-50 flex items-center justify-center gap-2"
             aria-label="Take photo or choose from gallery"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-            {currentPhotos.length >= 5 ? 'Max 5 photos' : 'Take Photo / Choose from Gallery'}
+            {uploading ? 'Processing...' : 'Take Photo / Choose from Gallery'}
           </button>
         </div>
         {error && <p className="text-xs text-red-600">{error}</p>}
       </div>
       )}
 
-      <p className="text-xs text-text-secondary">{currentPhotos.length}/5 photos</p>
+      <p className="text-xs text-text-secondary">{photos.length} photo{photos.length !== 1 ? 's' : ''}</p>
 
-      {currentPhotos.length === 0 && (
+      {photos.length === 0 && (
         <div className="text-text-secondary text-sm text-center py-8 border border-dashed border-border rounded-lg">
           No photos yet. Tap "Take Photo / Choose from Gallery" to add evidence.
         </div>
       )}
 
       <div className="grid grid-cols-2 gap-2">
-        {currentPhotos.map(photo => (
-          <div key={photo.id} className="bg-surface-primary border border-border rounded-lg p-2">
-            <img src={photo.dataUrl} alt={photo.caption} className="w-full h-24 object-cover rounded mb-1" />
+        {photos.map(photo => (
+          <div key={photo.photoId} className="bg-surface-primary border border-border rounded-lg p-2">
+            <img src={photo.fileData} alt={photo.caption} className="w-full h-24 object-cover rounded mb-1" />
             <p className="text-xs text-text-primary truncate">{photo.caption}</p>
             <div className="flex justify-between items-center mt-1">
-              <span className="text-xs text-yellow-600">pending</span>
+              {photo.syncState === 'synced' && <span className="text-xs text-green-600">synced</span>}
+              {photo.syncState === 'pending' && <span className="text-xs text-yellow-600">pending</span>}
+              {photo.syncState === 'failed' && <span className="text-xs text-red-600">failed</span>}
               {!isReadOnly && (
               <button
-                onClick={() => handleRemove(photo.id)}
+                onClick={() => handleRemove(photo.photoId)}
                 className="text-xs text-red-600"
                 aria-label={`Delete photo: ${photo.caption}`}
               >
@@ -147,4 +195,13 @@ export default function DeficiencyPhotosPage() {
       </div>
     </div>
   );
+}
+
+async function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsDataURL(file);
+  });
 }

@@ -12,6 +12,8 @@ import {
 } from '../services/deficiencies';
 import { remediationUpdateSchema } from '../contracts/inspections';
 
+import { pool } from '../lib/db';
+
 const router = Router();
 
 router.get(
@@ -209,6 +211,85 @@ router.patch(
     } catch (err) {
       if (err instanceof Error && err.message === 'DEFICIENCY_NOT_FOUND') {
         return res.status(404).json({ success: false, error_code: 'DEFICIENCY_NOT_FOUND', message: 'Deficiency not found' });
+      }
+      next(err);
+    }
+  }
+);
+
+const photoCreateSchema = z.object({
+  storage_url: z.string().min(1),
+  caption: z.string().min(1).max(500),
+  display_order: z.number().int().optional(),
+  exif: z.object({
+    original_filename: z.string(),
+    captured_at: z.string(),
+    camera_make: z.string().optional(),
+    camera_model: z.string().optional(),
+    raw_exif_payload: z.string(),
+  }).optional(),
+});
+
+router.get(
+  '/:id/photos',
+  requireAuth,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const result = await pool.query(
+        `SELECT p.photo_id, p.deficiency_id, p.storage_url, p.caption, p.display_order, p.created_at,
+                e.original_filename, e.captured_at, e.camera_make, e.camera_model, e.raw_exif_payload
+         FROM photos p
+         LEFT JOIN photo_exif_data e ON p.photo_id = e.photo_id
+         WHERE p.deficiency_id = $1 AND p.deleted_at IS NULL
+         ORDER BY p.display_order ASC, p.created_at ASC`,
+        [req.params.id],
+      );
+      res.json({ success: true, data: result.rows });
+    } catch (err) { next(err); }
+  }
+);
+
+router.post(
+  '/:id/photos',
+  requireAuth,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const input = photoCreateSchema.parse(req.body);
+      const deficiencyId = req.params.id;
+
+      const orderResult = await pool.query(
+        'SELECT COALESCE(MAX(display_order), 0) + 1 AS next_order FROM photos WHERE deficiency_id = $1 AND deleted_at IS NULL',
+        [deficiencyId],
+      );
+      const displayOrder = input.display_order ?? orderResult.rows[0].next_order;
+
+      const photoResult = await pool.query(
+        `INSERT INTO photos (deficiency_id, storage_url, caption, display_order)
+         VALUES ($1, $2, $3, $4)
+         RETURNING photo_id, deficiency_id, storage_url, caption, display_order, created_at`,
+        [deficiencyId, input.storage_url, input.caption, displayOrder],
+      );
+      const photo = photoResult.rows[0];
+
+      if (input.exif) {
+        await pool.query(
+          `INSERT INTO photo_exif_data (photo_id, original_filename, captured_at, camera_make, camera_model, raw_exif_payload)
+           VALUES ($1, $2, $3, $4, $5, $6)`,
+          [
+            photo.photo_id,
+            input.exif.original_filename,
+            input.exif.captured_at,
+            input.exif.camera_make || null,
+            input.exif.camera_model || null,
+            input.exif.raw_exif_payload,
+          ],
+        );
+      }
+
+      res.status(201).json({ success: true, data: photo });
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(422).json({ success: false, error_code: 'VALIDATION_ERROR', message: 'Invalid photo data', details: err.flatten() });
       }
       next(err);
     }
