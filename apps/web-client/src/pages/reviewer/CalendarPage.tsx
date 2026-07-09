@@ -186,7 +186,7 @@ export default function CalendarPage() {
                 selectedInspections.map(ins => (
                   <div key={ins.id} className="border border-border rounded-lg p-3">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-text-primary">{ins.assignee_name || ins.assigned_to}</span>
+                      <span className="text-sm font-medium text-text-primary">{ins.assignee_name ? `${ins.assignee_name}${ins.assignee_email ? ` (${ins.assignee_email})` : ''}` : ins.assigned_to}</span>
                       {ins.generated && <span className="text-[10px] bg-accent/10 text-accent px-1.5 py-0.5 rounded">Generated</span>}
                     </div>
                     <p className="text-xs text-text-secondary mb-2">Structure: {ins.structure_id || 'N/A'}</p>

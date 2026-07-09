@@ -205,6 +205,7 @@ export interface Inspection {
   created_at: string;
   updated_at: string;
   assignee_name?: string;
+  assignee_email?: string;
   return_reason?: string;
   approved_by?: string;
   approved_at?: string;

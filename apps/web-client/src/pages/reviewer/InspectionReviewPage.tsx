@@ -35,7 +35,7 @@ export default function InspectionReviewPage() {
       <div className="bg-surface-primary rounded-lg border border-border p-4 mb-6">
         <p className="text-sm text-text-secondary">Inspection: <span className="text-text-primary font-medium">{id}</span></p>
         <p className="text-sm text-text-secondary">Status: <span className="text-text-primary font-medium">{inspection.status}</span></p>
-        {inspection.assignee_name && <p className="text-sm text-text-secondary">Inspector: <span className="text-text-primary">{inspection.assignee_name}</span></p>}
+        {inspection.assignee_name && <p className="text-sm text-text-secondary">Inspector: <span className="text-text-primary">{inspection.assignee_name}{inspection.assignee_email ? ` (${inspection.assignee_email})` : ''}</span></p>}
         {inspection.return_reason && <p className="text-sm text-red-600 mt-1">Return reason: {inspection.return_reason}</p>}
       </div>
 

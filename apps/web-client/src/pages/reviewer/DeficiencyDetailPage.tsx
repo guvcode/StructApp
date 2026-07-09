@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { useDeficiencyById } from '../../hooks/useInspections';
+import { useDeficiencyById, useInspection } from '../../hooks/useInspections';
 import { PriorityOverridePanel } from '../../components/PriorityOverridePanel';
 import { GovernanceMetadataPanel } from '../../components/GovernanceMetadataPanel';
 import { apiClient } from '../../services/api/apiClient';
@@ -32,6 +32,16 @@ export default function DeficiencyDetailPage() {
   const navigate = useNavigate();
   const { data: deficiency, isLoading, refetch } = useDeficiencyById(id);
   const [showOverride, setShowOverride] = useState(false);
+
+  const { data: inspection } = useInspection(deficiency?.inspection_id);
+  const { data: allSites = [] } = useQuery({
+    queryKey: ['sites'],
+    queryFn: () => apiClient<Array<{ id: string; name: string }>>(ENDPOINTS.sites.list),
+    enabled: !!deficiency?.inspection_id,
+  });
+  const siteName = deficiency?.inspection_id && inspection
+    ? allSites.find(s => s.id === inspection.site_id)?.name ?? inspection.site_id
+    : null;
 
   const { data: photos = [] } = useQuery({
     queryKey: ['deficiency-photos', id],
@@ -74,7 +84,7 @@ export default function DeficiencyDetailPage() {
             </div>
             <div>
               <p className="text-xs text-text-secondary uppercase tracking-wide font-semibold mb-1">Inspection</p>
-              <p className="text-sm text-text-primary font-medium">{deficiency.inspection_id}</p>
+              <p className="text-sm text-text-primary font-medium">{siteName ?? deficiency.inspection_id}</p>
             </div>
           </div>
         </Card>

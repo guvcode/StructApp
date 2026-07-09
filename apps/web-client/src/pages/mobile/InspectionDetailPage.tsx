@@ -33,7 +33,7 @@ export default function InspectionDetailPage() {
       <div className="bg-surface-primary rounded-lg p-3 border border-border">
         <p className="text-sm text-text-primary">Status: <span className="font-semibold">{inspection.status}</span></p>
         <p className="text-xs text-text-secondary">Scheduled: {inspection.scheduled_date ?? 'N/A'}</p>
-        <p className="text-xs text-text-secondary">Assigned to: {inspection.assignee_name ?? inspection.assigned_to}</p>
+        <p className="text-xs text-text-secondary">Assigned to: {inspection.assignee_name ? `${inspection.assignee_name}${inspection.assignee_email ? ` (${inspection.assignee_email})` : ''}` : inspection.assigned_to}</p>
       </div>
 
       {inspection.status === 'Returned' && (
