@@ -3,10 +3,30 @@ import { useInspections } from '../../hooks/useInspections';
 import { Link } from 'react-router-dom';
 import Card from '../../components/Card';
 import Skeleton, { StatCardSkeleton } from '../../components/Skeleton';
+import { useState, useEffect } from 'react';
+import { getCachedClientNames } from '../../lib/clientNameCache';
 
 export default function AdminDashboardPage() {
   const { data, isLoading } = useAdminDashboardStats();
   const { data: inspections = [], isLoading: loadingInspections } = useInspections();
+  const [clientNames, setClientNames] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    getCachedClientNames().then(setClientNames);
+  }, []);
+
+  // Merge client names into cached ones from API response
+  useEffect(() => {
+    if (inspections.length > 0) {
+      const names: Record<string, string> = {};
+      inspections.forEach(insp => {
+        if (insp.site_name) names[insp.site_id] = insp.site_name;
+      });
+      if (Object.keys(names).length > 0) {
+        setClientNames(prev => ({ ...prev, ...names }));
+      }
+    }
+  }, [inspections]);
 
   if (isLoading) {
     return (
@@ -115,7 +135,10 @@ export default function AdminDashboardPage() {
                 ) : inspections.slice(0, 5).map(insp => {
                   return (
                     <tr key={insp.id} className="border-b border-border hover:bg-surface-hover transition-colors">
-                      <td className="px-6 py-4 text-text-primary font-medium">{insp.id}</td>
+                      <td className="px-6 py-4 text-text-primary font-medium">
+                        <span className="block">{insp.site_name || clientNames[insp.site_id] || insp.site_id}</span>
+                        <span className="block text-xs text-text-secondary mt-0.5">{insp.scheduled_date ? `Scheduled: ${new Date(insp.scheduled_date).toLocaleDateString()}` : ''}</span>
+                      </td>
                       <td className="py-4"><span className={`px-2 py-0.5 text-xs rounded-full ${insp.status === 'Approved' ? 'bg-green-100 text-green-700' : insp.status === 'Submitted' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600'}`}>{insp.status}</span></td>
                       <td className="py-4">
                         <Link
