@@ -52,7 +52,7 @@ export async function getSite(id: string): Promise<Site | null> {
 }
 
 export async function createSite(input: {
-  project_id: string; name: string; address: string; status?: string;
+  project_id: string; name: string; address: string; status?: string; safety_email?: string;
 }): Promise<Site> {
   return apiClient(ENDPOINTS.sites.create, {
     method: 'POST',
@@ -61,7 +61,7 @@ export async function createSite(input: {
 }
 
 export async function updateSite(id: string, input: Partial<{
-  name: string; address: string; status: string;
+  name: string; address: string; status: string; safety_email?: string;
 }>): Promise<Site> {
   return apiClient(ENDPOINTS.sites.update(id), {
     method: 'PATCH',

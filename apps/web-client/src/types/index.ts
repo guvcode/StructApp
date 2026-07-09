@@ -177,8 +177,9 @@ export interface Site {
   project_id: string;
   name: string;
   address: string;
-  coordinates?: { lat: number; lng: number };
   status: string;
+  safety_email?: string;
+  coordinates?: { lat: number; lng: number };
   created_at: string;
 }
 
