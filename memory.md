@@ -1,40 +1,38 @@
-# Memory — FIX-010 Taxonomy 403 + FIX-011 Deficiency Schema
+# Memory — FIX-012 Mobile Deficiency Detail Page Bugs
 
-Last updated: 2026-07-08T17:03:00-06:00
+Last updated: 2026-07-08T23:12:00-06:00
 
 ## What was built
 
-### FIX-010 — Taxonomy 403 for Contractors
-**Bug fix: GET /api/v1/taxonomy returning 403 for Contractor users.**
-- `taxonomyRouter` was mounted after `picklistsRouter`'s `requireRole('Admin', 'Reviewer')` guard at the same `/api/v1` prefix. Express ran the restrictive middleware first.
-- Fix: one-line reorder in `apps/api-server/src/index.ts`
-- Committed on `task/FIX-010-taxonomy-mobile-permission` (already pushed)
+### FIX-012 — Mobile Deficiency Detail Page bugs
+**Three bugs fixed in `apps/web-client/src/pages/mobile/DeficiencyDetailPage.tsx`:**
 
-### FIX-011 — Deficiency records schema mismatch
-**Bug fix: POST /api/v1/inspections/:id/deficiencies returning 500.**
-- `createDeficiency` INSERT referenced `structure_id`, `created_by`, `priority_tier`, `location_desc` — columns that were never added to the `deficiency_records` table via any migration.
-- The INSERT also omitted old v2 required columns (`component`, `severity`, `probability`, `consequences`) replaced by the Glencore grid in TAX-611.
-- Fix: migration `1700000020000_fix_deficiency_records_schema.ts` adds the four missing columns as nullable and makes the four old columns nullable.
-- Committed on `task/FIX-011-deficiency-records-schema` (just pushed — new branch)
+1. **Save -> Navigate**: After saving a new deficiency, the page now navigates to `/m/deficiencies/{newId}?inspection_id=X` using `navigate(..., { replace: true })`. The mutation returns the `deficiency_id` from the API response, and `onSuccess` navigates to the edit page — making the "Manage Photos" button visible.
+
+2. **Existing data loading**: Added a `useQuery` that tries Dexie `offlineDeficiencies` first, then falls back to `getDeficiencyById` from the API. A `useEffect` populates all 18 form fields from the fetched data. Both camelCase (Dexie) and snake_case (API) field names are handled.
+
+3. **Duplicate save prevention**: Navigation after save naturally prevents re-clicking. Also added a loading skeleton for the edit mode while data is being fetched.
+
+### Tests updated
+- `tests/b6-mobile.test.tsx` — Added 2 new tests: "shows edit heading for existing deficiency" and "disables save button when category not selected"
+- Fixed broken import paths for mock services (archived)
 
 ## Decisions made
 
-- FIX-010: Reorder over scoping role middleware — simpler, minimal risk
-- FIX-011: Migration approach (not altering the INSERT) — keeps INSERT as-is, fixes the actual schema to match what the code expects
+- **Navigate vs stay**: Navigate to edit URL on save — makes photos accessible, prevents duplicate saves, URL is bookmarkable
+- **Dexie + API fallback**: Load from offline cache first, then API — works offline for contractors in the field
+- **useEffect for data population**: Acceptable per project standards (not a data-fetching effect, it syncs query results to form state)
 
 ## Current state
 
-- Both fixes committed and pushed
-- All tests pass (deficiencies, taxonomy, routing, migration structural tests)
-- No TypeScript errors (only pre-existing TS6059 rootDir)
-- Deployed Render instance has the FIX-010 code but NOT the FIX-011 migration
+- Both commits pushed to `task/FIX-012-deficiency-save-navigate`
+- All 3 B6-T06 tests pass
+- No new TypeScript errors (only pre-existing ones)
+- Pre-existing test failures (DashboardPage, InspectionDetailPage, InspectionSubmitPage) are unrelated API-mocking issues
 
 ## Next session starts with
 
-Run the FIX-011 migration against the Render database, then deploy the latest code. Sequence:
-1. `npx node-pg-migrate up` on Render database
-2. Deploy updated code (both fixes)
-3. Verify taxonomy and deficiency creation work in production
+None — this task is complete. The FIX-011 migration should be run against the Render database, then deploy the updated code.
 
 ## Open questions
 

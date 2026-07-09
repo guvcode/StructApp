@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 import { apiClient } from '../../services/api/apiClient';
@@ -15,6 +15,11 @@ export default function DeficiencyPhotosPage() {
   const [error, setError] = useState('');
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setError('');
+  }, [localId]);
 
   const { data: deficiency } = useQuery({
     queryKey: ['deficiency', localId],
@@ -138,7 +143,15 @@ export default function DeficiencyPhotosPage() {
           ref={fileInputRef}
           onChange={handleFileSelected}
           className="hidden"
-          aria-label="Take photo or choose from gallery"
+          aria-label="Take photo with camera"
+        />
+        <input
+          type="file"
+          accept="image/*"
+          ref={galleryInputRef}
+          onChange={handleFileSelected}
+          className="hidden"
+          aria-label="Choose photo from gallery"
         />
         <div className="flex gap-2">
           <input
@@ -153,13 +166,33 @@ export default function DeficiencyPhotosPage() {
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
             className="flex-1 px-4 py-3 bg-accent text-white rounded-lg text-sm font-medium disabled:opacity-50 flex items-center justify-center gap-2"
-            aria-label="Take photo or choose from gallery"
+            aria-label="Take photo with camera"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-            {uploading ? 'Processing...' : 'Take Photo / Choose from Gallery'}
+            {uploading ? 'Processing...' : 'Take Photo'}
+          </button>
+          <button
+            onClick={() => galleryInputRef.current?.click()}
+            disabled={uploading}
+            className="flex-1 px-4 py-3 bg-surface-secondary border border-border text-text-primary rounded-lg text-sm font-medium disabled:opacity-50 flex items-center justify-center gap-2"
+            aria-label="Choose photo from gallery"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+            {uploading ? 'Processing...' : 'From Gallery'}
           </button>
         </div>
-        {error && <p className="text-xs text-red-600">{error}</p>}
+        {error && (
+          <div className="flex items-start gap-2 text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
+            <span className="flex-1">{error}</span>
+            <button
+              onClick={() => setError('')}
+              className="text-red-400 hover:text-red-600 font-bold leading-none"
+              aria-label="Dismiss error"
+            >
+              ✕
+            </button>
+          </div>
+        )}
       </div>
       )}
 
@@ -167,7 +200,7 @@ export default function DeficiencyPhotosPage() {
 
       {photos.length === 0 && (
         <div className="text-text-secondary text-sm text-center py-8 border border-dashed border-border rounded-lg">
-          No photos yet. Tap "Take Photo / Choose from Gallery" to add evidence.
+          No photos yet. Use "Take Photo" or "From Gallery" to add evidence.
         </div>
       )}
 
