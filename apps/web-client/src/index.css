@@ -8,6 +8,7 @@
   /* Page and surface backgrounds */
   --color-background: #f6f7fb;
   --color-surface: #ffffff;
+  --color-surface-primary: #ffffff;
   --color-surface-secondary: #f9fafb;
   --color-surface-tertiary: #f2f5f7;
   --color-surface-muted: #f4f5fb;
@@ -121,6 +122,10 @@
 @utility animate-buttonLift-hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+@utility safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 @layer base {
