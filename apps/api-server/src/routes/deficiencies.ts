@@ -239,7 +239,7 @@ router.get(
         `SELECT p.photo_id, p.deficiency_id, p.storage_url, p.caption, p.display_order, p.created_at,
                 e.original_filename, e.captured_at, e.camera_make, e.camera_model, e.raw_exif_payload
          FROM photos p
-         LEFT JOIN photo_exif_data e ON p.photo_id = e.photo_id
+         LEFT JOIN photo_evidence_metadata e ON p.photo_id = e.photo_id
          WHERE p.deficiency_id = $1 AND p.deleted_at IS NULL
          ORDER BY p.display_order ASC, p.created_at ASC`,
         [req.params.id],
@@ -273,7 +273,7 @@ router.post(
 
       if (input.exif) {
         await pool.query(
-          `INSERT INTO photo_exif_data (photo_id, original_filename, captured_at, camera_make, camera_model, raw_exif_payload)
+          `INSERT INTO photo_evidence_metadata (photo_id, original_filename, captured_at, camera_make, camera_model, raw_exif_payload)
            VALUES ($1, $2, $3, $4, $5, $6)`,
           [
             photo.photo_id,
