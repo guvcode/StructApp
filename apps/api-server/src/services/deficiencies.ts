@@ -108,7 +108,7 @@ export async function createDeficiency(
         $13, $14,
         $15, $16, $17,
         $18, $19, $20,
-        COALESCE($18, $21),
+        COALESCE($18::VARCHAR, $21),
         $22, $23
       ) RETURNING *`,
       [

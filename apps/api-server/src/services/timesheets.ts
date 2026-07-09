@@ -83,6 +83,138 @@ function derivePreInspection(row: Omit<TimesheetEntryRow, 'pre_inspection'>): bo
   return false;
 }
 
+export async function getTimesheetById(
+  entryId: string,
+  clientId: string
+): Promise<TimesheetEntryRow | null> {
+  const result = await pool.query(
+    `SELECT 
+      te.entry_id,
+      te.user_id,
+      te.project_id,
+      te.inspection_id,
+      te.client_id,
+      te.work_type,
+      te.hours_logged,
+      te.entry_date,
+      te.status,
+      te.rejection_reason,
+      te.approved_by,
+      te.approved_at,
+      te.created_at,
+      te.updated_at,
+      i.scheduled_date AS inspection_scheduled_date,
+      i.assigned_at AS inspection_assigned_at
+     FROM timesheet_entries te
+     LEFT JOIN inspections i ON te.inspection_id = i.inspection_id
+     WHERE te.entry_id = $1 AND te.client_id = $2`,
+    [entryId, clientId]
+  );
+
+  if (result.rowCount === 0) return null;
+  const row = result.rows[0] as Omit<TimesheetEntryRow, 'pre_inspection'>;
+  return { ...row, pre_inspection: derivePreInspection(row) };
+}
+
+export async function updateTimesheet(
+  entryId: string,
+  clientId: string,
+  userId: string,
+  data: { work_type?: string; hours?: number; description?: string }
+): Promise<{ entry_id: string; work_type: string; hours_logged: string }> {
+  const conn = await pool.connect();
+  try {
+    await conn.query('BEGIN');
+    await conn.query("SELECT set_config('app.current_client_id', $1, true)", [clientId]);
+
+    const current = await conn.query(
+      'SELECT entry_id, status FROM timesheet_entries WHERE entry_id = $1 FOR UPDATE',
+      [entryId]
+    );
+    if (current.rowCount === 0) throw new Error('TIMESHEET_NOT_FOUND');
+    if (current.rows[0].status !== 'Draft') throw new Error('TIMESHEET_NOT_DRAFT');
+
+    const sets: string[] = [];
+    const vals: unknown[] = [];
+    let idx = 1;
+    if (data.work_type !== undefined) { sets.push(`work_type = $${idx++}`); vals.push(data.work_type); }
+    if (data.hours !== undefined) { sets.push(`hours_logged = $${idx++}`); vals.push(data.hours); }
+    if (data.description !== undefined) { sets.push(`description = $${idx++}`); vals.push(data.description); }
+    if (sets.length === 0) throw new Error('NO_FIELDS_TO_UPDATE');
+
+    vals.push(entryId);
+    const result = await conn.query(
+      `UPDATE timesheet_entries SET ${sets.join(', ')}, updated_at = NOW() WHERE entry_id = $${idx} RETURNING entry_id, work_type, hours_logged`,
+      vals
+    );
+    await conn.query('COMMIT');
+    return result.rows[0];
+  } catch (err) {
+    await conn.query('ROLLBACK');
+    throw err;
+  } finally {
+    conn.release();
+  }
+}
+
+export async function submitTimesheet(
+  entryId: string,
+  clientId: string,
+  userId: string
+): Promise<{ entry_id: string; status: string }> {
+  const conn = await pool.connect();
+  try {
+    await conn.query('BEGIN');
+    await conn.query("SELECT set_config('app.current_client_id', $1, true)", [clientId]);
+
+    const current = await conn.query(
+      'SELECT entry_id, status FROM timesheet_entries WHERE entry_id = $1 FOR UPDATE',
+      [entryId]
+    );
+    if (current.rowCount === 0) throw new Error('TIMESHEET_NOT_FOUND');
+    if (current.rows[0].status !== 'Draft') throw new Error('TIMESHEET_NOT_DRAFT');
+
+    const result = await conn.query(
+      `UPDATE timesheet_entries SET status = 'Submitted', updated_at = NOW() WHERE entry_id = $1 RETURNING entry_id, status`,
+      [entryId]
+    );
+    await conn.query('COMMIT');
+    return result.rows[0];
+  } catch (err) {
+    await conn.query('ROLLBACK');
+    throw err;
+  } finally {
+    conn.release();
+  }
+}
+
+export async function deleteTimesheet(
+  entryId: string,
+  clientId: string,
+  userId: string
+): Promise<void> {
+  const conn = await pool.connect();
+  try {
+    await conn.query('BEGIN');
+    await conn.query("SELECT set_config('app.current_client_id', $1, true)", [clientId]);
+
+    const current = await conn.query(
+      'SELECT entry_id, status FROM timesheet_entries WHERE entry_id = $1 FOR UPDATE',
+      [entryId]
+    );
+    if (current.rowCount === 0) throw new Error('TIMESHEET_NOT_FOUND');
+    if (current.rows[0].status !== 'Draft') throw new Error('TIMESHEET_NOT_DRAFT');
+
+    await conn.query('DELETE FROM timesheet_entries WHERE entry_id = $1', [entryId]);
+    await conn.query('COMMIT');
+  } catch (err) {
+    await conn.query('ROLLBACK');
+    throw err;
+  } finally {
+    conn.release();
+  }
+}
+
 export async function createTimesheetBatch(
   userId: string,
   clientId: string,
