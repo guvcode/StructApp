@@ -15,10 +15,18 @@ export default function DeficiencyPhotosPage() {
 
   const { data: deficiency } = useQuery({
     queryKey: ['deficiency', localId],
-    queryFn: () => apiClient<{ title: string; priority_tier: string }>(ENDPOINTS.deficiencies.byId(localId!)),
+    queryFn: () => apiClient<{ title: string; priority_tier: string; inspection_id?: string }>(ENDPOINTS.deficiencies.byId(localId!)),
     enabled: !!localId,
     retry: false,
   });
+
+  const { data: inspection } = useQuery({
+    queryKey: ['inspection', deficiency?.inspection_id],
+    queryFn: () => apiClient<{ status: string }>(ENDPOINTS.inspections.byId(deficiency!.inspection_id!)),
+    enabled: !!deficiency?.inspection_id,
+    retry: false,
+  });
+  const isReadOnly = inspection?.status === 'Submitted' || inspection?.status === 'Approved';
 
   const currentPhotos = photos ?? [];
 
@@ -54,6 +62,13 @@ export default function DeficiencyPhotosPage() {
         </div>
       )}
 
+      {isReadOnly && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
+          This inspection is {inspection?.status?.toLowerCase()} — photos are read-only.
+        </div>
+      )}
+
+      {!isReadOnly && (
       <div className="flex gap-2">
         <input
           placeholder="Photo caption (required)"
@@ -70,6 +85,7 @@ export default function DeficiencyPhotosPage() {
           Add Photo
         </button>
       </div>
+      )}
 
       <p className="text-xs text-text-secondary">{currentPhotos.length}/5 photos</p>
 
@@ -86,6 +102,7 @@ export default function DeficiencyPhotosPage() {
             <p className="text-xs text-text-primary truncate">{photo.caption}</p>
             <div className="flex justify-between items-center mt-1">
               <span className="text-xs text-yellow-600">pending</span>
+              {!isReadOnly && (
               <button
                 onClick={() => handleRemove(photo.id)}
                 className="text-xs text-red-600"
@@ -93,6 +110,7 @@ export default function DeficiencyPhotosPage() {
               >
                 Delete
               </button>
+              )}
             </div>
           </div>
         ))}
