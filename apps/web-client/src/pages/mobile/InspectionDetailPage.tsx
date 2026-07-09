@@ -44,10 +44,12 @@ export default function InspectionDetailPage() {
 
       <div>
         <h3 className="font-semibold text-text-primary mb-1">Deficiencies / Findings ({deficiencies.length})</h3>
-        {deficiencies.map(def => (
+        {deficiencies.map(def => {
+          const defId = def.id || (def as unknown as Record<string, unknown>).deficiency_id as string;
+          return (
           <div
-            key={def.id}
-            onClick={() => navigate(`/m/deficiencies/${def.id}`)}
+            key={defId}
+            onClick={() => navigate(`/m/deficiencies/${defId}`)}
             className="bg-surface-primary border border-border rounded-lg p-3 mb-2 cursor-pointer"
           >
             <p className="text-sm font-semibold text-text-primary">{def.title}</p>
@@ -61,10 +63,11 @@ export default function InspectionDetailPage() {
                   {def.risk_rating}
                 </span>
               )}
-              <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-700">{def.priority_tier}</span>
+              <span className="text-xs text-text-secondary">{def.priority_tier}</span>
             </div>
           </div>
-        ))}
+          );
+        })}
         {deficiencies.length === 0 && (
           <p className="text-text-secondary text-sm py-2">No deficiencies recorded yet.</p>
         )}
