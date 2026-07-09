@@ -7,6 +7,7 @@ import { getDeficiencyById } from '../../services/api/inspections';
 import { calculateGlencoreRisk } from '../../utils/riskCalculator';
 import { db } from '../../lib/db';
 import Skeleton from '../../components/Skeleton';
+import { useOfflinePhotos } from '../../hooks/useOfflinePhotos';
 
 const LIKELIHOOD_OPTIONS = ['A', 'B', 'C', 'D', 'E'] as const;
 const PRIORITY_OPTIONS = ['P1', 'P2', 'P3', 'P4', 'P5'] as const;
@@ -149,6 +150,8 @@ export default function DeficiencyDetailPage() {
   });
   const isReadOnly = !isNew && (deficiencyInspection?.status === 'Submitted' || deficiencyInspection?.status === 'Approved');
 
+  const { uploadPending } = useOfflinePhotos(localId);
+
   const saveMutation = useMutation({
     mutationFn: async () => {
       const data: Record<string, unknown> = {
@@ -180,8 +183,10 @@ export default function DeficiencyDetailPage() {
       }
       return { deficiency_id: '' } as { deficiency_id: string };
     },
-    onSuccess: (result) => {
+    onSuccess: async (result) => {
       if (result?.deficiency_id) {
+        // Upload any pending photos captured while this deficiency was unsaved
+        await uploadPending(result.deficiency_id, inspectionId);
         navigate(`/m/deficiencies/${result.deficiency_id}?inspection_id=${inspectionId}`, { replace: true });
       }
     },
