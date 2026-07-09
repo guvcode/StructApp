@@ -11,13 +11,17 @@ router.get('/', requireAuth, async (req: Request, res: Response, next: NextFunct
   try {
     const { status, inspection_id } = req.query as Record<string, string | undefined>;
     let query = `
-      SELECT d.deficiency_id, d.inspection_id, d.client_id, d.component, d.description,
-             d.severity, d.probability, d.consequences, d.calculated_priority,
-             d.original_priority, d.is_overridden, d.triage_state,
-             d.remediation_status, d.remediation_due_date, d.remediated_at,
-             d.verified_closed_by, d.verified_closed_at, d.component_notes,
-             d.created_at, d.updated_at
+      SELECT d.deficiency_id AS id, d.inspection_id, d.category, d.priority_tier,
+             d.description, d.remediation_status, d.remediation_due_date,
+             d.remediated_at, d.verified_closed_by, d.verified_closed_at,
+             d.component_notes, d.created_at, d.updated_at,
+             st.name AS site_name,
+             u.display_name AS assignee_name, u.email AS assignee_email
       FROM deficiency_records d
+      LEFT JOIN inspections i ON d.inspection_id = i.inspection_id
+      LEFT JOIN structures s ON i.structure_id = s.structure_id
+      LEFT JOIN sites st ON s.site_id = st.site_id
+      LEFT JOIN users u ON d.created_by = u.user_id
       WHERE 1=1`;
     const params: unknown[] = [];
     let idx = 1;
@@ -32,13 +36,17 @@ router.get('/', requireAuth, async (req: Request, res: Response, next: NextFunct
 router.get('/:id', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const result = await pool.query(
-      `SELECT d.deficiency_id, d.inspection_id, d.client_id, d.component, d.description,
-              d.severity, d.probability, d.consequences, d.calculated_priority,
-              d.original_priority, d.is_overridden, d.triage_state,
-              d.remediation_status, d.remediation_due_date, d.remediated_at,
-              d.verified_closed_by, d.verified_closed_at, d.component_notes,
-              d.created_at, d.updated_at
+      `SELECT d.deficiency_id AS id, d.inspection_id, d.category, d.priority_tier,
+              d.description, d.remediation_status, d.remediation_due_date,
+              d.remediated_at, d.verified_closed_by, d.verified_closed_at,
+              d.component_notes, d.created_at, d.updated_at,
+              st.name AS site_name,
+              u.display_name AS assignee_name, u.email AS assignee_email
        FROM deficiency_records d
+       LEFT JOIN inspections i ON d.inspection_id = i.inspection_id
+       LEFT JOIN structures s ON i.structure_id = s.structure_id
+       LEFT JOIN sites st ON s.site_id = st.site_id
+       LEFT JOIN users u ON d.created_by = u.user_id
        WHERE d.deficiency_id = $1`,
       [req.params.id],
     );
