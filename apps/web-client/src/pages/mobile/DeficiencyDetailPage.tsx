@@ -127,6 +127,19 @@ export default function DeficiencyDetailPage() {
     ? calculateGlencoreRisk(consequenceSeverity as 1|2|3|4|5, likelihood as 'A'|'B'|'C'|'D'|'E')
     : null;
 
+  // Derive subComponent from the taxonomy tree when it's not persisted
+  // but focusArea is known. This bridges the gap because the 3rd dropdown
+  // (Sub-Component) has no corresponding DB column.
+  useEffect(() => {
+    if (!subComponent && focusArea && taxonomyNodes.length > 0) {
+      const focusAreaNode = taxonomyNodes.find(n => n.label === focusArea && n.level === 'focus_area');
+      if (focusAreaNode?.parentId) {
+        const parent = taxonomyNodes.find(n => n.nodeId === focusAreaNode.parentId);
+        if (parent) setSubComponent(parent.label);
+      }
+    }
+  }, [focusArea, taxonomyNodes, subComponent]);
+
   const saveMutation = useMutation({
     mutationFn: async () => {
       const data: Record<string, unknown> = {
