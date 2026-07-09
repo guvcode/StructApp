@@ -3,21 +3,38 @@ import { useQuery } from '@tanstack/react-query';
 import { getSession, setActiveClientId, getActiveClientId } from '../lib/authStore';
 import { apiClient } from '../services/api/apiClient';
 import { ENDPOINTS } from '../services/api/endpoints';
+import { cacheClientNames, getCachedClientNames } from '../lib/clientNameCache';
 
 export default function TenantContextBadge() {
   const [open, setOpen] = useState(false);
+  const [cachedNames, setCachedNames] = useState<Record<string, string>>({});
   const dropdownRef = useRef<HTMLDivElement>(null);
   const session = getSession();
   const activeClientId = getActiveClientId();
+  const isOffline = !navigator.onLine;
 
   const { data: myClients = [] } = useQuery({
     queryKey: ['clients', 'mine'],
-    queryFn: () => apiClient<Array<{ client_id: string; name: string }>>(ENDPOINTS.clients.mine),
-    enabled: !!session,
+    queryFn: async () => {
+      const result = await apiClient<Array<{ client_id: string; name: string }>>(ENDPOINTS.clients.mine);
+      cacheClientNames(result);
+      return result;
+    },
+    enabled: !!session && !isOffline,
   });
 
+  useEffect(() => {
+    if (isOffline) {
+      getCachedClientNames().then(setCachedNames);
+    }
+  }, [isOffline]);
+
+  const resolvedClients = isOffline
+    ? Object.entries(cachedNames).map(([client_id, name]) => ({ client_id, name }))
+    : myClients;
+
   const clientId = activeClientId || session?.user?.client_memberships?.[0]?.client_id;
-  const client = myClients.find(c => c.client_id === clientId);
+  const client = resolvedClients.find(c => c.client_id === clientId);
   const label = client?.name || 'No client';
 
   useEffect(() => {
@@ -42,21 +59,21 @@ export default function TenantContextBadge() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
         </svg>
         <span className="text-sm font-medium text-text-primary">{label}</span>
-        {myClients.length > 1 && (
+        {resolvedClients.length > 1 && (
           <svg className={`w-4 h-4 text-text-secondary transition-transform ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         )}
       </button>
 
-      {open && myClients.length > 1 && (
+      {open && resolvedClients.length > 1 && (
         <div className="absolute right-0 top-full mt-2 w-64 bg-surface-elevated border border-border rounded-lg shadow-lg z-50 overflow-hidden">
           <div className="p-2">
             <div className="px-3 py-2 text-xs font-semibold text-text-secondary uppercase tracking-wide">
               Select Client
             </div>
             <div className="space-y-1">
-              {myClients.map(c => {
+              {resolvedClients.map(c => {
                 const isActive = c.client_id === activeClientId;
                 return (
                   <button

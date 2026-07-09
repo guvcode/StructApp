@@ -103,6 +103,11 @@ export type OfflineTaxonomy = {
   isActive: boolean;
 };
 
+export type OfflineClient = {
+  client_id: string;
+  name: string;
+};
+
 export class StructAppLocalDB extends Dexie {
   authState!: Table<AuthState, 'current'>;
   deficiencies!: Table<DeficiencyRecord, number>;
@@ -110,6 +115,7 @@ export class StructAppLocalDB extends Dexie {
   offlineInspections!: Table<OfflineInspection, string>;
   offlineDeficiencies!: Table<OfflineDeficiency, string>;
   offlineTaxonomy!: Table<OfflineTaxonomy, string>;
+  offlineClients!: Table<OfflineClient, string>;
 
   constructor() {
     super('StructAppLocalDB');
@@ -131,6 +137,15 @@ export class StructAppLocalDB extends Dexie {
       offlineInspections: 'id, clientId, inspectorId, status, createdAt',
       offlineDeficiencies: 'deficiencyId, inspectionId, clientId',
       offlineTaxonomy: 'nodeId, level, category',
+    });
+    this.version(4).stores({
+      authState: 'id, accessToken, refreshToken, clientId, userId, role',
+      deficiencies: '++localId, inspectionId, syncState',
+      pinOutbox: '++localId, structureId, pinMode, createdAt',
+      offlineInspections: 'id, clientId, inspectorId, status, createdAt',
+      offlineDeficiencies: 'deficiencyId, inspectionId, clientId',
+      offlineTaxonomy: 'nodeId, level, category',
+      offlineClients: 'client_id',
     });
   }
 }

@@ -1,9 +1,10 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getSession, getLandingRoute, getUserRole } from '../../lib/authStore';
 import { apiClient } from '../../services/api/apiClient';
 import { ENDPOINTS } from '../../services/api/endpoints';
+import { cacheClientNames, getCachedClientNames } from '../../lib/clientNameCache';
 import Card from '../../components/Card';
 
 interface ClientOption {
@@ -15,6 +16,7 @@ export default function ClientPickerPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
+  const [cachedClientNames, setCachedClientNames] = useState<Record<string, string>>({});
   const isOffline = !navigator.onLine;
 
   const session = getSession();
@@ -23,14 +25,25 @@ export default function ClientPickerPage() {
 
   const { data: allClients = [], isLoading: clientsLoading, isError: clientsError } = useQuery({
     queryKey: ['clients', isContractor ? 'with-assigned-inspections' : 'mine'],
-    queryFn: () =>
-      apiClient<Array<{ client_id: string; name: string }>>(
+    queryFn: async () => {
+      const result = await apiClient<Array<{ client_id: string; name: string }>>(
         isContractor
           ? ENDPOINTS.clients.withAssignedInspections
           : ENDPOINTS.clients.mine
-      ),
+      );
+      // Cache names in Dexie for offline use
+      cacheClientNames(result);
+      return result;
+    },
     enabled: !!session && !isOffline,
   });
+
+  // Load cached names from Dexie when offline
+  useEffect(() => {
+    if (isOffline) {
+      getCachedClientNames().then(setCachedClientNames);
+    }
+  }, [isOffline]);
 
   const clientLookup = useMemo(() => {
     const map = new Map<string, string>();
@@ -40,10 +53,11 @@ export default function ClientPickerPage() {
 
   const clients = useMemo<ClientOption[]>(() => {
     if (isOffline && session?.user?.client_memberships) {
-      return session.user.client_memberships.map(m => ({
-        client_id: m.client_id,
-        display_name: m.client_id,
-      }));
+      return session.user.client_memberships
+        .map(m => ({
+          client_id: m.client_id,
+          display_name: cachedClientNames[m.client_id] || m.client_id,
+        }));
     }
     if (allClients.length === 0) return [];
     if (isContractor) {
@@ -56,7 +70,7 @@ export default function ClientPickerPage() {
         return name ? { client_id: m.client_id, display_name: name } : null;
       })
       .filter((c): c is ClientOption => c !== null);
-  }, [session, clientLookup, allClients, isContractor]);
+  }, [session, clientLookup, allClients, isContractor, isOffline, cachedClientNames]);
 
   if (!session) {
     navigate('/login', { replace: true });

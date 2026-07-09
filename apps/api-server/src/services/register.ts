@@ -46,7 +46,7 @@ export async function updateProject(projectId: string, fields: Record<string, un
 }
 
 export async function listSites(projectId?: string, clientId?: string): Promise<Array<Record<string, unknown>>> {
-  let query = 'SELECT site_id, project_id, client_id, name, iana_timezone, created_at, updated_at FROM sites';
+  let query = 'SELECT site_id, project_id, client_id, name, address, status, safety_email, iana_timezone, created_at, updated_at FROM sites';
   const params: unknown[] = [];
   const conditions: string[] = [];
   if (projectId) { conditions.push(`project_id = $${params.length + 1}`); params.push(projectId); }
@@ -59,18 +59,18 @@ export async function listSites(projectId?: string, clientId?: string): Promise<
 
 export async function getSiteById(siteId: string): Promise<Record<string, unknown> | null> {
   const result = await pool.query(
-    'SELECT site_id, project_id, client_id, name, iana_timezone, created_at, updated_at FROM sites WHERE site_id = $1',
+    'SELECT site_id, project_id, client_id, name, address, status, safety_email, iana_timezone, created_at, updated_at FROM sites WHERE site_id = $1',
     [siteId],
   );
   return result.rows[0] || null;
 }
 
 export async function createSite(input: {
-  project_id: string; name: string; iana_timezone?: string;
+  project_id: string; name: string; address?: string; status?: string; safety_email?: string; iana_timezone?: string;
 }): Promise<Record<string, unknown>> {
   const result = await pool.query(
-    'INSERT INTO sites (project_id, name, iana_timezone) VALUES ($1, $2, $3) RETURNING site_id, project_id, client_id, name, iana_timezone, created_at, updated_at',
-    [input.project_id, input.name, input.iana_timezone || 'UTC'],
+    'INSERT INTO sites (project_id, name, address, status, safety_email, iana_timezone) VALUES ($1, $2, $3, $4, $5, $6) RETURNING site_id, project_id, client_id, name, address, status, safety_email, iana_timezone, created_at, updated_at',
+    [input.project_id, input.name, input.address || null, input.status || 'active', input.safety_email || null, input.iana_timezone || 'UTC'],
   );
   return result.rows[0];
 }
@@ -87,7 +87,7 @@ export async function updateSite(siteId: string, fields: Record<string, unknown>
   params.push(siteId);
   const result = await pool.query(
     `UPDATE sites SET ${setClauses.join(', ')} WHERE site_id = $${idx}
-     RETURNING site_id, project_id, client_id, name, iana_timezone, created_at, updated_at`,
+     RETURNING site_id, project_id, client_id, name, address, status, safety_email, iana_timezone, created_at, updated_at`,
     params,
   );
   return result.rows[0] || null;
