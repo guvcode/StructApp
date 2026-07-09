@@ -303,7 +303,14 @@ export async function processPhotoUpload(
   deficiencyId: string,
   fileData: Buffer,
   originalFilename: string,
-  purpose: string = 'deficiency_evidence'
+  purpose: string = 'deficiency_evidence',
+  exif?: {
+    original_filename: string;
+    captured_at: string;
+    camera_make?: string;
+    camera_model?: string;
+    raw_exif_payload: string;
+  }
 ): Promise<{ photo_id: string; storage_url: string }> {
   const client = await pool.connect();
   try {
@@ -331,10 +338,25 @@ export async function processPhotoUpload(
       [deficiencyId, storageUrl]
     );
 
-    await client.query(
-      `INSERT INTO photo_evidence_metadata (photo_id, original_filename, captured_at, raw_exif_payload) VALUES ($1, $2, NOW(), '{}')`,
-      [photoResult.rows[0].photo_id, originalFilename]
-    );
+    if (exif) {
+      await client.query(
+        `INSERT INTO photo_evidence_metadata (photo_id, original_filename, captured_at, camera_make, camera_model, raw_exif_payload)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [
+          photoResult.rows[0].photo_id,
+          exif.original_filename,
+          exif.captured_at,
+          exif.camera_make || null,
+          exif.camera_model || null,
+          exif.raw_exif_payload,
+        ]
+      );
+    } else {
+      await client.query(
+        `INSERT INTO photo_evidence_metadata (photo_id, original_filename, captured_at, raw_exif_payload) VALUES ($1, $2, NOW(), '{}')`,
+        [photoResult.rows[0].photo_id, originalFilename]
+      );
+    }
 
     await client.query('COMMIT');
     return {

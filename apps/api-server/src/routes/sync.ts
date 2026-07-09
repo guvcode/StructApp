@@ -93,7 +93,9 @@ syncRouter.post(
         user.client_id,
         deficiencyId,
         file.buffer,
-        file.originalname
+        file.originalname,
+        undefined,
+        req.body.exif ? JSON.parse(req.body.exif) : undefined
       );
 
       res.json({ success: true, data: result });
