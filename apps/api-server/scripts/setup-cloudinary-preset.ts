@@ -29,8 +29,9 @@ async function main() {
     console.log('Upload preset created successfully:');
     console.log(JSON.stringify(result, null, 2));
   } catch (err: unknown) {
-    const error = err as { http_code?: number; message?: string };
-    if (error.http_code === 409) {
+    const error = err as { http_code?: number; message?: string; error?: { http_code?: number; message?: string } };
+    const httpCode = error.http_code || error.error?.http_code;
+    if (httpCode === 409) {
       console.log(`Preset "${PRESET_NAME}" already exists. Updating instead...`);
       const result = await cloudinary.api.update_upload_preset(PRESET_NAME, {
         unsigned: true,
@@ -42,7 +43,8 @@ async function main() {
       console.log('Upload preset updated successfully:');
       console.log(JSON.stringify(result, null, 2));
     } else {
-      console.error('Failed to create upload preset:', error.message || error);
+      const errorMessage = error.message || error.error?.message || 'Unknown error';
+      console.error('Failed to create upload preset:', errorMessage);
       process.exit(1);
     }
   }
