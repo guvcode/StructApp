@@ -1,6 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
-import { getTimesheetsForInspector, createTimesheetBatch } from '../services/timesheets';
+import { getTimesheetsForInspector, getTimesheetById, createTimesheetBatch, updateTimesheet, submitTimesheet, deleteTimesheet } from '../services/timesheets';
 import { requireAuth, requireRole } from '../middleware/auth';
 import { pool } from '../lib/db';
 import { logger } from '../lib/logger';
@@ -57,6 +57,50 @@ router.get('/groups', requireAuth, async (req: Request, res: Response, next: Nex
       [userId, clientId],
     );
     res.json({ success: true, data: result.rows });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/:id', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const entry = await getTimesheetById(req.params.id, req.user!.client_id);
+    if (!entry) return res.status(404).json({ success: false, error_code: 'NOT_FOUND', message: 'Timesheet entry not found' });
+    res.json({ success: true, data: entry });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.patch('/:id', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user = req.user!;
+    const data: { work_type?: string; hours?: number; description?: string } = {};
+    if (req.body.work_type !== undefined) data.work_type = req.body.work_type;
+    if (req.body.hours !== undefined) data.hours = req.body.hours;
+    if (req.body.description !== undefined) data.description = req.body.description;
+    const result = await updateTimesheet(req.params.id, user.client_id, user.sub, data);
+    res.json({ success: true, data: result });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/:id/submit', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user = req.user!;
+    const result = await submitTimesheet(req.params.id, user.client_id, user.sub);
+    res.json({ success: true, data: result });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.delete('/:id', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user = req.user!;
+    await deleteTimesheet(req.params.id, user.client_id, user.sub);
+    res.json({ success: true, message: 'Timesheet entry deleted' });
   } catch (err) {
     next(err);
   }
