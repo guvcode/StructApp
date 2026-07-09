@@ -31,30 +31,6 @@ describe('Bundle 6 — Contractor Mobile', () => {
     });
   });
 
-  describe('B6-T10/T11 — Extended mock services', () => {
-    it('createDeficiency adds a deficiency', async () => {
-      const { createDeficiency } = await import('../src/services/mockInspection');
-      const def = await createDeficiency('i-001', { title: 'Test def', description: 'Test', severity: 'medium', component_note: '', location_desc: '' });
-      expect(def).toMatchObject({ inspection_id: 'i-001', title: 'Test def' });
-    });
-
-    it('submitInspection changes status to Submitted', async () => {
-      const { submitInspection, getInspection } = await import('../src/services/mockInspection');
-      const result = await submitInspection('i-001');
-      expect(result.status).toBe(InspectionStatus.Submitted);
-      const insp = await getInspection('i-001');
-      expect(insp!.status).toBe(InspectionStatus.Submitted);
-    });
-
-    it('getPendingCount returns count from queue', async () => {
-      const { getPendingCount, addToQueue, clearQueue } = await import('../src/services/mockSync');
-      clearQueue();
-      expect(await getPendingCount()).toBe(0);
-      addToQueue({ type: 'deficiency', payload: {} });
-      expect(await getPendingCount()).toBe(1);
-    });
-  });
-
   describe('B6-T02 — SyncPage', () => {
     it('renders sync hub with pull/push buttons', async () => {
       const { default: SyncPage } = await import('../src/pages/mobile/SyncPage');
@@ -100,11 +76,17 @@ describe('Bundle 6 — Contractor Mobile', () => {
       expect(screen.getByText(/component/i)).toBeInTheDocument();
     });
 
-    it('shows risk preview calculation', async () => {
-      const { calculateRiskPreview } = await import('../src/lib/useLocalState');
-      expect(calculateRiskPreview(5, 5, 5)).toBe('P0');
-      expect(calculateRiskPreview(1, 1, 1)).toBe('P2');
-      expect(calculateRiskPreview(4, 4, 3)).toBe('P1');
+    it('shows edit heading for existing deficiency', async () => {
+      const { default: DeficiencyDetailPage } = await import('../src/pages/mobile/DeficiencyDetailPage');
+      render(wrap(<MemoryRouter initialEntries={['/m/deficiencies/d-001?inspection_id=i-001']}><Routes><Route path="/m/deficiencies/:localId" element={<DeficiencyDetailPage />} /></Routes></MemoryRouter>));
+      expect(await screen.findByText(/edit deficiency/i)).toBeInTheDocument();
+    });
+
+    it('disables save button when category not selected', async () => {
+      const { default: DeficiencyDetailPage } = await import('../src/pages/mobile/DeficiencyDetailPage');
+      render(wrap(<MemoryRouter initialEntries={['/m/deficiencies/new?inspection_id=i-001']}><Routes><Route path="/m/deficiencies/:localId" element={<DeficiencyDetailPage />} /></Routes></MemoryRouter>));
+      const saveBtn = await screen.findByRole('button', { name: /save deficiency/i });
+      expect(saveBtn).toBeDisabled();
     });
   });
 

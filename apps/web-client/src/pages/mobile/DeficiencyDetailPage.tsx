@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../services/api/apiClient';
 import { ENDPOINTS } from '../../services/api/endpoints';
+import { getDeficiencyById } from '../../services/api/inspections';
 import { calculateGlencoreRisk } from '../../utils/riskCalculator';
 import { db } from '../../lib/db';
 import Skeleton from '../../components/Skeleton';
@@ -16,8 +17,6 @@ export default function DeficiencyDetailPage() {
   const navigate = useNavigate();
   const inspectionId = searchParams.get('inspection_id') ?? '';
   const isNew = localId === 'new';
-  const [saved, setSaved] = useState(false);
-  const [loading, setLoading] = useState(!isNew);
   const [error, setError] = useState('');
 
   const { data: inspection } = useQuery({
@@ -37,6 +36,37 @@ export default function DeficiencyDetailPage() {
     queryFn: () => apiClient<{ id: string; name: string; identifier: string }>(ENDPOINTS.structures.byId(inspection!.structure_id ?? inspection!.structureId!)),
     enabled: !!inspection?.structure_id || !!inspection?.structureId,
   });
+
+  const { data: existingDeficiency, isLoading: isLoadingExisting } = useQuery({
+    queryKey: ['deficiencies', localId],
+    queryFn: async () => {
+      const offline = await db.offlineDeficiencies.get(localId!);
+      if (offline) return offline;
+      return getDeficiencyById(localId!);
+    },
+    enabled: !!localId && localId !== 'new',
+  });
+
+  useEffect(() => {
+    if (!existingDeficiency) return;
+    const d = existingDeficiency as Record<string, unknown>;
+    setCategory((d.category as string) || firstCategory);
+    setComponent((d.subComponent as string) || (d.sub_component as string) || '');
+    setFocusArea((d.focusArea as string) || (d.focus_area as string) || '');
+    setDeficiencyCategory((d.deficiencyCategory as string) || (d.deficiency_category as string) || '');
+    setDetailedDescription((d.detailedDescription as string) || (d.detailed_description as string) || '');
+    setDescription((d.description as string) || '');
+    setMechanisms((d.mechanisms as string) || '');
+    setVibrationPresent(d.vibration_present as boolean | undefined);
+    setNdtRequired(d.ndt_required as boolean | undefined);
+    setFurtherInvestigationRequired(d.further_investigation_required as boolean | undefined);
+    setRecommendedAction((d.recommendedAction as string) || (d.recommended_action as string) || '');
+    setConsequenceSeverity((d.consequenceSeverity as number) || (d.consequence_severity as number) || 3);
+    setLikelihood((d.likelihood as string) || 'C');
+    setPriorityRating((d.priorityTier as string) || (d.priority_tier as string) || 'P3');
+    setComponentNote((d.componentNote as string) || (d.component_note as string) || '');
+    setLocationDesc((d.locationDesc as string) || (d.location_desc as string) || '');
+  }, [existingDeficiency]);
 
   const { data: taxonomyNodes = [] } = useQuery({
     queryKey: ['taxonomy', 'offline'],
@@ -120,19 +150,27 @@ export default function DeficiencyDetailPage() {
       if (componentNote) data.component_note = componentNote;
       if (locationDesc) data.location_desc = locationDesc;
       if (isNew && inspectionId) {
-        await apiClient(ENDPOINTS.deficiencies.create(inspectionId), { method: 'POST', body: JSON.stringify(data) });
+        const created = await apiClient<{ deficiency_id: string }>(ENDPOINTS.deficiencies.create(inspectionId), { method: 'POST', body: JSON.stringify(data) });
+        return created;
       } else if (localId) {
         await apiClient(ENDPOINTS.deficiencies.update(localId), { method: 'PATCH', body: JSON.stringify(data) });
+        return { deficiency_id: localId } as { deficiency_id: string };
       }
+      return { deficiency_id: '' } as { deficiency_id: string };
     },
-    onSuccess: () => {
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
+    onSuccess: (result) => {
+      if (result?.deficiency_id) {
+        navigate(`/m/deficiencies/${result.deficiency_id}?inspection_id=${inspectionId}`, { replace: true });
+      }
     },
     onError: () => setError('Failed to save deficiency.'),
   });
 
   const saving = saveMutation.isPending;
+
+  if (!isNew && isLoadingExisting) {
+    return <div className="p-4"><Skeleton className="h-8 w-48 mb-4" /><Skeleton className="h-32 w-full rounded-lg" /></div>;
+  }
 
   return (
     <div className="space-y-4">
@@ -312,10 +350,6 @@ export default function DeficiencyDetailPage() {
       >
         {saving ? 'Saving...' : 'Save Deficiency'}
       </button>
-
-      {saved && (
-        <div className="bg-green-100 text-green-800 p-2 rounded text-sm text-center">Saved locally.</div>
-      )}
 
       {error && (
         <div className="bg-red-100 text-red-800 p-2 rounded text-sm text-center">{error}</div>
