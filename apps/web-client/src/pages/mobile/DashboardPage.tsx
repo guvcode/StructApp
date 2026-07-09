@@ -76,10 +76,16 @@ export default function DashboardPage() {
   if (isError && online) return <div className="p-6 text-red-600 text-center">Failed to load dashboard data.</div>;
 
   const assigned = displayInspections.filter(
-    (i: { status: string }) => i.status === 'Assigned' || i.status === 'In Progress' || i.status === 'Draft'
+    (i: { status: string }) => i.status === 'Assigned' || i.status === 'InProgress' || i.status === 'Draft'
   );
   const returned = displayInspections.filter(
     (i: { status: string }) => i.status === 'Returned'
+  );
+  const submitted = displayInspections.filter(
+    (i: { status: string }) => i.status === 'Submitted'
+  );
+  const approved = displayInspections.filter(
+    (i: { status: string }) => i.status === 'Approved'
   );
 
   return (
@@ -125,12 +131,66 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {submitted.length > 0 && (
+        <div>
+          <h3 className="font-semibold text-text-primary mb-2">Submitted ({submitted.length})</h3>
+          {submitted.map((insp) => {
+            const i = insp as { id: string; clientId?: string; client_id?: string; siteId?: string; site_id?: string; status: string; scheduledDate?: string | null; scheduled_date?: string };
+            return (
+            <button
+              key={i.id}
+              onClick={() => navigate(`/m/inspections/${i.id}`)}
+              className="w-full bg-surface-primary border border-border rounded-xl p-4 mb-2 text-left shadow-sm hover:shadow-md transition-shadow"
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">Submitted</span>
+                <span className="text-xs text-text-muted">{i.scheduledDate ?? i.scheduled_date}</span>
+              </div>
+              <p className="text-base font-semibold text-text-primary">
+                {clientLookup.get(i.clientId ?? i.client_id ?? '') ?? i.clientId ?? i.client_id}
+              </p>
+              <p className="text-sm text-text-secondary mt-0.5">
+                {siteLookup.get(i.siteId ?? i.site_id ?? '') ?? i.siteId ?? i.site_id}
+              </p>
+            </button>
+            );
+          })}
+        </div>
+      )}
+
+      {approved.length > 0 && (
+        <div>
+          <h3 className="font-semibold text-text-primary mb-2">Approved ({approved.length})</h3>
+          {approved.map((insp) => {
+            const i = insp as { id: string; clientId?: string; client_id?: string; siteId?: string; site_id?: string; status: string; scheduledDate?: string | null; scheduled_date?: string };
+            return (
+            <button
+              key={i.id}
+              onClick={() => navigate(`/m/inspections/${i.id}`)}
+              className="w-full bg-surface-primary border border-border rounded-xl p-4 mb-2 text-left shadow-sm hover:shadow-md transition-shadow"
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-800">Approved</span>
+                <span className="text-xs text-text-muted">{i.scheduledDate ?? i.scheduled_date}</span>
+              </div>
+              <p className="text-base font-semibold text-text-primary">
+                {clientLookup.get(i.clientId ?? i.client_id ?? '') ?? i.clientId ?? i.client_id}
+              </p>
+              <p className="text-sm text-text-secondary mt-0.5">
+                {siteLookup.get(i.siteId ?? i.site_id ?? '') ?? i.siteId ?? i.site_id}
+              </p>
+            </button>
+            );
+          })}
+        </div>
+      )}
+
       <div>
         <h3 className="font-semibold text-text-primary mb-2">Active Inspections ({assigned.length})</h3>
         {assigned.map((insp) => {
           const i = insp as { id: string; clientId?: string; client_id?: string; siteId?: string; site_id?: string; status: string; scheduledDate?: string | null; scheduled_date?: string; structureId?: string; structure_id?: string };
-          const statusColor = i.status === 'In Progress' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800';
-          const statusLabel = i.status === 'In Progress' ? 'In Progress' : 'Assigned';
+          const statusColor = i.status === 'InProgress' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800';
+          const statusLabel = i.status === 'InProgress' ? 'In Progress' : 'Assigned';
           return (
           <button
             key={i.id}
