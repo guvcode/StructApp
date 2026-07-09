@@ -46,6 +46,14 @@ export default function RouteGuard() {
   const role = getUserRole();
   const required = getRouteRole(pathname);
 
+  // Redirect bare root path to role-appropriate default
+  if (pathname === '/' || pathname === '') {
+    if (!isAuthenticated()) return <Navigate to="/login" replace />;
+    if (role === 'contractor') return <Navigate to="/m/dashboard" replace />;
+    if (role === 'reviewer' || role === 'admin') return <Navigate to="/inspections" replace />;
+    return <Navigate to="/login" replace />;
+  }
+
   if (required && role !== required && role !== 'admin') {
     if (required === 'reviewer' && role === 'contractor') {
       return <Navigate to="/forbidden" replace />;
