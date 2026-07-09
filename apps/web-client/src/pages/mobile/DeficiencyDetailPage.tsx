@@ -140,6 +140,15 @@ export default function DeficiencyDetailPage() {
     }
   }, [focusArea, taxonomyNodes, subComponent]);
 
+  // Fetch inspection status to determine read-only mode
+  const deficiencyInspectionId = (existingDeficiency as Record<string, unknown> | undefined)?.inspection_id as string | undefined ?? inspectionId;
+  const { data: deficiencyInspection } = useQuery({
+    queryKey: ['inspection', deficiencyInspectionId],
+    queryFn: () => apiClient<{ status: string }>(ENDPOINTS.inspections.byId(deficiencyInspectionId!)),
+    enabled: !!deficiencyInspectionId && !isNew,
+  });
+  const isReadOnly = !isNew && (deficiencyInspection?.status === 'Submitted' || deficiencyInspection?.status === 'Approved');
+
   const saveMutation = useMutation({
     mutationFn: async () => {
       const data: Record<string, unknown> = {
@@ -197,9 +206,15 @@ export default function DeficiencyDetailPage() {
       )}
       <h2 className="text-lg font-bold text-text-primary">{isNew ? 'New Deficiency' : 'Edit Deficiency'}</h2>
 
+      {isReadOnly && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
+          This inspection is {deficiencyInspection?.status?.toLowerCase()} — deficiencies are read-only.
+        </div>
+      )}
+
       <div>
         <label className="block text-sm font-medium text-text-primary mb-1">Category</label>
-        <select value={category} onChange={e => { setCategory(e.target.value); setComponent(''); setSubComponent(''); setFocusArea(''); setDeficiencyCategory(''); setDetailedDescription(''); }} className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary">
+        <select value={category} onChange={e => { setCategory(e.target.value); setComponent(''); setSubComponent(''); setFocusArea(''); setDeficiencyCategory(''); setDetailedDescription(''); }} disabled={isReadOnly} className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary disabled:opacity-60">
           {categories.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
       </div>
@@ -207,7 +222,7 @@ export default function DeficiencyDetailPage() {
       {category && (
         <div>
           <label className="block text-sm font-medium text-text-primary mb-1">Component</label>
-          <select value={component} onChange={e => { setComponent(e.target.value); setSubComponent(''); setFocusArea(''); setDeficiencyCategory(''); setDetailedDescription(''); }} className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary">
+          <select value={component} onChange={e => { setComponent(e.target.value); setSubComponent(''); setFocusArea(''); setDeficiencyCategory(''); setDetailedDescription(''); }} disabled={isReadOnly} className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary disabled:opacity-60">
             <option value="">Select component...</option>
             {components.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
@@ -217,7 +232,7 @@ export default function DeficiencyDetailPage() {
       {component && (
         <div>
           <label className="block text-sm font-medium text-text-primary mb-1">Sub-Component</label>
-          <select value={subComponent} onChange={e => { setSubComponent(e.target.value); setFocusArea(''); setDeficiencyCategory(''); setDetailedDescription(''); }} className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary">
+          <select value={subComponent} onChange={e => { setSubComponent(e.target.value); setFocusArea(''); setDeficiencyCategory(''); setDetailedDescription(''); }} disabled={isReadOnly} className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary disabled:opacity-60">
             <option value="">Select sub-component...</option>
             {subComponents.map(sc => <option key={sc} value={sc}>{sc}</option>)}
           </select>
@@ -227,7 +242,7 @@ export default function DeficiencyDetailPage() {
       {subComponent && (
         <div>
           <label className="block text-sm font-medium text-text-primary mb-1">Focus Area</label>
-          <select value={focusArea} onChange={e => { setFocusArea(e.target.value); setDeficiencyCategory(''); setDetailedDescription(''); }} className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary">
+          <select value={focusArea} onChange={e => { setFocusArea(e.target.value); setDeficiencyCategory(''); setDetailedDescription(''); }} disabled={isReadOnly} className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary disabled:opacity-60">
             <option value="">Select focus area...</option>
             {focusAreas.map(fa => <option key={fa} value={fa}>{fa}</option>)}
           </select>
@@ -237,7 +252,7 @@ export default function DeficiencyDetailPage() {
       {focusArea && (
         <div>
           <label className="block text-sm font-medium text-text-primary mb-1">Deficiency Category</label>
-          <select value={deficiencyCategory} onChange={e => { setDeficiencyCategory(e.target.value); setDetailedDescription(''); }} className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary">
+          <select value={deficiencyCategory} onChange={e => { setDeficiencyCategory(e.target.value); setDetailedDescription(''); }} disabled={isReadOnly} className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary disabled:opacity-60">
             <option value="">Select deficiency category...</option>
             {deficiencyCategories.map(dc => <option key={dc} value={dc}>{dc}</option>)}
           </select>
@@ -247,7 +262,7 @@ export default function DeficiencyDetailPage() {
       {deficiencyCategory && (
         <div>
           <label className="block text-sm font-medium text-text-primary mb-1">Detailed Description</label>
-          <select value={detailedDescription} onChange={e => setDetailedDescription(e.target.value)} className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary">
+          <select value={detailedDescription} onChange={e => setDetailedDescription(e.target.value)} disabled={isReadOnly} className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary disabled:opacity-60">
             <option value="">Select detailed description...</option>
             {detailedDescriptions.map(dd => <option key={dd} value={dd}>{dd}</option>)}
           </select>
@@ -256,14 +271,14 @@ export default function DeficiencyDetailPage() {
 
       <div>
         <label className="block text-sm font-medium text-text-primary mb-1">Inspector Notes</label>
-        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary" placeholder="Additional observations, measurements, or context..." />
+        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} disabled={isReadOnly} className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary disabled:opacity-60" placeholder="Additional observations, measurements, or context..." />
       </div>
 
       <div className="border-t border-border pt-4">
         <p className="text-sm font-semibold text-text-primary mb-3">Indication Details</p>
         <div>
           <label className="block text-sm font-medium text-text-primary mb-1">Potential Failure Mechanism</label>
-          <input value={mechanisms} onChange={e => setMechanisms(e.target.value)} className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary" placeholder="e.g., Atmospheric corrosion, fatigue loading..." />
+          <input value={mechanisms} onChange={e => setMechanisms(e.target.value)} disabled={isReadOnly} className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary disabled:opacity-60" placeholder="e.g., Atmospheric corrosion, fatigue loading..." />
         </div>
         <div className="grid grid-cols-3 gap-2 mt-3">
           <div>
@@ -303,19 +318,19 @@ export default function DeficiencyDetailPage() {
         <div className="grid grid-cols-3 gap-2">
           <div>
             <label className="block text-xs font-medium text-text-primary mb-1">Consequence (1-5)</label>
-            <select value={consequenceSeverity} onChange={e => setConsequenceSeverity(Number(e.target.value))} className="w-full px-2 py-2 bg-surface-primary border border-border rounded-lg text-text-primary text-sm">
-              {[1,2,3,4,5].map(v => <option key={v} value={v}>{v} — {['Negligible','Minor','Moderate','Major','Catastrophic'][v-1]}</option>)}
+<select value={consequenceSeverity} onChange={e => setConsequenceSeverity(Number(e.target.value))} disabled={isReadOnly} className="w-full px-2 py-2 bg-surface-primary border border-border rounded-lg text-text-primary text-sm disabled:opacity-60">
+              {[1,2,3,4,5].map(v => <option key={v} value={v}>{v} — {['','Minimal','Moderate','Major','Severe','Catastrophic'][v]}</option>)}
             </select>
           </div>
           <div>
             <label className="block text-xs font-medium text-text-primary mb-1">Likelihood</label>
-            <select value={likelihood} onChange={e => setLikelihood(e.target.value)} className="w-full px-2 py-2 bg-surface-primary border border-border rounded-lg text-text-primary text-sm">
-              {LIKELIHOOD_OPTIONS.map(v => <option key={v} value={v}>{v} — {['Rare','Unlikely','Possible','Likely','Almost Certain']['ABCDE'.indexOf(v)]}</option>)}
+            <select value={likelihood} onChange={e => setLikelihood(e.target.value)} disabled={isReadOnly} className="w-full px-2 py-2 bg-surface-primary border border-border rounded-lg text-text-primary text-sm disabled:opacity-60">
+              {['A','B','C','D','E'].map((v, i) => <option key={v} value={v}>{v} — {['','Rare','Unlikely','Possible','Likely','Almost Certain'][i + 1]}</option>)}
             </select>
           </div>
           <div>
             <label className="block text-xs font-medium text-text-primary mb-1">Priority</label>
-            <select value={priorityRating} onChange={e => setPriorityRating(e.target.value)} className="w-full px-2 py-2 bg-surface-primary border border-border rounded-lg text-text-primary text-sm">
+            <select value={priorityRating} onChange={e => setPriorityRating(e.target.value)} disabled={isReadOnly} className="w-full px-2 py-2 bg-surface-primary border border-border rounded-lg text-text-primary text-sm disabled:opacity-60">
               {PRIORITY_OPTIONS.map(v => <option key={v} value={v}>{v}</option>)}
             </select>
           </div>
@@ -332,17 +347,14 @@ export default function DeficiencyDetailPage() {
 
       <div>
         <label className="block text-sm font-medium text-text-primary mb-1">Location</label>
-        <input value={locationDesc} onChange={e => setLocationDesc(e.target.value)} className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary" placeholder="e.g., Floor 12, column grid C-4" />
-      </div>
+<input value={locationDesc} onChange={e => setLocationDesc(e.target.value)} disabled={isReadOnly} className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary disabled:opacity-60" placeholder="e.g., Floor 12, column grid C-4" />
 
-      <div>
-        <label className="block text-sm font-medium text-text-primary mb-1">Component Notes</label>
-        <input value={componentNote} onChange={e => setComponentNote(e.target.value)} className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary" />
+        <input value={componentNote} onChange={e => setComponentNote(e.target.value)} disabled={isReadOnly} className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary disabled:opacity-60" />
       </div>
 
       <div className="border-t border-border pt-4">
         <p className="text-sm font-semibold text-text-primary mb-3">Photos</p>
-        {localId && localId !== 'new' && (
+        {localId && localId !== 'new' && !isReadOnly && (
           <button
             onClick={() => navigate(`/m/deficiencies/${localId}/photos`)}
             className="w-full px-4 py-2 border border-accent text-accent rounded-lg text-sm"
@@ -353,8 +365,12 @@ export default function DeficiencyDetailPage() {
         {isNew && (
           <p className="text-xs text-text-secondary">Save the deficiency first, then add photos.</p>
         )}
+        {isReadOnly && (
+          <p className="text-xs text-text-secondary">Photos cannot be added in read-only mode.</p>
+        )}
       </div>
 
+      {!isReadOnly && (
       <button
         onClick={() => saveMutation.mutate()}
         disabled={saving || !category}
@@ -363,6 +379,7 @@ export default function DeficiencyDetailPage() {
       >
         {saving ? 'Saving...' : 'Save Deficiency'}
       </button>
+      )}
 
       {error && (
         <div className="bg-red-100 text-red-800 p-2 rounded text-sm text-center">{error}</div>
