@@ -26,6 +26,7 @@ export default function TimesheetDetailPage() {
   const [entryDate, setEntryDate] = useState('');
   const [rows, setRows] = useState<EntryRow[]>([{ id: crypto.randomUUID(), workType: '', hours: '', notes: '' }]);
   const [error, setError] = useState('');
+  const [savingUpdate, setSavingUpdate] = useState(false);
 
   const { data: original, isLoading } = useQuery<Timesheet | null>({
     queryKey: ['timesheet', id],
@@ -49,7 +50,7 @@ export default function TimesheetDetailPage() {
   });
 
   const isReadOnly = original ? original.status !== TimesheetStatus.Draft : false;
-  const saving = batchMutation.isPending || submitMutation.isPending;
+  const saving = batchMutation.isPending || submitMutation.isPending || savingUpdate;
 
   const addRow = () => {
     setRows(prev => [...prev, { id: crypto.randomUUID(), workType: '', hours: '', notes: '' }]);
@@ -88,14 +89,24 @@ export default function TimesheetDetailPage() {
       };
       const activeClientId = getActiveClientId();
       if (activeClientId) (input as { client_id?: string }).client_id = activeClientId;
-      batchMutation.mutate(input, { onSuccess: () => navigate('/m/timesheets') });
+      batchMutation.mutate(input, {
+        onSuccess: () => navigate('/m/timesheets'),
+        onError: (err) => setError(err instanceof Error ? err.message : 'Failed to save timesheet.'),
+      });
     } else if (id && validRows[0]) {
-      const session = getSession();
-      const first = validRows[0];
-      const body = { entry_date: entryDate, hours: parseFloat(first.hours), work_type: first.workType, description: first.notes };
-      await apiClient(ENDPOINTS.timesheets.update(id), { method: 'PATCH', body: JSON.stringify(body) });
-      queryClient.invalidateQueries({ queryKey: ['timesheets'] });
-      navigate('/m/timesheets');
+      setSavingUpdate(true);
+      try {
+        const session = getSession();
+        const first = validRows[0];
+        const body = { entry_date: entryDate, hours: parseFloat(first.hours), work_type: first.workType, description: first.notes };
+        await apiClient(ENDPOINTS.timesheets.update(id), { method: 'PATCH', body: JSON.stringify(body) });
+        queryClient.invalidateQueries({ queryKey: ['timesheets'] });
+        navigate('/m/timesheets');
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to update timesheet.');
+      } finally {
+        setSavingUpdate(false);
+      }
     }
   };
 
