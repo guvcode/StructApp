@@ -145,7 +145,7 @@ export default function InspectionListPage() {
                       <tr key={insp.id} className="border-b border-border hover:bg-surface-hover transition-colors">
                         <td className="px-6 py-4 text-text-primary font-medium">{getSiteName(insp.site_id)}</td>
                         <td className="py-4 text-text-primary">{structureLookup.get(insp.structure_id ?? '') ?? insp.structure_id ?? '—'}</td>
-                        <td className="py-4 text-text-primary">{insp.assignee_name ?? insp.assigned_to}</td>
+                        <td className="py-4 text-text-primary">{insp.assignee_name ? `${insp.assignee_name}${insp.assignee_email ? ` (${insp.assignee_email})` : ''}` : insp.assigned_to}</td>
                         <td className="py-4">
                           <StatusBadge label={insp.status} map={INSPECTION_STATUS_STYLES} />
                         </td>

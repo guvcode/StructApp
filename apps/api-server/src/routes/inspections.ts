@@ -18,11 +18,11 @@ router.get(
     try {
       const { site_id, assignee, status, scheduled_date_from, scheduled_date_to, client_id } = req.query as Record<string, string | undefined>;
       let query = `
-        SELECT i.inspection_id, i.structure_id, i.client_id, i.inspector_id,
+        SELECT i.inspection_id, i.site_id, i.structure_id, i.client_id, i.inspector_id,
                i.assigned_by, i.status, i.scheduled_date, i.submitted_at, i.created_at,
                i.updated_at, i.returned_reason, i.approved_by, i.approved_at,
                i.reopened_by, i.reopened_at, i.reopen_reason, i.schedule_id,
-               u.email as assignee_name
+               u.display_name as assignee_name, u.email as assignee_email
         FROM inspections i
         LEFT JOIN users u ON i.inspector_id = u.user_id
         WHERE 1=1`;
@@ -51,11 +51,11 @@ router.get(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await pool.query(
-        `SELECT i.inspection_id, i.structure_id, i.client_id, i.inspector_id,
-                i.assigned_by, i.status, i.scheduled_date, i.submitted_at, i.created_at,
-                i.updated_at, i.returned_reason, i.approved_by, i.approved_at,
-                i.reopened_by, i.reopened_at, i.reopen_reason, i.schedule_id,
-                u.email as assignee_name
+`SELECT i.inspection_id, i.site_id, i.structure_id, i.client_id, i.inspector_id,
+               i.assigned_by, i.status, i.scheduled_date, i.submitted_at, i.created_at,
+               i.updated_at, i.returned_reason, i.approved_by, i.approved_at,
+               i.reopened_by, i.reopened_at, i.reopen_reason, i.schedule_id,
+               u.display_name as assignee_name, u.email as assignee_email
          FROM inspections i
          LEFT JOIN users u ON i.inspector_id = u.user_id
          WHERE i.inspection_id = $1`,
@@ -564,6 +564,7 @@ export const inspectionsRouter = router;
 function mapInspectionRow(row: Record<string, unknown>) {
   return {
     id: row.inspection_id,
+    site_id: row.site_id || undefined,
     structure_id: row.structure_id || undefined,
     client_id: row.client_id,
     assigned_to: row.inspector_id,
@@ -574,6 +575,7 @@ function mapInspectionRow(row: Record<string, unknown>) {
     created_at: row.created_at,
     updated_at: row.updated_at,
     assignee_name: row.assignee_name || undefined,
+    assignee_email: row.assignee_email || undefined,
     return_reason: row.returned_reason || undefined,
     approved_by: row.approved_by || undefined,
     approved_at: row.approved_at || undefined,

@@ -73,7 +73,7 @@ export default function InspectionDetailPage() {
           </div>
           <div>
             <span className="text-sm text-text-secondary">Assignee</span>
-            <p className="text-text-primary font-medium">{inspection.assignee_name ?? inspection.assigned_to}</p>
+            <p className="text-text-primary font-medium">{inspection.assignee_name ? `${inspection.assignee_name}${inspection.assignee_email ? ` (${inspection.assignee_email})` : ''}` : inspection.assigned_to}</p>
           </div>
           <div>
             <span className="text-sm text-text-secondary">Site</span>
