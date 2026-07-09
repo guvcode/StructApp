@@ -150,8 +150,10 @@ export default function InspectionDetailPage() {
           <p className="text-text-secondary">No deficiencies recorded for this inspection.</p>
         ) : (
           <div className="space-y-3">
-            {deficiencies.map(def => (
-              <Link key={def.id} to={`/deficiencies/${def.id}`} className="block border border-border rounded-lg p-4 hover:bg-surface-hover transition-colors">
+            {deficiencies.map(def => {
+              const defId = def.id || (def as unknown as Record<string, unknown>).deficiency_id as string;
+              return (
+              <Link key={defId} to={`/deficiencies/${defId}`} className="block border border-border rounded-lg p-4 hover:bg-surface-hover transition-colors">
                 <div className="flex items-start justify-between mb-2">
                   <span className="text-text-primary font-medium">{def.title}</span>
                   <div className="flex gap-2 items-center">
@@ -173,7 +175,8 @@ export default function InspectionDetailPage() {
                   <span>Status: {def.status}</span>
                 </div>
               </Link>
-            ))}
+            );
+          })}
           </div>
         )}
       </Card>

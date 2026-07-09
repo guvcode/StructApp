@@ -122,7 +122,8 @@ export default function RemediationQueuePage() {
 }
 
 function RemediationRow({ deficiency, role, onVerify, onOpen }: { deficiency: import('../../types').Deficiency; role: string | null; onVerify: (id: string) => void; onOpen: () => void }) {
-  const { data: hasEvidence } = useHasRemediationEvidence(deficiency.id);
+  const defId = deficiency.id || (deficiency as unknown as Record<string, unknown>).deficiency_id as string;
+  const { data: hasEvidence } = useHasRemediationEvidence(defId);
   const canVerify = deficiency.remediation_status === 'Remediated_Pending_Verification' && hasEvidence === true && (role === 'reviewer' || role === 'admin');
 
   return (
@@ -166,7 +167,7 @@ function RemediationRow({ deficiency, role, onVerify, onOpen }: { deficiency: im
           </button>
           {deficiency.remediation_status === 'Remediated_Pending_Verification' && canVerify && (
             <button
-              onClick={() => onVerify(deficiency.id)}
+              onClick={() => onVerify(defId)}
               className="px-3 py-1.5 text-xs font-medium border border-green-200 text-green-700 rounded-md hover:bg-green-50 transition-colors shadow-sm"
               aria-label={`Verify closure for ${deficiency.title}`}
             >
