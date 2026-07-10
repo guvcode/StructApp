@@ -306,8 +306,10 @@ export interface Timesheet {
   id: string;
   user_id: string;
   project_id?: string;
+  project_name?: string;
   inspection_id?: string;
   inspection_name?: string;
+  structure_name?: string;
   client_id: string;
   entry_date: string;
   hours: number;
@@ -331,7 +333,7 @@ export interface TimesheetGridCell {
 }
 
 export interface TimesheetGridData {
-  inspections: Array<{ inspection_id: string; inspection_name: string }>;
+  inspections: Array<{ inspection_id: string; inspection_name: string; project_name?: string; structure_name?: string }>;
   contractors: Array<{ user_id: string; user_name: string }>;
   cells: TimesheetGridCell[];
 }
