@@ -202,12 +202,17 @@ export default function DeficiencyDetailPage() {
   return (
     <div className="space-y-4">
       {inspection && (
-        <div className="bg-surface-secondary rounded-lg p-3 border border-border text-sm">
-          <p className="text-text-primary font-medium">
+        <button
+          onClick={() => navigate(`/m/inspections/${inspectionId}`)}
+          className="w-full bg-surface-secondary rounded-lg p-3 border border-border text-sm text-left hover:bg-surface-primary transition-colors"
+          aria-label={`View inspection for ${site?.name ?? 'Site'} — ${structure?.name ?? structure?.identifier ?? inspection.structure_id ?? inspection.structureId}`}
+        >
+          <p className="text-text-primary font-medium flex items-center gap-2">
+            <svg className="w-4 h-4 text-text-secondary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
             {site?.name ?? 'Site'} — {structure?.name ?? structure?.identifier ?? inspection.structure_id ?? inspection.structureId}
           </p>
-          <p className="text-text-secondary text-xs">{inspection.status}</p>
-        </div>
+          <p className="text-text-secondary text-xs ml-6">{inspection.status}</p>
+        </button>
       )}
       <h2 className="text-lg font-bold text-text-primary">{isNew ? 'New Deficiency' : 'Edit Deficiency'}</h2>
 

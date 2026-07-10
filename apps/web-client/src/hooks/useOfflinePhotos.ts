@@ -59,7 +59,6 @@ export function useOfflinePhotos(deficiencyLocalId: string | undefined): UseOffl
     if (pending.length === 0) return;
 
     const clientId = getActiveClientId() || 'unknown';
-    const folderPath = `structapp/${clientId}/inspections/${inspectionId}/deficiencies/${deficiencyServerId}`;
 
     for (const photo of pending) {
       try {
@@ -69,7 +68,8 @@ export function useOfflinePhotos(deficiencyLocalId: string | undefined): UseOffl
         const file = new File([blob], photo.filename, { type: blob.type || 'image/jpeg' });
 
         // Upload to Cloudinary (EXIF is already stripped, re-read from stored exif)
-        const { cloudinaryUrl } = await uploadPhotoToCloudinary(file, folderPath);
+        const publicId = `structapp/${clientId}/inspections/${inspectionId}/deficiencies/${deficiencyServerId}/${photo.photoId}`;
+        const { cloudinaryUrl } = await uploadPhotoToCloudinary(file, publicId);
 
         // Save to API — build payload with optional camera fields
         const exifPayload: Record<string, unknown> = {
