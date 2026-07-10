@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCreateTimesheetBatch, useSubmitTimesheet, useUpdateTimesheet } from '../../hooks/useTimesheets';
 import { apiClient } from '../../services/api/apiClient';
 import { ENDPOINTS } from '../../services/api/endpoints';
-import { TimesheetStatus } from '../../types/index';
+import { useCreateTimesheetBatch, useSubmitTimesheet } from '../../hooks/useTimesheets';
 import type { Timesheet } from '../../types/index';
+import { TimesheetStatus } from '../../types/index';
 import Skeleton from '../../components/Skeleton';
 import { getActiveClientId } from '../../lib/authStore';
 
@@ -28,16 +28,16 @@ export default function TimesheetDetailPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const isNew = id === 'new';
-
   const [entryDate, setEntryDate] = useState('');
   const [rows, setRows] = useState<EntryRow[]>([{ id: crypto.randomUUID(), workType: '', hours: '', notes: '' }]);
   const [dateError, setDateError] = useState('');
   const [rowErrors, setRowErrors] = useState<Record<string, RowErrors>>({});
   const [globalError, setGlobalError] = useState('');
+  const [savingUpdate, setSavingUpdate] = useState(false);
 
-  const { data: original, isLoading } = useQuery({
+  const { data: original, isLoading } = useQuery<Timesheet | null>({
     queryKey: ['timesheet', id],
-    queryFn: () => apiClient<Timesheet>(ENDPOINTS.timesheets.byId(id!)),
+    queryFn: () => apiClient(ENDPOINTS.timesheets.byId(id!)),
     enabled: !!id && !isNew,
   });
 
@@ -50,12 +50,13 @@ export default function TimesheetDetailPage() {
 
   const batchMutation = useCreateTimesheetBatch();
   const submitMutation = useSubmitTimesheet();
-  const updateMutation = useUpdateTimesheet();
 
   const isReadOnly = original ? original.status !== TimesheetStatus.Draft : false;
-  const saving = batchMutation.isPending || submitMutation.isPending || updateMutation.isPending;
+  const saving = batchMutation.isPending || submitMutation.isPending || savingUpdate;
 
-  const addRow = () => setRows(prev => [...prev, { id: crypto.randomUUID(), workType: '', hours: '', notes: '' }]);
+  const addRow = () => {
+    setRows(prev => [...prev, { id: crypto.randomUUID(), workType: '', hours: '', notes: '' }]);
+  };
 
   const removeRow = (rowId: string) => {
     if (rows.length <= 1) return;
@@ -70,10 +71,14 @@ export default function TimesheetDetailPage() {
     }
   };
 
-  const validate = (): boolean => {
+  const clearAllErrors = () => {
     setDateError('');
     setRowErrors({});
     setGlobalError('');
+  };
+
+  const validate = (): boolean => {
+    clearAllErrors();
     let valid = true;
 
     if (!entryDate) {
@@ -84,59 +89,66 @@ export default function TimesheetDetailPage() {
     const errors: Record<string, RowErrors> = {};
     for (const r of rows) {
       const re: RowErrors = {};
-      if (!r.workType) { re.workType = 'Select a work type.'; valid = false; }
-      if (!r.hours) { re.hours = 'Hours are required.'; valid = false; }
-      else {
-        const h = parseFloat(r.hours);
-        if (isNaN(h) || h <= 0 || h > 24) { re.hours = 'Must be between 0 and 24.'; valid = false; }
+      if (!r.workType) {
+        re.workType = 'Select a work type.';
+        valid = false;
       }
-      if (re.workType || re.hours) errors[r.id] = re;
+      if (!r.hours) {
+        re.hours = 'Hours are required.';
+        valid = false;
+      } else {
+        const h = parseFloat(r.hours);
+        if (isNaN(h) || h <= 0 || h > 24) {
+          re.hours = 'Must be between 0 and 24.';
+          valid = false;
+        }
+      }
+      if (re.workType || re.hours) {
+        errors[r.id] = re;
+      }
     }
-    if (Object.keys(errors).length > 0) setRowErrors(errors);
+
+    if (Object.keys(errors).length > 0) {
+      setRowErrors(errors);
+    }
+
     return valid;
   };
 
-  const onSuccess = () => {
-    queryClient.invalidateQueries({ queryKey: ['timesheets'] });
-    navigate('/m/timesheets');
-  };
-
-  const onError = (err: unknown) => {
-    setGlobalError(err instanceof Error ? err.message : 'Failed to save timesheet.');
-  };
-
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!validate()) return;
+    setGlobalError('');
 
     const validRows = rows.filter(r => r.workType && r.hours);
 
     if (isNew) {
+      const input: { entry_date: string; entries: Array<{ work_type: string; hours: number; notes?: string }> } = {
+        entry_date: entryDate,
+        entries: validRows.map(r => {
+          const e: { work_type: string; hours: number; notes?: string } = { work_type: r.workType, hours: parseFloat(r.hours) };
+          if (r.notes) e.notes = r.notes;
+          return e;
+        }),
+      };
       const activeClientId = getActiveClientId();
-      batchMutation.mutate(
-        {
-          entry_date: entryDate,
-          entries: validRows.map(r => ({
-            work_type: r.workType,
-            hours: parseFloat(r.hours),
-            ...(r.notes ? { notes: r.notes } : {}),
-          })),
-          ...(activeClientId ? { client_id: activeClientId } : {}),
-        },
-        { onSuccess, onError },
-      );
+      if (activeClientId) (input as { client_id?: string }).client_id = activeClientId;
+      batchMutation.mutate(input, {
+        onSuccess: () => navigate('/m/timesheets'),
+        onError: (err) => setGlobalError(err instanceof Error ? err.message : 'Failed to save timesheet.'),
+      });
     } else if (id && validRows[0]) {
-      updateMutation.mutate(
-        {
-          id,
-          data: {
-            entry_date: entryDate,
-            hours: parseFloat(validRows[0].hours),
-            work_type: validRows[0].workType,
-            ...(validRows[0].notes ? { description: validRows[0].notes } : {}),
-          },
-        },
-        { onSuccess, onError },
-      );
+      setSavingUpdate(true);
+      try {
+        const first = validRows[0];
+        const body = { entry_date: entryDate, hours: parseFloat(first.hours), work_type: first.workType, description: first.notes };
+        await apiClient(ENDPOINTS.timesheets.update(id), { method: 'PATCH', body: JSON.stringify(body) });
+        queryClient.invalidateQueries({ queryKey: ['timesheets'] });
+        navigate('/m/timesheets');
+      } catch (err) {
+        setGlobalError(err instanceof Error ? err.message : 'Failed to update timesheet.');
+      } finally {
+        setSavingUpdate(false);
+      }
     }
   };
 
@@ -144,7 +156,7 @@ export default function TimesheetDetailPage() {
     if (!id || isNew) return;
     setGlobalError('');
     submitMutation.mutate(id, {
-      onSuccess,
+      onSuccess: () => navigate('/m/timesheets'),
       onError: () => setGlobalError('Failed to submit timesheet.'),
     });
   };
@@ -177,7 +189,7 @@ export default function TimesheetDetailPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-medium text-text-secondary">Entry {idx + 1}</span>
                   {rows.length > 1 && !isReadOnly && (
-                    <button onClick={() => removeRow(row.id)} className="text-xs text-red-600 hover:text-red-800">Remove</button>
+                    <button onClick={() => removeRow(row.id)} className="text-xs text-red-600 hover:text-red-800" aria-label="Remove entry">Remove</button>
                   )}
                 </div>
                 <div>
@@ -224,10 +236,12 @@ export default function TimesheetDetailPage() {
         </div>
 
         {isNew && !isReadOnly && (
-          <button onClick={addRow} className="w-full py-2 border-2 border-dashed border-border rounded-lg text-sm text-accent font-medium hover:bg-surface-secondary">+ Add Another Entry</button>
+          <button onClick={addRow} className="w-full py-2 border-2 border-dashed border-border rounded-lg text-sm text-accent font-medium hover:bg-surface-secondary transition-colors" aria-label="Add another entry">
+            + Add Another Entry
+          </button>
         )}
 
-        {original?.rejection_reason && (
+        {original && original.rejection_reason && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-3">
             <p className="text-xs text-red-700 font-medium">Rejection Reason</p>
             <p className="text-sm text-red-800 mt-0.5">{original.rejection_reason}</p>
@@ -243,21 +257,19 @@ export default function TimesheetDetailPage() {
         <div className="flex gap-2 pt-2">
           {!isReadOnly && (
             <>
-              <button onClick={handleSave} disabled={saving} className="flex-1 px-4 py-2 bg-accent text-white rounded-lg disabled:opacity-50">
+              <button onClick={handleSave} disabled={saving} className="flex-1 px-4 py-2 bg-accent text-white rounded-lg disabled:opacity-50" aria-label="Save timesheet">
                 {saving ? 'Saving...' : 'Save'}
               </button>
               {!isNew && (
-                <button onClick={handleSubmit} disabled={saving} className="flex-1 px-4 py-2 border border-accent text-accent rounded-lg disabled:opacity-50">
+                <button onClick={handleSubmit} disabled={saving} className="flex-1 px-4 py-2 border border-accent text-accent rounded-lg disabled:opacity-50" aria-label="Submit timesheet">
                   {saving ? 'Submitting...' : 'Submit'}
                 </button>
               )}
             </>
           )}
           {isReadOnly && (
-            <p className="text-sm text-text-secondary italic w-full text-center">
-              {original?.status === TimesheetStatus.Approved ? 'Approved — locked.' :
-               original?.status === TimesheetStatus.Rejected ? 'Rejected — read-only.' :
-               'Submitted — locked.'}
+            <p className="text-sm text-text-secondary italic">
+              {original?.status === TimesheetStatus.Approved ? 'Approved timesheets are locked.' : original?.status === TimesheetStatus.Rejected ? 'Rejected timesheets are read-only. Create a new entry to correct.' : 'Submitted timesheets are locked from edits.'}
             </p>
           )}
         </div>
