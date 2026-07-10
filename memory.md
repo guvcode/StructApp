@@ -1,27 +1,31 @@
-# Memory — ADM-421 Email Queue Admin UI Fix
+# Memory — FIX-013 Timesheet Save Fix
 
-Last updated: 2026-07-10T13:36:00-06:00
+Last updated: 2026-07-10T14:57:00-06:00
 
 ## What was built
 
-Fixed the Email Queue admin UI on `task/ADM-email-queue-ui-fix`:
+Fixed timesheet save not working for draft or submitted entries on `task/TS-fix-timesheet-save`:
 
-- **Backend** (`apps/api-server/src/routes/notifications.ts`): Changed `GET /api/v1/notifications` response to nest pagination inside `json.data` (`{ rows, pagination }`) instead of separate top-level fields — aligns with `apiClient` unwrapping `json.data`.
-- **Frontend** (`apps/web-client/src/pages/admin/EmailQueuePage.tsx`): Changed destructure from `data?.data` → `data?.rows` to match unwrapped apiClient response.
-- **Sidebar** (`apps/web-client/src/components/DesktopSidebar.tsx`): Changed Email Queue entry phase from `P1` → `P0` so it always shows for admin/reviewer (was hidden by the P1 feature-flag whitelist filter).
-- **Test** (`apps/web-client/tests/b18-email-queue.test.tsx`): 4 tests — row rendering, Resend-only-on-non-sent, Delete-on-every-row, total count.
+- **Server service** (`apps/api-server/src/services/timesheets.ts`): Added `pre_inspection` to `updateTimesheet` params type, SQL SET clause, and RETURNING columns. Allowed editing Submitted entries by reverting status to Draft (previously threw `TIMESHEET_NOT_DRAFT`).
+- **Server route** (`apps/api-server/src/routes/timesheets.ts`): Added extraction of `pre_inspection` from PATCH request body with `Boolean()` coercion.
+- **Client page** (`apps/web-client/src/pages/mobile/TimesheetDetailPage.tsx`): Added `pre_inspection: entry.preInspection` to the update mutation payload.
+- **Tests** (`apps/api-server/tests/timesheets.test.ts`): Updated existing test to verify `pre_inspection` and `notes` in response. Added new test for editing a Submitted entry (expects status to revert to Draft). Changed the NOT_DRAFT test to use an Approved entry (since Submitted no longer errors).
 
 ## Decisions made
 
-- Pagination nested inside `json.data` on the backend instead of adding a pagination-aware variant of `apiClient` — keeps the client pattern consistent.
-- Email Queue sidebar entry set to `P0` (always visible) since the route has no feature flag guard and should always be accessible.
+- Editing a submitted timesheet reverts it to Draft (must be resubmitted for re-approval). Approved/Rejected entries remain uneditable.
+- `pre_inspection` is included in the PATCH payload for both drafts and submitted entries, ensuring the flag is preserved during edits.
+
+## Problems solved
+
+- `pre_inspection` field was completely missing from the update code path — not extracted in the route handler, not accepted by the service, not sent by the client. Resulted in silent data loss on save.
+- Submitted timesheets could not be edited at all — the service gate kept them from being updated.
 
 ## Current state
 
-- ADM-421 committed to `task/ADM-email-queue-ui-fix`
-- All 4 tests pass
-- No regressions detected (only consumer of the notifications endpoint is EmailQueuePage itself)
-- Pre-existing TS errors unchanged
+- FIX-013 committed to `task/TS-fix-timesheet-save`
+- All 14 server tests pass, 1 client test passes
+- No regressions detected (only `updateTimesheet` caller is the PATCH route handler)
 
 ## Next session starts with
 
