@@ -1,267 +1,158 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCreateTimesheetBatch, useSubmitTimesheet, useUpdateTimesheet } from '../../hooks/useTimesheets';
-import { apiClient } from '../../services/api/apiClient';
-import { ENDPOINTS } from '../../services/api/endpoints';
-import { TimesheetStatus } from '../../types/index';
-import type { Timesheet } from '../../types/index';
-import Skeleton from '../../components/Skeleton';
-import { getActiveClientId } from '../../lib/authStore';
+import { getSession, getActiveClientId } from '../../lib/authStore';
 
 const WORK_TYPES = ['Field Inspection', 'Report Writing', 'Equipment Check', 'Office Work', 'Travel'];
 
-interface EntryRow {
+interface Entry {
   id: string;
   workType: string;
   hours: string;
   notes: string;
 }
 
-interface RowErrors {
-  workType?: string;
-  hours?: string;
-}
-
 export default function TimesheetDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const isNew = id === 'new';
 
   const [entryDate, setEntryDate] = useState('');
-  const [rows, setRows] = useState<EntryRow[]>([{ id: crypto.randomUUID(), workType: '', hours: '', notes: '' }]);
-  const [dateError, setDateError] = useState('');
-  const [rowErrors, setRowErrors] = useState<Record<string, RowErrors>>({});
-  const [globalError, setGlobalError] = useState('');
+  const [entries, setEntries] = useState<Entry[]>([{ id: crypto.randomUUID(), workType: '', hours: '', notes: '' }]);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
 
-  const { data: original, isLoading } = useQuery({
-    queryKey: ['timesheet', id],
-    queryFn: () => apiClient<Timesheet>(ENDPOINTS.timesheets.byId(id!)),
-    enabled: !!id && !isNew,
-  });
+  const addEntry = () => setEntries(prev => [...prev, { id: crypto.randomUUID(), workType: '', hours: '', notes: '' }]);
 
-  useEffect(() => {
-    if (original) {
-      setEntryDate(original.entry_date);
-      setRows([{ id: crypto.randomUUID(), workType: original.work_type ?? '', hours: String(original.hours), notes: original.description ?? '' }]);
-    }
-  }, [original]);
-
-  const batchMutation = useCreateTimesheetBatch();
-  const submitMutation = useSubmitTimesheet();
-  const updateMutation = useUpdateTimesheet();
-
-  const isReadOnly = original ? original.status !== TimesheetStatus.Draft : false;
-  const saving = batchMutation.isPending || submitMutation.isPending || updateMutation.isPending;
-
-  const addRow = () => setRows(prev => [...prev, { id: crypto.randomUUID(), workType: '', hours: '', notes: '' }]);
-
-  const removeRow = (rowId: string) => {
-    if (rows.length <= 1) return;
-    setRows(prev => prev.filter(r => r.id !== rowId));
-    setRowErrors(prev => { const next = { ...prev }; delete next[rowId]; return next; });
+  const removeEntry = (entryId: string) => {
+    if (entries.length <= 1) return;
+    setEntries(prev => prev.filter(e => e.id !== entryId));
   };
 
-  const updateRow = (rowId: string, field: keyof EntryRow, value: string) => {
-    setRows(prev => prev.map(r => r.id === rowId ? { ...r, [field]: value } : r));
-    if (rowErrors[rowId]?.[field as keyof RowErrors]) {
-      setRowErrors(prev => ({ ...prev, [rowId]: { ...prev[rowId], [field]: undefined } }));
-    }
+  const updateEntry = (entryId: string, field: keyof Entry, value: string) => {
+    setEntries(prev => prev.map(e => e.id === entryId ? { ...e, [field]: value } : e));
   };
 
-  const validate = (): boolean => {
-    setDateError('');
-    setRowErrors({});
-    setGlobalError('');
-    let valid = true;
+  const handleSave = async () => {
+    setError('');
 
-    if (!entryDate) {
-      setDateError('Date is required.');
-      valid = false;
+    if (!entryDate) { setError('Date is required.'); return; }
+
+    const validEntries = entries.filter(e => e.workType && e.hours);
+    if (validEntries.length === 0) { setError('At least one entry with work type and hours is required.'); return; }
+
+    for (const e of validEntries) {
+      const h = parseFloat(e.hours);
+      if (isNaN(h) || h <= 0 || h > 24) { setError(`Hours for "${e.workType}" must be between 0 and 24.`); return; }
     }
 
-    const errors: Record<string, RowErrors> = {};
-    for (const r of rows) {
-      const re: RowErrors = {};
-      if (!r.workType) { re.workType = 'Select a work type.'; valid = false; }
-      if (!r.hours) { re.hours = 'Hours are required.'; valid = false; }
-      else {
-        const h = parseFloat(r.hours);
-        if (isNaN(h) || h <= 0 || h > 24) { re.hours = 'Must be between 0 and 24.'; valid = false; }
+    setSaving(true);
+
+    try {
+      const session = getSession();
+      if (!session?.token) { setError('Not authenticated.'); setSaving(false); return; }
+
+      const body = {
+        entry_date: entryDate,
+        entries: validEntries.map(e => ({
+          work_type: e.workType,
+          hours: parseFloat(e.hours),
+          ...(e.notes ? { notes: e.notes } : {}),
+        })),
+        ...(getActiveClientId() ? { client_id: getActiveClientId() } : {}),
+      };
+
+      const res = await fetch('/api/v1/timesheets/batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.token}` },
+        body: JSON.stringify(body),
+      });
+
+      const json = await res.json();
+
+      if (!res.ok) {
+        throw new Error(json.message || `Request failed (${res.status})`);
       }
-      if (re.workType || re.hours) errors[r.id] = re;
-    }
-    if (Object.keys(errors).length > 0) setRowErrors(errors);
-    return valid;
-  };
 
-  const onSuccess = () => {
-    queryClient.invalidateQueries({ queryKey: ['timesheets'] });
-    navigate('/m/timesheets');
-  };
-
-  const onError = (err: unknown) => {
-    setGlobalError(err instanceof Error ? err.message : 'Failed to save timesheet.');
-  };
-
-  const handleSave = () => {
-    if (!validate()) return;
-
-    const validRows = rows.filter(r => r.workType && r.hours);
-
-    if (isNew) {
-      const activeClientId = getActiveClientId();
-      batchMutation.mutate(
-        {
-          entry_date: entryDate,
-          entries: validRows.map(r => ({
-            work_type: r.workType,
-            hours: parseFloat(r.hours),
-            ...(r.notes ? { notes: r.notes } : {}),
-          })),
-          ...(activeClientId ? { client_id: activeClientId } : {}),
-        },
-        { onSuccess, onError },
-      );
-    } else if (id && validRows[0]) {
-      updateMutation.mutate(
-        {
-          id,
-          data: {
-            entry_date: entryDate,
-            hours: parseFloat(validRows[0].hours),
-            work_type: validRows[0].workType,
-            ...(validRows[0].notes ? { description: validRows[0].notes } : {}),
-          },
-        },
-        { onSuccess, onError },
-      );
+      navigate('/m/timesheets');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to save.');
+    } finally {
+      setSaving(false);
     }
   };
-
-  const handleSubmit = () => {
-    if (!id || isNew) return;
-    setGlobalError('');
-    submitMutation.mutate(id, {
-      onSuccess,
-      onError: () => setGlobalError('Failed to submit timesheet.'),
-    });
-  };
-
-  if (isLoading) return <div className="p-4"><Skeleton className="h-6 w-32 mx-auto mb-2" /><Skeleton className="h-48 w-full rounded-lg" /></div>;
 
   return (
     <div className="p-4 max-w-lg mx-auto space-y-4">
       <button onClick={() => navigate('/m/timesheets')} className="text-sm text-accent">&larr; Back</button>
-      <h1 className="text-xl font-bold text-text-primary">{isNew ? 'New Timesheet Entry' : 'Timesheet Entry'}</h1>
+      <h1 className="text-xl font-bold text-text-primary">New Timesheet Entry</h1>
+
+      <div>
+        <label className="block text-sm font-medium text-text-primary mb-1">Date</label>
+        <input
+          type="date"
+          value={entryDate}
+          onChange={e => setEntryDate(e.target.value)}
+          className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary"
+        />
+      </div>
 
       <div className="space-y-3">
-        <div>
-          <label className="block text-sm font-medium text-text-primary mb-1">Date</label>
-          <input
-            type="date"
-            value={entryDate}
-            onChange={e => { setEntryDate(e.target.value); if (dateError) setDateError(''); }}
-            disabled={isReadOnly}
-            className={`w-full px-3 py-2 bg-surface-primary border rounded-lg text-text-primary disabled:opacity-50 ${dateError ? 'border-red-500' : 'border-border'}`}
-          />
-          {dateError && <p className="text-red-600 text-xs mt-1">{dateError}</p>}
-        </div>
-
-        <div className="space-y-3">
-          {rows.map((row, idx) => {
-            const errs = rowErrors[row.id] || {};
-            return (
-              <div key={row.id} className="border border-border rounded-lg p-3 bg-surface-secondary space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-text-secondary">Entry {idx + 1}</span>
-                  {rows.length > 1 && !isReadOnly && (
-                    <button onClick={() => removeRow(row.id)} className="text-xs text-red-600 hover:text-red-800">Remove</button>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-text-primary mb-1">Work Type</label>
-                  <select
-                    value={row.workType}
-                    onChange={e => updateRow(row.id, 'workType', e.target.value)}
-                    disabled={isReadOnly}
-                    className={`w-full px-3 py-2 bg-surface-primary border rounded-lg text-text-primary disabled:opacity-50 ${errs.workType ? 'border-red-500' : 'border-border'}`}
-                  >
-                    <option value="">Select work type...</option>
-                    {WORK_TYPES.map(wt => <option key={wt} value={wt}>{wt}</option>)}
-                  </select>
-                  {errs.workType && <p className="text-red-600 text-xs mt-1">{errs.workType}</p>}
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-text-primary mb-1">Hours (0–24)</label>
-                  <input
-                    type="number"
-                    min="0.5"
-                    max="24"
-                    step="0.5"
-                    value={row.hours}
-                    onChange={e => updateRow(row.id, 'hours', e.target.value)}
-                    disabled={isReadOnly}
-                    className={`w-full px-3 py-2 bg-surface-primary border rounded-lg text-text-primary disabled:opacity-50 ${errs.hours ? 'border-red-500' : 'border-border'}`}
-                  />
-                  {errs.hours && <p className="text-red-600 text-xs mt-1">{errs.hours}</p>}
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-text-primary mb-1">Notes</label>
-                  <input
-                    type="text"
-                    value={row.notes}
-                    onChange={e => updateRow(row.id, 'notes', e.target.value)}
-                    disabled={isReadOnly}
-                    className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary disabled:opacity-50"
-                    placeholder="Optional..."
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {isNew && !isReadOnly && (
-          <button onClick={addRow} className="w-full py-2 border-2 border-dashed border-border rounded-lg text-sm text-accent font-medium hover:bg-surface-secondary">+ Add Another Entry</button>
-        )}
-
-        {original?.rejection_reason && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-            <p className="text-xs text-red-700 font-medium">Rejection Reason</p>
-            <p className="text-sm text-red-800 mt-0.5">{original.rejection_reason}</p>
-          </div>
-        )}
-
-        {globalError && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-            <p className="text-sm text-red-700">{globalError}</p>
-          </div>
-        )}
-
-        <div className="flex gap-2 pt-2">
-          {!isReadOnly && (
-            <>
-              <button onClick={handleSave} disabled={saving} className="flex-1 px-4 py-2 bg-accent text-white rounded-lg disabled:opacity-50">
-                {saving ? 'Saving...' : 'Save'}
-              </button>
-              {!isNew && (
-                <button onClick={handleSubmit} disabled={saving} className="flex-1 px-4 py-2 border border-accent text-accent rounded-lg disabled:opacity-50">
-                  {saving ? 'Submitting...' : 'Submit'}
-                </button>
+        {entries.map((entry, idx) => (
+          <div key={entry.id} className="border border-border rounded-lg p-3 bg-surface-secondary space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-text-secondary">Entry {idx + 1}</span>
+              {entries.length > 1 && (
+                <button onClick={() => removeEntry(entry.id)} className="text-xs text-red-600 hover:text-red-800">Remove</button>
               )}
-            </>
-          )}
-          {isReadOnly && (
-            <p className="text-sm text-text-secondary italic w-full text-center">
-              {original?.status === TimesheetStatus.Approved ? 'Approved — locked.' :
-               original?.status === TimesheetStatus.Rejected ? 'Rejected — read-only.' :
-               'Submitted — locked.'}
-            </p>
-          )}
-        </div>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-text-primary mb-1">Work Type</label>
+              <select
+                value={entry.workType}
+                onChange={e => updateEntry(entry.id, 'workType', e.target.value)}
+                className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary"
+              >
+                <option value="">Select work type...</option>
+                {WORK_TYPES.map(wt => <option key={wt} value={wt}>{wt}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-text-primary mb-1">Hours (0–24)</label>
+              <input
+                type="number"
+                min="0.5"
+                max="24"
+                step="0.5"
+                value={entry.hours}
+                onChange={e => updateEntry(entry.id, 'hours', e.target.value)}
+                className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-text-primary mb-1">Notes</label>
+              <input
+                type="text"
+                value={entry.notes}
+                onChange={e => updateEntry(entry.id, 'notes', e.target.value)}
+                className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary"
+                placeholder="Optional..."
+              />
+            </div>
+          </div>
+        ))}
       </div>
+
+      <button onClick={addEntry} className="w-full py-2 border-2 border-dashed border-border rounded-lg text-sm text-accent font-medium hover:bg-surface-secondary">+ Add Another Entry</button>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+          <p className="text-sm text-red-700">{error}</p>
+        </div>
+      )}
+
+      <button onClick={handleSave} disabled={saving} className="w-full px-4 py-2 bg-accent text-white rounded-lg disabled:opacity-50">
+        {saving ? 'Saving...' : 'Save'}
+      </button>
     </div>
   );
 }
