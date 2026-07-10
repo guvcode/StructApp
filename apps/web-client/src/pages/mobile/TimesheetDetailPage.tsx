@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getSession } from '../../lib/authStore';
+import { getSession, getActiveClientId } from '../../lib/authStore';
 import { useCreateTimesheetBatch, useUpdateTimesheet } from '../../hooks/useTimesheets';
 import { getInspections } from '../../services/api/inspections';
 import { getTimesheetById } from '../../services/api/timesheets';
@@ -43,9 +43,14 @@ export default function TimesheetDetailPage() {
   useEffect(() => {
     if (isNew || !id) return;
     setLoading(true);
-    getTimesheetById(id)
+    const activeClientId = getActiveClientId();
+    getTimesheetById(id, activeClientId)
       .then(entry => {
-        if (!entry) return;
+        if (!entry) {
+          setError('Timesheet entry not found.');
+          setTimeout(() => navigate('/m/timesheets'), 2000);
+          return;
+        }
         setEntryDate(entry.entry_date ?? '');
         setInspectionId(entry.inspection_id ?? '');
         setEntries([{

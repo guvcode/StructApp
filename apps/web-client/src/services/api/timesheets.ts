@@ -7,9 +7,10 @@ export async function getTimesheets(clientId?: string): Promise<Timesheet[]> {
   return apiClient(url);
 }
 
-export async function getTimesheetById(id: string): Promise<Timesheet | null> {
+export async function getTimesheetById(id: string, clientId?: string): Promise<Timesheet | null> {
   try {
-    return await apiClient(ENDPOINTS.timesheets.byId(id));
+    const url = clientId ? `${ENDPOINTS.timesheets.byId(id)}?client_id=${clientId}` : ENDPOINTS.timesheets.byId(id);
+    return await apiClient(url);
   } catch {
     return null;
   }

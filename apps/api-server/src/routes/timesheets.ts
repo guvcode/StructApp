@@ -100,7 +100,8 @@ router.get('/groups', requireAuth, async (req: Request, res: Response, next: Nex
 
 router.get('/:id', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const entry = await getTimesheetById(req.params.id, req.user!.client_id);
+    const clientId = (req.query.client_id as string) || req.user!.client_id;
+    const entry = await getTimesheetById(req.params.id, clientId);
     if (!entry) return res.status(404).json({ success: false, error_code: 'NOT_FOUND', message: 'Timesheet entry not found' });
     res.json({ success: true, data: entry });
   } catch (err) {
