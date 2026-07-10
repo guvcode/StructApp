@@ -1,38 +1,36 @@
-# Memory — FIX-012 Mobile Deficiency Detail Page Bugs
+# Memory — FIX-015 Timesheet Cache Invalidation Fix
 
-Last updated: 2026-07-08T23:12:00-06:00
+Last updated: 2026-07-10T10:12:00-06:00
 
 ## What was built
 
-### FIX-012 — Mobile Deficiency Detail Page bugs
-**Three bugs fixed in `apps/web-client/src/pages/mobile/DeficiencyDetailPage.tsx`:**
+### TSM-904 — TimesheetDetailPage uses `useCreateTimesheetBatch` hook
 
-1. **Save -> Navigate**: After saving a new deficiency, the page now navigates to `/m/deficiencies/{newId}?inspection_id=X` using `navigate(..., { replace: true })`. The mutation returns the `deficiency_id` from the API response, and `onSuccess` navigates to the edit page — making the "Manage Photos" button visible.
+**Root cause:** `TimesheetDetailPage.tsx` imported and called the raw `createTimesheetBatch` API function directly instead of using the `useCreateTimesheetBatch` React Query hook. This meant the React Query cache key `['timesheets', userId]` was never invalidated after saving, so the `TimesheetListPage` showed stale (empty) data after navigation.
 
-2. **Existing data loading**: Added a `useQuery` that tries Dexie `offlineDeficiencies` first, then falls back to `getDeficiencyById` from the API. A `useEffect` populates all 18 form fields from the fetched data. Both camelCase (Dexie) and snake_case (API) field names are handled.
+**Fix:** Replaced the raw API import/call with the `useCreateTimesheetBatch` hook. The hook's `onSuccess` callback calls `client.invalidateQueries({ queryKey: ['timesheets'] })`, ensuring the list page fetches fresh data on mount.
 
-3. **Duplicate save prevention**: Navigation after save naturally prevents re-clicking. Also added a loading skeleton for the edit mode while data is being fetched.
-
-### Tests updated
-- `tests/b6-mobile.test.tsx` — Added 2 new tests: "shows edit heading for existing deficiency" and "disables save button when category not selected"
-- Fixed broken import paths for mock services (archived)
+**Files changed:**
+- `apps/web-client/src/pages/mobile/TimesheetDetailPage.tsx` — Changed import from `services/api/timesheets` to `hooks/useTimesheets`; added `createBatch = useCreateTimesheetBatch()`; changed `await createTimesheetBatch(body)` to `await createBatch.mutateAsync(body)`
+- `apps/web-client/tests/b17-timesheet-detail.test.tsx` — New test file verifying `useCreateTimesheetBatch.mutateAsync` is called on save
+- `.doc/10-progress-tracker.md` — Added TSM-904 entry
 
 ## Decisions made
 
-- **Navigate vs stay**: Navigate to edit URL on save — makes photos accessible, prevents duplicate saves, URL is bookmarkable
-- **Dexie + API fallback**: Load from offline cache first, then API — works offline for contractors in the field
-- **useEffect for data population**: Acceptable per project standards (not a data-fetching effect, it syncs query results to form state)
+- Use the existing React Query hook pattern for data mutations (consistent with rest of codebase)
+- No server-side changes needed — the `POST /batch` endpoint and `GET /` endpoint already use correct `client_id` logic
 
 ## Current state
 
-- Both commits pushed to `task/FIX-012-deficiency-save-navigate`
-- All 3 B6-T06 tests pass
-- No new TypeScript errors (only pre-existing ones)
-- Pre-existing test failures (DashboardPage, InspectionDetailPage, InspectionSubmitPage) are unrelated API-mocking issues
+- Fix committed to `task/FIX-015-timesheet-batch-save`
+- All timesheet API tests pass (5/5)
+- New test (b17) passes
+- No new TypeScript errors
+- Pre-existing errors in other files unchanged
 
 ## Next session starts with
 
-None — this task is complete. The FIX-011 migration should be run against the Render database, then deploy the updated code.
+FIX-015 task is complete. Next: pick a new task from the progress tracker (Sprint 6 has all items completed; Sprint cross-track items remain).
 
 ## Open questions
 

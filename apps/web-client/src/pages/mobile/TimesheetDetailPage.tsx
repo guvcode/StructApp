@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getSession, getActiveClientId } from '../../lib/authStore';
-import { createTimesheetBatch } from '../../services/api/timesheets';
+import { getSession } from '../../lib/authStore';
+import { useCreateTimesheetBatch } from '../../hooks/useTimesheets';
 import { getInspections } from '../../services/api/inspections';
 import type { Inspection } from '../../types';
 
@@ -17,6 +17,7 @@ interface Entry {
 export default function TimesheetDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const createBatch = useCreateTimesheetBatch();
   const isNew = id === 'new';
 
   const [entryDate, setEntryDate] = useState('');
@@ -66,7 +67,6 @@ export default function TimesheetDetailPage() {
       const session = getSession();
       if (!session?.token) { setError('Not authenticated.'); setSaving(false); return; }
 
-      const activeClientId = getActiveClientId();
       const body = {
         entry_date: entryDate,
         inspection_id: inspectionId,
@@ -75,10 +75,9 @@ export default function TimesheetDetailPage() {
           hours: parseFloat(e.hours),
           ...(e.notes ? { notes: e.notes } : {}),
         })),
-        ...(activeClientId ? { client_id: activeClientId } : {}),
-      } as const;
+      };
 
-      await createTimesheetBatch(body);
+      await createBatch.mutateAsync(body);
 
       navigate('/m/timesheets');
     } catch (err: unknown) {

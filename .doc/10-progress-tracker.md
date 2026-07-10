@@ -363,3 +363,4 @@
 | TSM-901 | Backend: multi-row INSERT with RETURNING * — stores `inspection_id` and `notes→description`, returns `{ entries: [...] }` instead of `{ count }` | 6 | 🟩 COMPLETED | None |
 | TSM-902 | Frontend: update `createTimesheetBatch` return type to `Promise<{ entries: Timesheet[] }>` | 6 | 🟩 COMPLETED | TSM-901 |
 | TSM-903 | Tests: server tests for multi-row INSERT, inspection_id null handling, description mapping | 6 | 🟩 COMPLETED | TSM-901 |
+| TSM-904 | Fix: TimesheetDetailPage uses `useCreateTimesheetBatch` hook instead of raw API — ensures React Query cache invalidation so saved entries appear in list | 6 | 🟩 COMPLETED | TSM-902 |
