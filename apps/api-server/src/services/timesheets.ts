@@ -7,7 +7,7 @@ interface BatchEntryInput {
 }
 
 export interface TimesheetEntryRow {
-  entry_id: string;
+  id: string;
   user_id: string;
   project_id: string;
   inspection_id: string | null;
@@ -32,7 +32,7 @@ export async function getTimesheetsForInspector(
 ): Promise<TimesheetEntryRow[]> {
   const result = await pool.query(
     `SELECT 
-      te.entry_id,
+      te.entry_id AS id,
       te.user_id,
       te.project_id,
       te.inspection_id,
@@ -89,7 +89,7 @@ export async function getTimesheetById(
 ): Promise<TimesheetEntryRow | null> {
   const result = await pool.query(
     `SELECT 
-      te.entry_id,
+      te.entry_id AS id,
       te.user_id,
       te.project_id,
       te.inspection_id,
@@ -121,7 +121,7 @@ export async function updateTimesheet(
   clientId: string,
   userId: string,
   data: { work_type?: string; hours?: number; description?: string }
-): Promise<{ entry_id: string; work_type: string; hours: string }> {
+): Promise<{ id: string; work_type: string; hours: string }> {
   const conn = await pool.connect();
   try {
     await conn.query('BEGIN');
@@ -144,7 +144,7 @@ export async function updateTimesheet(
 
     vals.push(entryId);
     const result = await conn.query(
-      `UPDATE timesheet_entries SET ${sets.join(', ')}, updated_at = NOW() WHERE entry_id = $${idx} RETURNING entry_id, work_type, hours_logged AS hours`,
+      `UPDATE timesheet_entries SET ${sets.join(', ')}, updated_at = NOW() WHERE entry_id = $${idx} RETURNING entry_id AS id, work_type, hours_logged AS hours`,
       vals
     );
     await conn.query('COMMIT');
@@ -161,7 +161,7 @@ export async function submitTimesheet(
   entryId: string,
   clientId: string,
   userId: string
-): Promise<{ entry_id: string; status: string }> {
+): Promise<{ id: string; status: string }> {
   const conn = await pool.connect();
   try {
     await conn.query('BEGIN');
@@ -175,7 +175,7 @@ export async function submitTimesheet(
     if (current.rows[0].status !== 'Draft') throw new Error('TIMESHEET_NOT_DRAFT');
 
     const result = await conn.query(
-      `UPDATE timesheet_entries SET status = 'Submitted', updated_at = NOW() WHERE entry_id = $1 RETURNING entry_id, status`,
+      `UPDATE timesheet_entries SET status = 'Submitted', updated_at = NOW() WHERE entry_id = $1 RETURNING entry_id AS id, status`,
       [entryId]
     );
     await conn.query('COMMIT');
