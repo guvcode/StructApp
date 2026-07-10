@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { apiClient } from '../services/api/apiClient';
 import { ENDPOINTS } from '../services/api/endpoints';
+import { InspectionStatus } from '../types';
 
 interface Props {
   inspectionId: string;
@@ -8,7 +9,7 @@ interface Props {
   onReopen: () => void;
 }
 
-const TARGET_STATUSES = ['Submitted', 'Returned'] as const;
+const TARGET_STATUSES = [InspectionStatus.Submitted, InspectionStatus.Returned] as const;
 
 export function ReopenInspectionModal({ inspectionId, onClose, onReopen }: Props) {
   const [targetStatus, setTargetStatus] = useState<'Submitted' | 'Returned'>('Submitted');

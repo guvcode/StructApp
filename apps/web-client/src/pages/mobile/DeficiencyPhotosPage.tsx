@@ -8,6 +8,7 @@ import { uploadPhotoToCloudinary } from '../../lib/photoUpload';
 import { getActiveClientId } from '../../lib/authStore';
 import { getDeficiencyPhotos } from '../../services/api/photos';
 import type { OfflinePhoto } from '../../lib/db';
+import { InspectionStatus } from '../../types';
 
 export default function DeficiencyPhotosPage() {
   const { localId } = useParams<{ localId: string }>();
@@ -37,7 +38,7 @@ export default function DeficiencyPhotosPage() {
     enabled: !!deficiency?.inspection_id,
     retry: false,
   });
-  const isReadOnly = inspection?.status === 'Submitted' || inspection?.status === 'Approved';
+  const isReadOnly = inspection?.status === InspectionStatus.Submitted || inspection?.status === InspectionStatus.Approved;
 
   const { data: serverPhotos = [] } = useQuery({
     queryKey: ['deficiency-photos', localId],

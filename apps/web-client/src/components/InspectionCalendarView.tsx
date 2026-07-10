@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { BulkReassignDialog, InspectionForBulkReassign } from './BulkReassignDialog';
+import { InspectionStatus } from '../types';
 
 export interface InspectionForCalendar {
   inspection_id: string;
@@ -139,7 +140,7 @@ export function InspectionCalendarView({
           <h3 className="text-text-primary font-semibold mb-3">Inspectors</h3>
           <div className="space-y-2">
             {Object.entries(inspectionsByInspector).map(([inspectorId, inspList]) => {
-              const openCount = inspList.filter((i) => i.status !== 'Approved').length;
+              const openCount = inspList.filter((i) => i.status !== InspectionStatus.Approved).length;
               return (
                 <div
                   key={inspectorId}

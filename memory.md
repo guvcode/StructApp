@@ -1,38 +1,39 @@
-# Memory — FIX-012 Mobile Deficiency Detail Page Bugs
+# Memory — REFACTOR-001 Literal Constants Across Forms
 
-Last updated: 2026-07-08T23:12:00-06:00
+Last updated: 2026-07-10T10:55:00-06:00
 
 ## What was built
 
-### FIX-012 — Mobile Deficiency Detail Page bugs
-**Three bugs fixed in `apps/web-client/src/pages/mobile/DeficiencyDetailPage.tsx`:**
+Replaced hardcoded string literals with canonical status constants (`InspectionStatus`, `TimesheetStatus`, `PriorityTier`, `RemediationStatus`) from `types/index.ts` across 12 files:
 
-1. **Save -> Navigate**: After saving a new deficiency, the page now navigates to `/m/deficiencies/{newId}?inspection_id=X` using `navigate(..., { replace: true })`. The mutation returns the `deficiency_id` from the API response, and `onSuccess` navigates to the edit page — making the "Manage Photos" button visible.
-
-2. **Existing data loading**: Added a `useQuery` that tries Dexie `offlineDeficiencies` first, then falls back to `getDeficiencyById` from the API. A `useEffect` populates all 18 form fields from the fetched data. Both camelCase (Dexie) and snake_case (API) field names are handled.
-
-3. **Duplicate save prevention**: Navigation after save naturally prevents re-clicking. Also added a loading skeleton for the edit mode while data is being fetched.
-
-### Tests updated
-- `tests/b6-mobile.test.tsx` — Added 2 new tests: "shows edit heading for existing deficiency" and "disables save button when category not selected"
-- Fixed broken import paths for mock services (archived)
+- `apps/web-client/src/pages/mobile/TimesheetListPage.tsx` — `TimesheetStatus` for filter array + 4 status comparisons
+- `apps/web-client/src/pages/mobile/InspectionDetailPage.tsx` — `InspectionStatus` for 7 status comparisons
+- `apps/web-client/src/pages/mobile/DeficiencyPhotosPage.tsx` — `InspectionStatus` for readOnly check
+- `apps/web-client/src/pages/mobile/DeficiencyDetailPage.tsx` — `InspectionStatus` for readOnly check; `PriorityTier` for PRIORITY_OPTIONS
+- `apps/web-client/src/pages/mobile/DashboardPage.tsx` — `InspectionStatus` for 6 filter conditions + status color/label
+- `apps/web-client/src/pages/reviewer/TimesheetReviewPage.tsx` — `TimesheetStatus` for filter array + 3 canActOn conditions
+- `apps/web-client/src/components/DesktopSidebar.tsx` — `InspectionStatus` + `RemediationStatus` for route config strings
+- `apps/web-client/src/components/ReopenInspectionModal.tsx` — `InspectionStatus` for TARGET_STATUSES
+- `apps/web-client/src/components/InspectionCalendarView.tsx` — `InspectionStatus` for openCount filter
+- `apps/web-client/src/components/BulkReassignDialog.tsx` — `InspectionStatus` for open/approved filters
+- `apps/web-client/src/components/GovernanceMetadataPanel.tsx` — `InspectionStatus` for hasReturn check
+- `apps/web-client/src/pages/admin/AdminDashboardPage.tsx` — `InspectionStatus` for status badge styling
 
 ## Decisions made
 
-- **Navigate vs stay**: Navigate to edit URL on save — makes photos accessible, prevents duplicate saves, URL is bookmarkable
-- **Dexie + API fallback**: Load from offline cache first, then API — works offline for contractors in the field
-- **useEffect for data population**: Acceptable per project standards (not a data-fetching effect, it syncs query results to form state)
+- Constants used directly from `types/index.ts` (`InspectionStatus`, `TimesheetStatus`, `PriorityTier`, `RemediationStatus`) — consistent with existing reviewer page pattern
+- `object.values(PriorityTier)` replaces `['P1','P2','P3','P4','P5']` inline array
+- Route URL strings in `DesktopSidebar.tsx` use template literals with constants (e.g. ``/inspections?status=${InspectionStatus.Submitted}``)
 
 ## Current state
 
-- Both commits pushed to `task/FIX-012-deficiency-save-navigate`
-- All 3 B6-T06 tests pass
-- No new TypeScript errors (only pre-existing ones)
-- Pre-existing test failures (DashboardPage, InspectionDetailPage, InspectionSubmitPage) are unrelated API-mocking issues
+- All 12 files refactored on `task/REFACTOR-001-literal-constants-forms`
+- No new TypeScript errors (only pre-existing ones in PicklistLandingPage, GenericPicklistPage, usePicklists, etc.)
+- FIX-015 stash has been committed and pushed to `task/FIX-015-timesheet-batch-save`
 
 ## Next session starts with
 
-None — this task is complete. The FIX-011 migration should be run against the Render database, then deploy the updated code.
+Run regression tests and commit this branch. Then pick the next task from the progress tracker (Sprint cross-track items remain).
 
 ## Open questions
 

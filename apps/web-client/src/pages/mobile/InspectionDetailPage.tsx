@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../services/api/apiClient';
 import { ENDPOINTS } from '../../services/api/endpoints';
 import Skeleton from '../../components/Skeleton';
+import { InspectionStatus } from '../../types';
 
 export default function InspectionDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -37,7 +38,7 @@ export default function InspectionDetailPage() {
         <p className="text-xs text-text-secondary">Assigned to: {inspection.assignee_name ? `${inspection.assignee_name}${inspection.assignee_email ? ` (${inspection.assignee_email})` : ''}` : inspection.assigned_to}</p>
       </div>
 
-      {inspection.status === 'Returned' && (
+      {inspection.status === InspectionStatus.Returned && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-800 text-sm">
           This inspection was returned for corrections.
         </div>
@@ -77,7 +78,7 @@ export default function InspectionDetailPage() {
       </div>
 
       <div className="flex gap-2 pt-2">
-        {inspection.status === 'Assigned' || inspection.status === 'InProgress' || inspection.status === 'Draft' ? (
+        {inspection.status === InspectionStatus.Assigned || inspection.status === InspectionStatus.InProgress || inspection.status === InspectionStatus.Draft ? (
           <>
             <button
               onClick={() => navigate(`/m/deficiencies/new?inspection_id=${id}`)}
@@ -92,7 +93,7 @@ export default function InspectionDetailPage() {
               Submit Inspection
             </button>
           </>
-        ) : inspection.status === 'Submitted' || inspection.status === 'Approved' ? (
+        ) : inspection.status === InspectionStatus.Submitted || inspection.status === InspectionStatus.Approved ? (
           <div className="w-full px-3 py-2 bg-surface-secondary border border-border rounded-lg text-sm text-text-secondary text-center">
             This inspection is {inspection.status.toLowerCase()} and is read-only.
           </div>
