@@ -10,6 +10,7 @@ const mockMutateAsync = vi.hoisted(() => vi.fn().mockResolvedValue({ entries: []
 
 vi.mock('../src/hooks/useTimesheets', () => ({
   useCreateTimesheetBatch: () => ({ mutateAsync: mockMutateAsync, isPending: false }),
+  useUpdateTimesheet: () => ({ mutateAsync: vi.fn(), isPending: false }),
   useSubmitTimesheet: () => ({ mutate: vi.fn() }),
   useDeleteTimesheet: () => ({ mutate: vi.fn() }),
 }));
@@ -43,7 +44,7 @@ describe('B17-T01 — TimesheetDetailPage cache invalidation', () => {
     const { container } = render(wrap(
       <MemoryRouter initialEntries={['/m/timesheets/new']}>
         <Routes>
-          <Route path="m/timesheets/new" element={<TimesheetDetailPage />} />
+          <Route path="m/timesheets/:id" element={<TimesheetDetailPage />} />
           <Route path="m/timesheets" element={<div>Timesheet List Page</div>} />
         </Routes>
       </MemoryRouter>

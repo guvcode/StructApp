@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getSession } from '../../lib/authStore';
-import { useCreateTimesheetBatch } from '../../hooks/useTimesheets';
+import { useCreateTimesheetBatch, useUpdateTimesheet } from '../../hooks/useTimesheets';
 import { getInspections } from '../../services/api/inspections';
+import { getTimesheetById } from '../../services/api/timesheets';
 import type { Inspection } from '../../types';
 
 const WORK_TYPES = ['Field Inspection', 'Report Writing', 'Equipment Check', 'Office Work', 'Travel'];
@@ -19,7 +20,9 @@ export default function TimesheetDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const createBatch = useCreateTimesheetBatch();
+  const updateTimesheet = useUpdateTimesheet();
   const isNew = id === 'new';
+  const [loading, setLoading] = useState(false);
 
   const [entryDate, setEntryDate] = useState('');
   const [inspectionId, setInspectionId] = useState('');
@@ -36,6 +39,26 @@ export default function TimesheetDetailPage() {
         .catch(() => {});
     }
   }, []);
+
+  useEffect(() => {
+    if (isNew || !id) return;
+    setLoading(true);
+    getTimesheetById(id)
+      .then(entry => {
+        if (!entry) return;
+        setEntryDate(entry.entry_date ?? '');
+        setInspectionId(entry.inspection_id ?? '');
+        setEntries([{
+          id: crypto.randomUUID(),
+          workType: entry.work_type ?? '',
+          hours: String(entry.hours),
+          notes: entry.notes ?? '',
+          preInspection: entry.pre_inspection ?? false,
+        }]);
+      })
+      .catch(() => setError('Failed to load timesheet entry.'))
+      .finally(() => setLoading(false));
+  }, [id, isNew]);
 
   const addEntry = () => setEntries(prev => [...prev, { id: crypto.randomUUID(), workType: '', hours: '', notes: '', preInspection: false }]);
 
@@ -68,18 +91,30 @@ export default function TimesheetDetailPage() {
       const session = getSession();
       if (!session?.token) { setError('Not authenticated.'); setSaving(false); return; }
 
-      const body = {
-        entry_date: entryDate,
-        inspection_id: inspectionId,
-        entries: validEntries.map(e => ({
-          work_type: e.workType,
-          hours: parseFloat(e.hours),
-          pre_inspection: e.preInspection,
-          ...(e.notes ? { notes: e.notes } : {}),
-        })),
-      };
+      if (isNew) {
+        const body = {
+          entry_date: entryDate,
+          inspection_id: inspectionId,
+          entries: validEntries.map(e => ({
+            work_type: e.workType,
+            hours: parseFloat(e.hours),
+            pre_inspection: e.preInspection,
+            ...(e.notes ? { notes: e.notes } : {}),
+          })),
+        };
 
-      await createBatch.mutateAsync(body);
+        await createBatch.mutateAsync(body);
+      } else {
+        const entry = validEntries[0]!;
+        await updateTimesheet.mutateAsync({
+          id: id!,
+          data: {
+            work_type: entry.workType,
+            hours: parseFloat(entry.hours),
+            notes: entry.notes || undefined,
+          },
+        });
+      }
 
       navigate('/m/timesheets');
     } catch (err: unknown) {
@@ -89,10 +124,19 @@ export default function TimesheetDetailPage() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="p-4 max-w-lg mx-auto">
+        <button onClick={() => navigate('/m/timesheets')} className="text-sm text-accent">&larr; Back</button>
+        <p className="text-text-secondary text-sm mt-4">Loading...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 max-w-lg mx-auto space-y-4">
       <button onClick={() => navigate('/m/timesheets')} className="text-sm text-accent">&larr; Back</button>
-      <h1 className="text-xl font-bold text-text-primary">New Timesheet Entry</h1>
+      <h1 className="text-xl font-bold text-text-primary">{isNew ? 'New' : 'Edit'} Timesheet Entry</h1>
 
       <div>
         <label className="block text-sm font-medium text-text-primary mb-1">Date</label>
