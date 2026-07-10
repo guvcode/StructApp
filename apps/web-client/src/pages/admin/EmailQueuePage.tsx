@@ -22,7 +22,7 @@ export default function EmailQueuePage() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
 
-  const { data, isLoading } = useQuery<{ data: NotificationRow[]; pagination: { page: number; totalPages: number; total: number } }>({
+  const { data, isLoading } = useQuery<{ rows: NotificationRow[]; pagination: { page: number; totalPages: number; total: number } }>({
     queryKey: ['notifications', page],
     queryFn: () => apiClient(`${ENDPOINTS.notifications.list}?page=${page}&limit=50`),
   });
@@ -37,7 +37,7 @@ export default function EmailQueuePage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
   });
 
-  const notifications = data?.data ?? [];
+  const notifications = data?.rows ?? [];
   const pagination = data?.pagination;
 
   if (isLoading) return (

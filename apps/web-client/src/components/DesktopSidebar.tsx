@@ -126,7 +126,7 @@ const menuSections: MenuSection[] = [
   ]},
   { label: 'Reports', route: '/reports', roles: ['reviewer', 'admin'], phase: 'P1' },
   { label: 'Audit Logs', route: '/admin/audit-logs', roles: ['admin', 'reviewer'], phase: 'P1' },
-  { label: 'Email Queue', route: '/admin/email-queue', roles: ['admin', 'reviewer'], phase: 'P1' },
+  { label: 'Email Queue', route: '/admin/email-queue', roles: ['admin', 'reviewer'], phase: 'P0' },
   { label: 'Imports', route: '/admin/imports', roles: ['admin'], phase: 'P2', submenu: [
     { label: 'Upload Batch', route: '/admin/imports' },
     { label: 'Batch History', route: '/admin/imports/history' },
