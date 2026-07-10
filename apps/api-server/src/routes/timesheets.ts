@@ -86,12 +86,26 @@ router.post('/batch', requireAuth, async (req: Request, res: Response, next: Nex
 
 router.get('/groups', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = req.user!.sub;
-    const clientId = req.user!.client_id;
-    const result = await pool.query(
-      `SELECT entry_id AS id, user_id, project_id, inspection_id, client_id, work_type, hours_logged AS hours, entry_date, pre_inspection, status, rejection_reason, approved_by, approved_at, created_at, updated_at FROM timesheet_entries WHERE user_id = $1 AND client_id = $2 ORDER BY entry_date DESC`,
-      [userId, clientId],
-    );
+    const user = req.user!;
+    const clientId = user.client_id;
+    const isAdminOrReviewer = user.role === 'Admin' || user.role === 'Reviewer';
+    const requestedUserId = req.query.user_id as string | undefined;
+
+    let query = `SELECT entry_id AS id, user_id, project_id, inspection_id, client_id, work_type, hours_logged AS hours, entry_date, pre_inspection, status, rejection_reason, approved_by, approved_at, created_at, updated_at FROM timesheet_entries WHERE client_id = $1`;
+    const params: unknown[] = [clientId];
+    let paramIdx = 2;
+
+    if (isAdminOrReviewer && requestedUserId) {
+      query += ` AND user_id = $${paramIdx++}`;
+      params.push(requestedUserId);
+    } else if (!isAdminOrReviewer) {
+      query += ` AND user_id = $${paramIdx++}`;
+      params.push(user.sub);
+    }
+
+    query += ` ORDER BY entry_date DESC`;
+
+    const result = await pool.query(query, params);
     res.json({ success: true, data: result.rows });
   } catch (err) {
     next(err);
