@@ -94,8 +94,8 @@ export async function updateTimesheet(
   entryId: string,
   clientId: string,
   userId: string,
-  data: { work_type?: string; hours?: number; notes?: string }
-): Promise<{ id: string; work_type: string; hours: string }> {
+  data: { work_type?: string; hours?: number; notes?: string; pre_inspection?: boolean }
+): Promise<{ id: string; work_type: string; hours: string; notes: string | null; pre_inspection: boolean; status: string }> {
   const conn = await pool.connect();
   try {
     await conn.query('BEGIN');
@@ -106,7 +106,10 @@ export async function updateTimesheet(
       [entryId]
     );
     if (current.rowCount === 0) throw new Error('TIMESHEET_NOT_FOUND');
-    if (current.rows[0].status !== 'Draft') throw new Error('TIMESHEET_NOT_DRAFT');
+
+    // Allow editing Submitted entries by reverting to Draft
+    const currentStatus = current.rows[0].status;
+    if (currentStatus !== 'Draft' && currentStatus !== 'Submitted') throw new Error('TIMESHEET_NOT_DRAFT');
 
     const sets: string[] = [];
     const vals: unknown[] = [];
@@ -114,11 +117,14 @@ export async function updateTimesheet(
     if (data.work_type !== undefined) { sets.push(`work_type = $${idx++}`); vals.push(data.work_type); }
     if (data.hours !== undefined) { sets.push(`hours_logged = $${idx++}`); vals.push(data.hours); }
     if (data.notes !== undefined) { sets.push(`notes = $${idx++}`); vals.push(data.notes); }
+    if (data.pre_inspection !== undefined) { sets.push(`pre_inspection = $${idx++}`); vals.push(data.pre_inspection); }
+    // Revert to Draft if it was Submitted
+    if (currentStatus === 'Submitted') { sets.push(`status = 'Draft'`); }
     if (sets.length === 0) throw new Error('NO_FIELDS_TO_UPDATE');
 
     vals.push(entryId);
     const result = await conn.query(
-      `UPDATE timesheet_entries SET ${sets.join(', ')}, updated_at = NOW() WHERE entry_id = $${idx} RETURNING entry_id AS id, work_type, hours_logged AS hours`,
+      `UPDATE timesheet_entries SET ${sets.join(', ')}, updated_at = NOW() WHERE entry_id = $${idx} RETURNING entry_id AS id, work_type, hours_logged AS hours, notes, pre_inspection, status`,
       vals
     );
     await conn.query('COMMIT');

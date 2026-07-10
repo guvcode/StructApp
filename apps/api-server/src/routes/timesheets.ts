@@ -126,10 +126,11 @@ router.get('/:id', requireAuth, async (req: Request, res: Response, next: NextFu
 router.patch('/:id', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = req.user!;
-    const data: { work_type?: string; hours?: number; notes?: string } = {};
+    const data: { work_type?: string; hours?: number; notes?: string; pre_inspection?: boolean } = {};
     if (req.body.work_type !== undefined) data.work_type = req.body.work_type;
     if (req.body.hours !== undefined) data.hours = req.body.hours;
     if (req.body.notes !== undefined) data.notes = req.body.notes;
+    if (req.body.pre_inspection !== undefined) data.pre_inspection = Boolean(req.body.pre_inspection);
     const result = await updateTimesheet(req.params.id, user.client_id, user.sub, data);
     res.json({ success: true, data: result });
   } catch (err) {

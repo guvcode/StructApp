@@ -117,6 +117,7 @@ export default function TimesheetDetailPage() {
             work_type: entry.workType,
             hours: parseFloat(entry.hours),
             notes: entry.notes || undefined,
+            pre_inspection: entry.preInspection,
           },
         });
       }
