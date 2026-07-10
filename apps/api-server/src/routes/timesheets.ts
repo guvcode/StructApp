@@ -17,7 +17,12 @@ const batchCreateSchema = z.object({
   entry_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   entries: z.array(batchEntrySchema).min(1).max(20),
   client_id: z.string().optional(),
-});
+  project_id: z.string().uuid().optional(),
+  inspection_id: z.string().uuid().optional(),
+}).refine(
+  data => data.project_id || data.inspection_id,
+  { message: 'Either project_id or inspection_id is required' }
+);
 
 const groupApproveSchema = z.object({ entry_ids: z.array(z.string().uuid()).min(1), approver_name: z.string().min(1) });
 const groupRejectSchema = z.object({ entry_ids: z.array(z.string().uuid()).min(1), reason: z.string().min(1) });
@@ -41,7 +46,24 @@ router.post('/batch', requireAuth, async (req: Request, res: Response, next: Nex
       return res.status(422).json({ success: false, error_code: 'VALIDATION_ERROR', message: 'Invalid batch data', details: parsed.error.flatten() });
     }
     const clientId = parsed.data.client_id || user.client_id;
-    const result = await createTimesheetBatch(user.sub, clientId, parsed.data.entry_date, parsed.data.entries);
+
+    // Resolve project_id: direct or derived from inspection_id
+    let projectId = parsed.data.project_id;
+    if (!projectId && parsed.data.inspection_id) {
+      const inspResult = await pool.query(
+        `SELECT s.project_id FROM inspections i
+         JOIN structures st ON i.structure_id = st.structure_id
+         JOIN sites s ON st.site_id = s.site_id
+         WHERE i.inspection_id = $1`,
+        [parsed.data.inspection_id]
+      );
+      if (inspResult.rowCount === 0) {
+        return res.status(404).json({ success: false, error_code: 'NOT_FOUND', message: 'Inspection not found' });
+      }
+      projectId = inspResult.rows[0].project_id;
+    }
+
+    const result = await createTimesheetBatch(user.sub, clientId, projectId!, parsed.data.entry_date, parsed.data.entries);
     res.json({ success: true, data: result });
   } catch (err) {
     next(err);

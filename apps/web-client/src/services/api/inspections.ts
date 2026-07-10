@@ -2,10 +2,11 @@ import { apiClient } from './apiClient';
 import { ENDPOINTS } from './endpoints';
 import type { Inspection, Deficiency } from '../../types';
 
-export async function getInspections(filters?: Partial<{ site_id: string; status: string }>): Promise<Inspection[]> {
+export async function getInspections(filters?: Partial<{ site_id: string; status: string; assignee: string }>): Promise<Inspection[]> {
   const params = new URLSearchParams();
   if (filters?.site_id) params.set('site_id', filters.site_id);
   if (filters?.status) params.set('status', filters.status);
+  if (filters?.assignee) params.set('assignee', filters.assignee);
   const qs = params.toString();
   return apiClient(`${ENDPOINTS.inspections.list}${qs ? `?${qs}` : ''}`);
 }

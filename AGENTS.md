@@ -9,10 +9,11 @@ Run these rules at the start of EVERY task:
 3. **Create task branch** — `git checkout -b task/FEATURE-ID-short-description`; verify with `git symbolic-ref --short HEAD`
 4. **Write failing test first** — Write the test, run only that test with `--testNamePattern`, confirm it fails for the right reason
 5. **Implement the task** — Build only what was planned; stop when the new test passes
-6. **Run `/review`** — Verify work matches plan and respects system standards
-7. **Apply fixes** identified in review
-8. **Commit to task branch** — `git add` only task files; `git commit` with descriptive message
-9. **Run `/remember save`** — Persist state to `memory.md` for next session
+6. **Run `/checkregression`** — Before touching any existing code, scan the codebase for all callers, importers, and dependents. Validate no downstream code breaks. **This is mandatory — never skip.**
+7. **Run `/review`** — Verify work matches plan and respects system standards
+8. **Apply fixes** identified in checkregression and review
+9. **Commit to task branch** — `git add` only task files; `git commit` with descriptive message
+10. **Run `/remember save`** — Persist state to `memory.md` for next session
 
 ## Branching Convention
 
@@ -31,6 +32,7 @@ After every task, before `/remember save`, the session must show verified comple
 - [ ] Implementation makes that test pass
 - [ ] Tests pass: `npx jest tests/FILE.test.ts --testNamePattern "NEW_TEST_NAME"`
 - [ ] TypeScript compiles clean: `npx tsc --noEmit --skipLibCheck` (exclude migration/test rootDir errors)
+- [ ] Regression check completed — no breaking changes to existing callers (`/checkregression`)
 - [ ] Review completed with no critical issues (output "No issues found" or fixes applied)
 - [ ] Changes committed to task branch
 - [ ] `.doc/10-progress-tracker.md` updated and committed
@@ -55,6 +57,7 @@ Update `.doc/10-progress-tracker.md` after each task:
 | Test imports wrong module path | Test passes vacuously or fails with module not found | Import must match actual file path |
 | Committing to wrong branch | Work gets orphaned or mixed with unrelated tasks | Verify branch before every commit |
 | Skipping review skill | Defects compound across features | Run review before committing |
+| Modifying or deleting existing code without regression check | Unknowingly breaks downstream callers, causing silent failures or runtime errors | Run `/checkregression` before every commit to scan all dependents |
 | No lint step | Type errors accumulate silently | Run `tsc --noEmit --skipLibCheck` before commit |
 | Forgetting memory save | Context lost between sessions | `/remember save` is the final step, no exceptions |
 

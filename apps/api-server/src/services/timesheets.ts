@@ -218,18 +218,20 @@ export async function deleteTimesheet(
 export async function createTimesheetBatch(
   userId: string,
   clientId: string,
+  projectId: string,
   entryDate: string,
   entries: BatchEntryInput[]
 ): Promise<{ count: number }> {
   const conn = await pool.connect();
   try {
     await conn.query('BEGIN');
+    await conn.query("SELECT set_config('app.current_client_id', $1, true)", [clientId]);
     let count = 0;
     for (const entry of entries) {
       await conn.query(
-        `INSERT INTO timesheet_entries (user_id, client_id, entry_date, work_type, hours_logged, description, status)
+        `INSERT INTO timesheet_entries (user_id, client_id, project_id, entry_date, work_type, hours_logged, status)
          VALUES ($1, $2, $3, $4, $5, $6, 'Draft')`,
-        [userId, clientId, entryDate, entry.work_type, entry.hours, entry.notes ?? null]
+        [userId, clientId, projectId, entryDate, entry.work_type, entry.hours]
       );
       count++;
     }
