@@ -43,11 +43,11 @@ router.post(
     try {
       const result = await pool.query(
         `UPDATE notification_queue SET status = 'pending', retry_count = 0, last_error = NULL, updated_at = NOW()
-         WHERE id = $1 AND status != 'sent' RETURNING id`,
+         WHERE id = $1 RETURNING id`,
         [req.params.id]
       );
       if (result.rowCount === 0) {
-        return res.status(404).json({ success: false, error_code: 'NOT_FOUND', message: 'Notification not found or already sent' });
+        return res.status(404).json({ success: false, error_code: 'NOT_FOUND', message: 'Notification not found' });
       }
       res.json({ success: true, data: { id: result.rows[0].id } });
     } catch (err) {

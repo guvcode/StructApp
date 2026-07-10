@@ -86,7 +86,6 @@ export default function EmailQueuePage() {
                   <td className="py-4 text-xs text-red-600 max-w-xs truncate">{n.last_error ?? '—'}</td>
                   <td className="py-4">
                     <div className="flex gap-2">
-                      {n.status !== 'sent' && (
                         <button
                           onClick={() => resendMutation.mutate(n.id)}
                           disabled={resendMutation.isPending}
@@ -94,7 +93,6 @@ export default function EmailQueuePage() {
                         >
                           Resend
                         </button>
-                      )}
                       <button
                         onClick={() => deleteMutation.mutate(n.id)}
                         disabled={deleteMutation.isPending}
