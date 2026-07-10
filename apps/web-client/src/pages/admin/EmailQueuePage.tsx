@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../services/api/apiClient';
 import { ENDPOINTS } from '../../services/api/endpoints';
@@ -17,6 +18,7 @@ interface NotificationRow {
 }
 
 export default function EmailQueuePage() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
 
@@ -47,6 +49,7 @@ export default function EmailQueuePage() {
 
   return (
     <div className="p-8 max-w-7xl mx-auto animate-fadeIn">
+      <button onClick={() => navigate('/admin')} className="text-sm text-accent mb-4">&larr; Admin Dashboard</button>
       <h1 className="text-3xl font-bold text-text-primary mb-6">Email Queue</h1>
       <p className="text-sm text-text-secondary mb-4">{pagination?.total ?? 0} notifications total</p>
 

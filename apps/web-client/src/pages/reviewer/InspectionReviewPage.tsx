@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useInspection, useDeficienciesForInspection } from '../../hooks/useInspections';
 import { getUserRole } from '../../lib/authStore';
 import { InspectionStatus } from '../../types/index';
@@ -12,6 +12,7 @@ import Skeleton from '../../components/Skeleton';
 
 export default function InspectionReviewPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { data: inspection, isLoading } = useInspection(id);
   const { data: deficiencies = [], refetch } = useDeficienciesForInspection(id);
   const [selectedDef, setSelectedDef] = useState<string | null>(null);
@@ -31,6 +32,7 @@ export default function InspectionReviewPage() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
+      <button onClick={() => navigate('/inspections')} className="text-sm text-accent mb-4">&larr; Back to Inspections</button>
       <h1 className="text-xl font-bold text-text-primary mb-2">Review Inspection</h1>
       <div className="bg-surface-primary rounded-lg border border-border p-4 mb-6">
         <p className="text-sm text-text-secondary">Inspection: <span className="text-text-primary font-medium">{id}</span></p>

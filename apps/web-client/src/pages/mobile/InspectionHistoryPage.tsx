@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useInspection, useDeficienciesForInspection } from '../../hooks/useInspections';
 import type { Deficiency, TriageDecision } from '../../types/index';
 import Skeleton from '../../components/Skeleton';
 
 export default function InspectionHistoryPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { data: inspection, isLoading: loadingInsp } = useInspection(id);
   const { data: deficiencies = [], isLoading: loadingDefs } = useDeficienciesForInspection(id);
   const [decisions, setDecisions] = useState<Record<string, TriageDecision>>({});
@@ -25,6 +26,7 @@ export default function InspectionHistoryPage() {
 
   return (
     <div className="space-y-4">
+      <button onClick={() => navigate(`/m/inspections/${id}`)} className="text-sm text-accent">&larr; Back to Inspection</button>
       <h2 className="text-lg font-bold text-text-primary">
         Historical Deficiency Triage
       </h2>

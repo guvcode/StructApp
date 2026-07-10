@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useUsers, useUpdateUser, useDeactivateUser } from '../../hooks/useUsers';
@@ -173,6 +173,7 @@ function DeactivateDialog({
 }
 
 export default function UserListPage() {
+  const navigate = useNavigate();
   const { data: users = [], isLoading } = useUsers();
   const { data: clients = [] } = useClients();
   const deactivateUserMutation = useDeactivateUser();
@@ -199,6 +200,7 @@ export default function UserListPage() {
 
   return (
     <div className="p-8 max-w-7xl">
+      <button onClick={() => navigate('/admin')} className="text-sm text-accent mb-4">&larr; Admin Dashboard</button>
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-3xl font-bold text-text-primary">Users</h2>
         <Link

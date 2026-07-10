@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useBatches, useSimulateUpload, useCommitBatch, useDiscardBatch } from '../../hooks/useImports';
 import type { ImportBatch } from '../../types/index';
 import Card from '../../components/Card';
 
 export default function ImportCenterPage() {
+  const navigate = useNavigate();
   const { data: allBatches = [], refetch: refetchBatches } = useBatches();
   const [currentBatch, setCurrentBatch] = useState<ImportBatch | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -50,6 +52,7 @@ export default function ImportCenterPage() {
 
   return (
     <div className="p-8 max-w-7xl animate-fadeIn">
+      <button onClick={() => navigate('/admin')} className="text-sm text-accent mb-4">&larr; Admin Dashboard</button>
       <h2 className="text-3xl font-bold text-text-primary mb-8">Import Center</h2>
 
       {error && (

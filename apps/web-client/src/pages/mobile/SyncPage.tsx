@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { useSyncState } from '../../hooks/useSync';
 import { getPendingItems, getAllQueueItems, clearQueue } from '../../services/mockSync';
@@ -8,6 +9,7 @@ import type { SyncQueueItem } from '../../types/index';
 import Skeleton from '../../components/Skeleton';
 
 export default function SyncPage() {
+  const navigate = useNavigate();
   const { data: syncState } = useSyncState();
   const [pendingItems, setPendingItems] = useState<SyncQueueItem[]>([]);
   const [allItems, setAllItems] = useState<SyncQueueItem[]>([]);
@@ -137,6 +139,7 @@ export default function SyncPage() {
 
   return (
     <div className="space-y-4">
+      <button onClick={() => navigate('/m')} className="text-sm text-accent">&larr; Back</button>
       <h2 className="text-lg font-bold text-text-primary">Sync Hub</h2>
       <div className="bg-surface-primary rounded-lg p-3 border border-border">
         <p className="text-sm text-text-primary">
