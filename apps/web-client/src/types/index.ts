@@ -331,7 +331,7 @@ export interface TimesheetGroup {
   week_end: string;
   entries: Timesheet[];
   total_hours: number;
-  status: TimesheetStatus;
+  status: TimesheetStatus | 'Mixed';
   rejection_reason?: string;
   approved_by?: string;
   approved_at?: string;
