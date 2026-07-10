@@ -1,71 +1,65 @@
 import { apiClient } from './apiClient';
 import { ENDPOINTS } from './endpoints';
-import type { Timesheet, TimesheetGroup, TimesheetStatus } from '../../types';
+import type { Timesheet, TimesheetGridData, TimesheetGridCell, TimesheetStatus } from '../../types';
 
-function getMonday(d: Date): Date {
-  const date = new Date(d);
-  const day = date.getDay();
-  const diff = date.getDate() - day + (day === 0 ? -6 : 1);
-  date.setDate(diff);
-  date.setHours(0, 0, 0, 0);
-  return date;
-}
-
-function getSunday(d: Date): Date {
-  const mon = getMonday(d);
-  const sun = new Date(mon);
-  sun.setDate(sun.getDate() + 6);
-  return sun;
-}
-
-function toISODate(d: Date): string {
-  return d.toISOString().slice(0, 10);
-}
-
-function groupIntoWeeks(entries: Timesheet[]): TimesheetGroup[] {
-  const groupMap = new Map<string, {
-    user_id: string;
-    user_name: string;
-    week_start: string;
-    week_end: string;
-    entries: Timesheet[]; }>();
+function groupIntoGrid(entries: Timesheet[]): TimesheetGridData {
+  const contractorMap = new Map<string, { user_id: string; user_name: string }>();
+  const inspectionMap = new Map<string, { inspection_id: string; inspection_name: string }>();
+  const cellMap = new Map<string, TimesheetGridCell>();
 
   for (const entry of entries) {
-    const entryDate = new Date(entry.entry_date + 'T00:00:00');
-    const weekStart = getMonday(entryDate);
-    const weekEnd = getSunday(entryDate);
-    const weekKey = `${entry.user_id}_${toISODate(weekStart)}`;
-    if (!groupMap.has(weekKey)) {
-      groupMap.set(weekKey, {
+    const contractorKey = entry.user_id;
+    if (!contractorMap.has(contractorKey)) {
+      contractorMap.set(contractorKey, {
         user_id: entry.user_id,
-        user_name: (entry as any).user_name ?? entry.user_id,
-        week_start: toISODate(weekStart),
-        week_end: toISODate(weekEnd),
-        entries: [],
+        user_name: entry.user_name ?? entry.user_id,
       });
     }
-    groupMap.get(weekKey)!.entries.push(entry);
+
+    const inspectionKey = entry.inspection_id || '__none__';
+    if (!inspectionMap.has(inspectionKey)) {
+      inspectionMap.set(inspectionKey, {
+        inspection_id: inspectionKey,
+        inspection_name: entry.inspection_name || (entry.inspection_id ? 'Unknown Inspection' : 'Other'),
+      });
+    }
+
+    const cellKey = `${entry.user_id}|${inspectionKey}`;
+    if (!cellMap.has(cellKey)) {
+      cellMap.set(cellKey, {
+        user_id: entry.user_id,
+        inspection_id: inspectionKey,
+        entries: [],
+        total_hours: 0,
+        status: 'Draft',
+      });
+    }
+    const cell = cellMap.get(cellKey)!;
+    cell.entries.push(entry);
+    cell.total_hours += Number(entry.hours);
   }
 
-  return Array.from(groupMap.entries()).map(([key, group]) => {
-    const totalHours = group.entries.reduce((sum, e) => sum + Number(e.hours), 0);
-    const statuses = new Set(group.entries.map(e => e.status));
-    let groupStatus = statuses.size === 1 ? group.entries[0]!.status : 'Mixed';
-    if (statuses.has('Rejected')) groupStatus = 'Rejected';
-    const sorted = [...group.entries].sort(
+  const inspectors = Array.from(contractorMap.values()).sort((a, b) =>
+    a.user_name.localeCompare(b.user_name)
+  );
+  const inspections = Array.from(inspectionMap.values()).sort((a, b) => {
+    if (a.inspection_id === '__none__') return 1;
+    if (b.inspection_id === '__none__') return -1;
+    return a.inspection_name.localeCompare(b.inspection_name);
+  });
+
+  const cells: TimesheetGridCell[] = [];
+  for (const cell of cellMap.values()) {
+    const statuses = new Set(cell.entries.map(e => e.status));
+    let cellStatus: TimesheetStatus | 'Mixed' = statuses.size === 1 ? cell.entries[0]!.status : 'Mixed';
+    if (statuses.has('Rejected')) cellStatus = 'Rejected';
+    cell.entries.sort(
       (a, b) => new Date(b.entry_date).getTime() - new Date(a.entry_date).getTime()
     );
-    return {
-      id: key,
-      user_id: group.user_id,
-      user_name: group.user_name,
-      week_start: group.week_start,
-      week_end: group.week_end,
-      entries: sorted,
-      total_hours: totalHours,
-      status: groupStatus as TimesheetStatus | 'Mixed',
-    };
-  });
+    cells.push({ ...cell, status: cellStatus });
+  }
+
+  return { inspections, contractors: inspectors, cells };
 }
 
 export async function getTimesheets(clientId?: string): Promise<Timesheet[]> {
@@ -129,10 +123,10 @@ export async function rejectTimesheet(id: string, reason: string): Promise<void>
   });
 }
 
-export async function getTimesheetGroups(userId?: string): Promise<TimesheetGroup[]> {
+export async function getTimesheetGroups(userId?: string): Promise<TimesheetGridData> {
   const url = userId ? `${ENDPOINTS.timesheets.groups}?user_id=${userId}` : ENDPOINTS.timesheets.groups;
   const entries = await apiClient<Timesheet[]>(url);
-  return groupIntoWeeks(entries);
+  return groupIntoGrid(entries);
 }
 
 export async function approveTimesheetGroup(groupId: string, approverName: string): Promise<void> {
