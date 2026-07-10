@@ -2,8 +2,8 @@ import { apiClient } from './apiClient';
 import { ENDPOINTS } from './endpoints';
 import type { Timesheet, TimesheetGroup, TimesheetStatus } from '../../types';
 
-export async function getTimesheets(userId?: string): Promise<Timesheet[]> {
-  const url = userId ? `${ENDPOINTS.timesheets.list}?user_id=${userId}` : ENDPOINTS.timesheets.list;
+export async function getTimesheets(clientId?: string): Promise<Timesheet[]> {
+  const url = clientId ? `${ENDPOINTS.timesheets.list}?client_id=${clientId}` : ENDPOINTS.timesheets.list;
   return apiClient(url);
 }
 

@@ -2,10 +2,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as api from '../services/api/timesheets';
 import type { Timesheet, TimesheetStatus } from '../types';
 
-export function useTimesheets(userId?: string) {
+export function useTimesheets(clientId?: string) {
   return useQuery({
-    queryKey: ['timesheets', userId],
-    queryFn: () => api.getTimesheets(userId),
+    queryKey: ['timesheets', clientId],
+    queryFn: () => api.getTimesheets(clientId),
   });
 }
 

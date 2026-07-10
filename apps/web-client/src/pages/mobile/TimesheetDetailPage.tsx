@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getSession, getActiveClientId } from '../../lib/authStore';
+import { getSession } from '../../lib/authStore';
 import { useCreateTimesheetBatch } from '../../hooks/useTimesheets';
 import { getInspections } from '../../services/api/inspections';
 import type { Inspection } from '../../types';
@@ -67,7 +67,6 @@ export default function TimesheetDetailPage() {
       const session = getSession();
       if (!session?.token) { setError('Not authenticated.'); setSaving(false); return; }
 
-      const activeClientId = getActiveClientId();
       const body = {
         entry_date: entryDate,
         inspection_id: inspectionId,
@@ -76,8 +75,7 @@ export default function TimesheetDetailPage() {
           hours: parseFloat(e.hours),
           ...(e.notes ? { notes: e.notes } : {}),
         })),
-        ...(activeClientId ? { client_id: activeClientId } : {}),
-      } as const;
+      };
 
       await createBatch.mutateAsync(body);
 

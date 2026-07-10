@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTimesheets, useSubmitTimesheet, useDeleteTimesheet } from '../../hooks/useTimesheets';
-import { getSession } from '../../lib/authStore';
+import { getActiveClientId } from '../../lib/authStore';
 import { TimesheetStatus } from '../../types';
 import Skeleton from '../../components/Skeleton';
 
@@ -16,9 +16,8 @@ const FILTERS = ['All', TimesheetStatus.Draft, TimesheetStatus.Submitted, Timesh
 
 export default function TimesheetListPage() {
   const navigate = useNavigate();
-  const session = getSession();
-  const userId = session?.user?.id;
-  const { data: timesheets = [], isLoading, isError, error } = useTimesheets(userId);
+  const activeClientId = getActiveClientId();
+  const { data: timesheets = [], isLoading, isError, error } = useTimesheets(activeClientId);
   const submitTimesheet = useSubmitTimesheet();
   const deleteTimesheet = useDeleteTimesheet();
   const [statusFilter, setStatusFilter] = useState('All');
