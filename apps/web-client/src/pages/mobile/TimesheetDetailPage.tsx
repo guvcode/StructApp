@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getSession, getActiveClientId } from '../../lib/authStore';
 import { createTimesheetBatch } from '../../services/api/timesheets';
+import { getInspections } from '../../services/api/inspections';
+import type { Inspection } from '../../types';
 
 const WORK_TYPES = ['Field Inspection', 'Report Writing', 'Equipment Check', 'Office Work', 'Travel'];
 
@@ -18,9 +20,20 @@ export default function TimesheetDetailPage() {
   const isNew = id === 'new';
 
   const [entryDate, setEntryDate] = useState('');
+  const [inspectionId, setInspectionId] = useState('');
+  const [inspections, setInspections] = useState<Inspection[]>([]);
   const [entries, setEntries] = useState<Entry[]>([{ id: crypto.randomUUID(), workType: '', hours: '', notes: '' }]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const session = getSession();
+    if (session?.user?.id) {
+      getInspections({ assignee: session.user.id })
+        .then(setInspections)
+        .catch(() => {});
+    }
+  }, []);
 
   const addEntry = () => setEntries(prev => [...prev, { id: crypto.randomUUID(), workType: '', hours: '', notes: '' }]);
 
@@ -37,6 +50,7 @@ export default function TimesheetDetailPage() {
     setError('');
 
     if (!entryDate) { setError('Date is required.'); return; }
+    if (!inspectionId) { setError('Please select an inspection.'); return; }
 
     const validEntries = entries.filter(e => e.workType && e.hours);
     if (validEntries.length === 0) { setError('At least one entry with work type and hours is required.'); return; }
@@ -52,15 +66,17 @@ export default function TimesheetDetailPage() {
       const session = getSession();
       if (!session?.token) { setError('Not authenticated.'); setSaving(false); return; }
 
+      const activeClientId = getActiveClientId();
       const body = {
         entry_date: entryDate,
+        inspection_id: inspectionId,
         entries: validEntries.map(e => ({
           work_type: e.workType,
           hours: parseFloat(e.hours),
           ...(e.notes ? { notes: e.notes } : {}),
         })),
-        ...(getActiveClientId() ? { client_id: getActiveClientId() } : {}),
-      };
+        ...(activeClientId ? { client_id: activeClientId } : {}),
+      } as const;
 
       await createTimesheetBatch(body);
 
@@ -85,6 +101,22 @@ export default function TimesheetDetailPage() {
           onChange={e => setEntryDate(e.target.value)}
           className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary"
         />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-text-primary mb-1">Inspection</label>
+        <select
+          value={inspectionId}
+          onChange={e => setInspectionId(e.target.value)}
+          className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary"
+        >
+          <option value="">Select an inspection...</option>
+          {inspections.map(insp => (
+            <option key={insp.id} value={insp.id}>
+              {insp.site_name} ({insp.status}){insp.scheduled_date ? ` - ${insp.scheduled_date}` : ''}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="space-y-3">
