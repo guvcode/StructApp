@@ -72,7 +72,7 @@ export default function ReportCenterPage() {
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8 animate-fadeIn">
-      <button onClick={() => navigate('/reviewer/dashboard')} className="text-sm text-accent mb-4">&larr; Dashboard</button>
+      <button onClick={() => navigate(-1)} className="text-sm text-accent mb-4">&larr; Back</button>
       <h1 className="text-3xl font-bold text-text-primary">Report Publishing Center</h1>
 
       {error && <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-sm text-red-700">{error}</div>}
