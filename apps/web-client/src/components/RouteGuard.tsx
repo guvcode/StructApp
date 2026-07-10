@@ -1,5 +1,6 @@
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { isAuthenticated, getUserRole } from '../lib/authStore';
+import { UserRole, isReviewerOrAdmin } from '../types/index';
 
 function isPublicRoute(pathname: string): boolean {
   const path = pathname.toLowerCase();
@@ -8,9 +9,9 @@ function isPublicRoute(pathname: string): boolean {
 
 function getRouteRole(pathname: string): string | null {
   const path = pathname.toLowerCase();
-  if (path.startsWith('/m/')) return 'contractor';
-  if (path.startsWith('/admin/')) return 'admin';
-  if (path.startsWith('/reviewer/')) return 'reviewer';
+  if (path.startsWith('/m/')) return UserRole.contractor;
+  if (path.startsWith('/admin/')) return UserRole.admin;
+  if (path.startsWith('/reviewer/')) return UserRole.reviewer;
   if (
     path.startsWith('/inspections') ||
     path.startsWith('/deficiencies') ||
@@ -20,7 +21,7 @@ function getRouteRole(pathname: string): string | null {
     path.startsWith('/reports') ||
     path.startsWith('/categories') ||
     path.startsWith('/calendar')
-  ) return 'reviewer';
+  ) return UserRole.reviewer;
   return null;
 }
 
@@ -49,19 +50,19 @@ export default function RouteGuard() {
   // Redirect bare root path to role-appropriate default
   if (pathname === '/' || pathname === '') {
     if (!isAuthenticated()) return <Navigate to="/login" replace />;
-    if (role === 'contractor') return <Navigate to="/m/dashboard" replace />;
-    if (role === 'reviewer' || role === 'admin') return <Navigate to="/inspections" replace />;
+    if (role === UserRole.contractor) return <Navigate to="/m/dashboard" replace />;
+    if (isReviewerOrAdmin(role)) return <Navigate to="/inspections" replace />;
     return <Navigate to="/login" replace />;
   }
 
-  if (required && role !== required && role !== 'admin') {
-    if (required === 'reviewer' && role === 'contractor') {
+  if (required && role !== required && role !== UserRole.admin) {
+    if (required === UserRole.reviewer && role === UserRole.contractor) {
       return <Navigate to="/forbidden" replace />;
     }
-    if (required === 'admin' && role !== 'admin') {
+    if (required === UserRole.admin && role !== UserRole.admin) {
       return <Navigate to="/forbidden" replace />;
     }
-    if (required === 'contractor' && role !== 'contractor') {
+    if (required === UserRole.contractor && role !== UserRole.contractor) {
       return <Navigate to="/forbidden" replace />;
     }
   }

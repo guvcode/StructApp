@@ -1,4 +1,5 @@
 import type { AuthSession } from '../types/index';
+import { UserRole } from '../types/index';
 
 const STORAGE_KEY = 'structapp_auth_session';
 
@@ -90,9 +91,9 @@ export function isSessionExpired(): boolean {
 export function getLandingRoute(role?: string): string {
   const r = role ?? getUserRole();
   switch (r) {
-    case 'admin':
+    case UserRole.admin:
       return '/admin/dashboard';
-    case 'reviewer':
+    case UserRole.reviewer:
       return '/reviewer/dashboard';
     default:
       return '/m/dashboard';

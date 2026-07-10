@@ -5,6 +5,7 @@ import { getSession, getLandingRoute, getUserRole } from '../../lib/authStore';
 import { apiClient } from '../../services/api/apiClient';
 import { ENDPOINTS } from '../../services/api/endpoints';
 import { cacheClientNames, getCachedClientNames } from '../../lib/clientNameCache';
+import { UserRole } from '../../types/index';
 import Card from '../../components/Card';
 
 interface ClientOption {
@@ -21,7 +22,7 @@ export default function ClientPickerPage() {
 
   const session = getSession();
   const role = getUserRole();
-  const isContractor = role === 'contractor';
+  const isContractor = role === UserRole.contractor;
 
   const { data: allClients = [], isLoading: clientsLoading, isError: clientsError } = useQuery({
     queryKey: ['clients', isContractor ? 'with-assigned-inspections' : 'mine'],
