@@ -63,7 +63,7 @@ router.post('/batch', requireAuth, async (req: Request, res: Response, next: Nex
       projectId = inspResult.rows[0].project_id;
     }
 
-    const result = await createTimesheetBatch(user.sub, clientId, projectId!, parsed.data.entry_date, parsed.data.entries);
+    const result = await createTimesheetBatch(user.sub, clientId, projectId!, parsed.data.inspection_id ?? null, parsed.data.entry_date, parsed.data.entries);
     res.json({ success: true, data: result });
   } catch (err) {
     next(err);
