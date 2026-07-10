@@ -219,24 +219,53 @@ export async function createTimesheetBatch(
   userId: string,
   clientId: string,
   projectId: string,
+  inspectionId: string | null,
   entryDate: string,
   entries: BatchEntryInput[]
-): Promise<{ count: number }> {
+): Promise<{
+  entries: Array<{
+    id: string;
+    user_id: string;
+    project_id: string;
+    inspection_id: string | null;
+    client_id: string;
+    work_type: string;
+    hours: string;
+    description: string | null;
+    entry_date: string;
+    status: string;
+    rejection_reason: null;
+    approved_by: null;
+    approved_at: null;
+    created_at: string;
+    updated_at: string;
+  }>;
+}> {
   const conn = await pool.connect();
   try {
     await conn.query('BEGIN');
     await conn.query("SELECT set_config('app.current_client_id', $1, true)", [clientId]);
-    let count = 0;
-    for (const entry of entries) {
-      await conn.query(
-        `INSERT INTO timesheet_entries (user_id, client_id, project_id, entry_date, work_type, hours_logged, status)
-         VALUES ($1, $2, $3, $4, $5, $6, 'Draft')`,
-        [userId, clientId, projectId, entryDate, entry.work_type, entry.hours]
-      );
-      count++;
-    }
+
+    const baseParams = [userId, clientId, projectId, inspectionId, entryDate];
+    const entryParams: unknown[] = [];
+    const valueClauses = entries.map((entry) => {
+      const offset = entryParams.length;
+      entryParams.push(entry.work_type, entry.hours, entry.notes ?? null);
+      return `($1, $2, $3, $4, $5, $${6 + offset}, $${6 + offset + 1}, $${6 + offset + 2}, 'Draft')`;
+    });
+
+    const result = await conn.query(
+      `INSERT INTO timesheet_entries
+         (user_id, client_id, project_id, inspection_id, entry_date, work_type, hours_logged, description, status)
+       VALUES ${valueClauses.join(', ')}
+       RETURNING entry_id AS id, user_id, project_id, inspection_id, client_id, work_type,
+                 hours_logged AS hours, description, entry_date, status,
+                 rejection_reason, approved_by, approved_at, created_at, updated_at`,
+      [...baseParams, ...entryParams]
+    );
+
     await conn.query('COMMIT');
-    return { count };
+    return { entries: result.rows as any };
   } catch (err) {
     await conn.query('ROLLBACK');
     throw err;
