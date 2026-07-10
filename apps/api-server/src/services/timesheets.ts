@@ -120,7 +120,7 @@ export async function updateTimesheet(
   entryId: string,
   clientId: string,
   userId: string,
-  data: { work_type?: string; hours?: number; description?: string }
+  data: { work_type?: string; hours?: number; notes?: string }
 ): Promise<{ id: string; work_type: string; hours: string }> {
   const conn = await pool.connect();
   try {
@@ -139,7 +139,7 @@ export async function updateTimesheet(
     let idx = 1;
     if (data.work_type !== undefined) { sets.push(`work_type = $${idx++}`); vals.push(data.work_type); }
     if (data.hours !== undefined) { sets.push(`hours_logged = $${idx++}`); vals.push(data.hours); }
-    if (data.description !== undefined) { sets.push(`description = $${idx++}`); vals.push(data.description); }
+    if (data.notes !== undefined) { sets.push(`notes = $${idx++}`); vals.push(data.notes); }
     if (sets.length === 0) throw new Error('NO_FIELDS_TO_UPDATE');
 
     vals.push(entryId);
@@ -231,7 +231,7 @@ export async function createTimesheetBatch(
     client_id: string;
     work_type: string;
     hours: string;
-    description: string | null;
+    notes: string | null;
     entry_date: string;
     status: string;
     rejection_reason: null;
@@ -256,10 +256,10 @@ export async function createTimesheetBatch(
 
     const result = await conn.query(
       `INSERT INTO timesheet_entries
-         (user_id, client_id, project_id, inspection_id, entry_date, work_type, hours_logged, description, status)
+         (user_id, client_id, project_id, inspection_id, entry_date, work_type, hours_logged, notes, status)
        VALUES ${valueClauses.join(', ')}
        RETURNING entry_id AS id, user_id, project_id, inspection_id, client_id, work_type,
-                 hours_logged AS hours, description, entry_date, status,
+                 hours_logged AS hours, notes, entry_date, status,
                  rejection_reason, approved_by, approved_at, created_at, updated_at`,
       [...baseParams, ...entryParams]
     );

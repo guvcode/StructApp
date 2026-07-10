@@ -293,7 +293,7 @@ export interface Timesheet {
   entry_date: string;
   hours: number;
   work_type?: string;
-  description?: string;
+  notes?: string;
   status: TimesheetStatus;
   rejection_reason?: string;
   approved_by?: string;

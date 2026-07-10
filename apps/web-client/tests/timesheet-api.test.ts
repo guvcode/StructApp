@@ -9,7 +9,7 @@ describe('Timesheet API service', () => {
 
   it('createTimesheetBatch calls fetch with correct URL and body', async () => {
     const mockEntries = [
-      { id: 'e1', user_id: 'user-1', project_id: 'proj-1', inspection_id: 'insp-1', client_id: 'client-1', work_type: 'Office Work', hours: 8, description: 'Test', entry_date: '2026-07-09', status: 'Draft', rejection_reason: null, approved_by: null, approved_at: null, created_at: '2026-07-09T10:00:00Z', updated_at: '2026-07-09T10:00:00Z' },
+      { id: 'e1', user_id: 'user-1', project_id: 'proj-1', inspection_id: 'insp-1', client_id: 'client-1', work_type: 'Office Work', hours: 8, notes: 'Test', entry_date: '2026-07-09', status: 'Draft', rejection_reason: null, approved_by: null, approved_at: null, created_at: '2026-07-09T10:00:00Z', updated_at: '2026-07-09T10:00:00Z' },
     ];
     const mockFetch = vi.fn().mockResolvedValue({
       ok: true,
@@ -47,7 +47,7 @@ describe('Timesheet API service', () => {
   it('createTimesheetBatch sends client_id when provided', async () => {
     const mockFetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({ success: true, data: { entries: [{ id: 'e1', user_id: 'user-1', project_id: 'proj-1', inspection_id: null, client_id: 'client-abc', work_type: 'Field Inspection', hours: 4, description: null, entry_date: '2026-07-09', status: 'Draft', rejection_reason: null, approved_by: null, approved_at: null, created_at: '2026-07-09T10:00:00Z', updated_at: '2026-07-09T10:00:00Z' }] } }),
+      json: () => Promise.resolve({ success: true, data: { entries: [{ id: 'e1', user_id: 'user-1', project_id: 'proj-1', inspection_id: null, client_id: 'client-abc', work_type: 'Field Inspection', hours: 4, notes: null, entry_date: '2026-07-09', status: 'Draft', rejection_reason: null, approved_by: null, approved_at: null, created_at: '2026-07-09T10:00:00Z', updated_at: '2026-07-09T10:00:00Z' }] } }),
     });
     vi.stubGlobal('fetch', mockFetch);
 
