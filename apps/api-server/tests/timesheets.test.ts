@@ -94,13 +94,30 @@ describe('timesheets service', () => {
       mockClient.query
         .mockResolvedValueOnce({}) // BEGIN
         .mockResolvedValueOnce({}) // set_config
-        .mockResolvedValueOnce({ rows: [{ entry_id: 'e1', status: 'Draft' }], rowCount: 1 }) // SELECT FOR UPDATE
-        .mockResolvedValueOnce({ rows: [{ entry_id: 'e1', work_type: 'Field Inspection', hours_logged: '4.00' }], rowCount: 1 }) // UPDATE
+        .mockResolvedValueOnce({ rows: [{ entry_id: 'e1', status: 'Draft', user_id: 'user-1' }], rowCount: 1 }) // SELECT FOR UPDATE
+        .mockResolvedValueOnce({ rows: [{ entry_id: 'e1', work_type: 'Field Inspection', hours_logged: '4.00', notes: 'test note', pre_inspection: true, status: 'Draft' }], rowCount: 1 }) // UPDATE
+        .mockResolvedValueOnce({}); // COMMIT
+      mockPool.connect.mockResolvedValue(mockClient);
+
+      const result = await updateTimesheet('e1', 'client-1', 'user-1', { work_type: 'Field Inspection', hours: 4, notes: 'test note', pre_inspection: true });
+      expect(result.work_type).toBe('Field Inspection');
+      expect(result.pre_inspection).toBe(true);
+      expect(result.notes).toBe('test note');
+    });
+
+    test('updates a Submitted entry and reverts to Draft', async () => {
+      const mockClient = makeMockClient();
+      mockClient.query
+        .mockResolvedValueOnce({}) // BEGIN
+        .mockResolvedValueOnce({}) // set_config
+        .mockResolvedValueOnce({ rows: [{ entry_id: 'e1', status: 'Submitted', user_id: 'user-1' }], rowCount: 1 }) // SELECT FOR UPDATE
+        .mockResolvedValueOnce({ rows: [{ entry_id: 'e1', work_type: 'Field Inspection', hours_logged: '4.00', notes: null, pre_inspection: false, status: 'Draft' }], rowCount: 1 }) // UPDATE
         .mockResolvedValueOnce({}); // COMMIT
       mockPool.connect.mockResolvedValue(mockClient);
 
       const result = await updateTimesheet('e1', 'client-1', 'user-1', { work_type: 'Field Inspection', hours: 4 });
       expect(result.work_type).toBe('Field Inspection');
+      expect(result.status).toBe('Draft');
     });
 
     test('throws NOT_FOUND when entry does not exist', async () => {
@@ -114,12 +131,12 @@ describe('timesheets service', () => {
       await expect(updateTimesheet('bad-id', 'client-1', 'user-1', { work_type: 'X' })).rejects.toThrow('TIMESHEET_NOT_FOUND');
     });
 
-    test('throws NOT_DRAFT when entry is not Draft status', async () => {
+    test('throws NOT_DRAFT when entry is Approved or Rejected', async () => {
       const mockClient = makeMockClient();
       mockClient.query
         .mockResolvedValueOnce({}) // BEGIN
         .mockResolvedValueOnce({}) // set_config
-        .mockResolvedValueOnce({ rows: [{ entry_id: 'e1', status: 'Submitted' }], rowCount: 1 }); // SELECT FOR UPDATE
+        .mockResolvedValueOnce({ rows: [{ entry_id: 'e1', status: 'Approved', user_id: 'user-1' }], rowCount: 1 }); // SELECT FOR UPDATE
       mockPool.connect.mockResolvedValue(mockClient);
 
       await expect(updateTimesheet('e1', 'client-1', 'user-1', { work_type: 'X' })).rejects.toThrow('TIMESHEET_NOT_DRAFT');
