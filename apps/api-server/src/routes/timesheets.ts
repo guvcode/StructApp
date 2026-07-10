@@ -91,7 +91,7 @@ router.get('/groups', requireAuth, async (req: Request, res: Response, next: Nex
     const isAdminOrReviewer = user.role === 'Admin' || user.role === 'Reviewer';
     const requestedUserId = req.query.user_id as string | undefined;
 
-    let query = `SELECT te.entry_id AS id, te.user_id, u.display_name AS user_name, te.project_id, te.inspection_id, te.client_id, te.work_type, te.hours_logged AS hours, te.entry_date, te.pre_inspection, te.status, te.rejection_reason, te.approved_by, te.approved_at, te.created_at, te.updated_at, COALESCE(st.name, s.name) AS inspection_name FROM timesheet_entries te LEFT JOIN users u ON te.user_id = u.user_id LEFT JOIN inspections i ON te.inspection_id = i.inspection_id LEFT JOIN structures s ON i.structure_id = s.structure_id LEFT JOIN sites st ON s.site_id = st.site_id WHERE te.client_id = $1`;
+    let query = `SELECT te.entry_id AS id, te.user_id, u.display_name AS user_name, te.project_id, te.inspection_id, te.client_id, te.work_type, te.hours_logged AS hours, te.entry_date, te.pre_inspection, te.status, te.rejection_reason, te.approved_by, te.approved_at, te.created_at, te.updated_at, COALESCE(st.name, s.name) AS inspection_name, p.name AS project_name, s.name AS structure_name FROM timesheet_entries te LEFT JOIN users u ON te.user_id = u.user_id LEFT JOIN inspections i ON te.inspection_id = i.inspection_id LEFT JOIN structures s ON i.structure_id = s.structure_id LEFT JOIN sites st ON s.site_id = st.site_id LEFT JOIN projects p ON st.project_id = p.project_id WHERE te.client_id = $1`;
     const params: unknown[] = [clientId];
     let paramIdx = 2;
 

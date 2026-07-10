@@ -4,7 +4,7 @@ import type { Timesheet, TimesheetGridData, TimesheetGridCell, TimesheetStatus }
 
 function groupIntoGrid(entries: Timesheet[]): TimesheetGridData {
   const contractorMap = new Map<string, { user_id: string; user_name: string }>();
-  const inspectionMap = new Map<string, { inspection_id: string; inspection_name: string }>();
+  const inspectionMap = new Map<string, { inspection_id: string; inspection_name: string; project_name?: string; structure_name?: string }>();
   const cellMap = new Map<string, TimesheetGridCell>();
 
   for (const entry of entries) {
@@ -21,6 +21,8 @@ function groupIntoGrid(entries: Timesheet[]): TimesheetGridData {
       inspectionMap.set(inspectionKey, {
         inspection_id: inspectionKey,
         inspection_name: entry.inspection_name || (entry.inspection_id ? 'Unknown Inspection' : 'Other'),
+        ...(entry.project_name ? { project_name: entry.project_name } : {}),
+        ...(entry.structure_name ? { structure_name: entry.structure_name } : {}),
       });
     }
 

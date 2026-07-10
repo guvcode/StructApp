@@ -42,7 +42,9 @@ export default function TimesheetReviewPage() {
       c.user_name.toLowerCase().includes(searchLower)
     );
     const filteredInspections = gridData.inspections.filter(i =>
-      i.inspection_name.toLowerCase().includes(searchLower)
+      i.inspection_name.toLowerCase().includes(searchLower) ||
+      (i.project_name?.toLowerCase().includes(searchLower)) ||
+      (i.structure_name?.toLowerCase().includes(searchLower))
     );
 
     const contractorIds = new Set(filteredContractors.map(c => c.user_id));
@@ -120,7 +122,7 @@ export default function TimesheetReviewPage() {
           type="text"
           value={search}
           onChange={e => setSearch(e.target.value)}
-          placeholder="Search by worker or inspection..."
+          placeholder="Search by worker, inspection, project, or structure..."
           className="ml-auto px-3 py-1 rounded-lg border border-border bg-surface text-sm text-text-primary placeholder-text-muted focus:outline-none focus:ring-1 focus:ring-accent w-56"
           aria-label="Search timesheet grid"
         />
@@ -135,7 +137,9 @@ export default function TimesheetReviewPage() {
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="border-b border-border bg-surface-secondary/20">
-                <th className="px-4 py-3 text-left text-text-secondary font-semibold sticky left-0 bg-surface-secondary/20 z-10 min-w-[180px]">Inspection</th>
+                <th className="px-4 py-3 text-left text-text-secondary font-semibold sticky left-0 bg-surface-secondary/20 z-10 min-w-[160px]">Inspection</th>
+                <th className="px-4 py-3 text-left text-text-secondary font-semibold min-w-[140px]">Project</th>
+                <th className="px-4 py-3 text-left text-text-secondary font-semibold min-w-[140px]">Structure</th>
                 {filtered.contractors.map(c => (
                   <th key={c.user_id} className="px-4 py-3 text-center text-text-secondary font-semibold min-w-[130px]">{c.user_name}</th>
                 ))}
@@ -145,6 +149,8 @@ export default function TimesheetReviewPage() {
               {filtered.inspections.map(inspection => (
                 <tr key={inspection.inspection_id} className="border-b border-border/50 hover:bg-surface-hover/30 transition-colors">
                   <td className="px-4 py-3 font-semibold text-text-primary sticky left-0 bg-surface z-10">{inspection.inspection_name}</td>
+                  <td className="px-4 py-3 text-text-secondary">{inspection.project_name || '—'}</td>
+                  <td className="px-4 py-3 text-text-secondary">{inspection.structure_name || '—'}</td>
                   {filtered.contractors.map(contractor => {
                     const cell = cellMap.get(`${contractor.user_id}|${inspection.inspection_id}`);
                     if (!cell) return (
