@@ -5,6 +5,7 @@ import { getSession } from '../../lib/authStore';
 import { login as apiLogin } from '../../services/api/auth';
 import { hasLocalPin, verifyPinLocally, isPinLockedOut, resetPinAttempts, getRemainingLockoutMs } from '../../hooks/usePinAuth';
 import Card from '../../components/Card';
+import { UserRole } from '../../types/index';
 
 function getClientMembershipCount(session: import('../../types').AuthSession): number {
   return session.user.client_memberships?.length ?? 0;
@@ -16,7 +17,7 @@ function getFirstClientId(session: import('../../types').AuthSession): string | 
 
 async function redirectAfterLogin(session: import('../../types').AuthSession, navigate: ReturnType<typeof useNavigate>) {
   const hasPin = await hasLocalPin();
-  if (!hasPin && navigator.onLine && session.user.role === 'contractor') {
+  if (!hasPin && navigator.onLine && session.user.role === UserRole.contractor) {
     try {
       sessionStorage.setItem('pin_setup_prompt', 'true');
     } catch {

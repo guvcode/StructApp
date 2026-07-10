@@ -4,6 +4,7 @@ import * as apiUsers from '../services/api/users';
 import * as apiRegister from '../services/api/register';
 import * as apiInspections from '../services/api/inspections';
 import * as apiDeficiencies from '../services/api/deficiencies';
+import { InspectionStatus, PriorityTier } from '../types';
 
 export function useAdminDashboardStats() {
   return useQuery({
@@ -26,10 +27,10 @@ export function useReviewerDashboardStats(clientId?: string) {
         apiInspections.getInspections(),
         apiDeficiencies.getDeficiencies(),
       ]);
-      const submitted = inspections.filter(i => i.status === 'Submitted');
-      const approved = inspections.filter(i => i.status === 'Approved');
-      const returned = inspections.filter(i => i.status === 'Returned');
-      const p1Count = deficiencies.filter(d => d.priority_tier === 'P1').length;
+      const submitted = inspections.filter(i => i.status === InspectionStatus.Submitted);
+      const approved = inspections.filter(i => i.status === InspectionStatus.Approved);
+      const returned = inspections.filter(i => i.status === InspectionStatus.Returned);
+      const p1Count = deficiencies.filter(d => d.priority_tier === PriorityTier.P1).length;
       return { inspections, deficiencies, submitted, approved, returned, p1Count };
     },
   });

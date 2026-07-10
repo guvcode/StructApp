@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useRemediationDeficiencies, useHasRemediationEvidence } from '../../hooks/useRemediation';
 import { useQueryClient } from '@tanstack/react-query';
-import { RemediationStatus } from '../../types/index';
+import { RemediationStatus, isReviewerOrAdmin } from '../../types/index';
 import { getUserRole } from '../../lib/authStore';
 import { useClientScope } from '../../hooks/useClientScope';
 import { useSearchSort } from '../../hooks/useSearchSort';
@@ -126,7 +126,7 @@ export default function RemediationQueuePage() {
 function RemediationRow({ deficiency, role, onVerify, onOpen }: { deficiency: import('../../types').Deficiency; role: string | null; onVerify: (id: string) => void; onOpen: () => void }) {
   const defId = deficiency.id || (deficiency as unknown as Record<string, unknown>).deficiency_id as string;
   const { data: hasEvidence } = useHasRemediationEvidence(defId);
-  const canVerify = deficiency.remediation_status === 'Remediated_Pending_Verification' && hasEvidence === true && (role === 'reviewer' || role === 'admin');
+  const canVerify = deficiency.remediation_status === RemediationStatus.PendingVerification && hasEvidence === true && isReviewerOrAdmin(role);
 
   return (
     <tr className="border-b border-border hover:bg-surface-hover transition-colors">
@@ -167,7 +167,7 @@ function RemediationRow({ deficiency, role, onVerify, onOpen }: { deficiency: im
           >
             Open
           </button>
-          {deficiency.remediation_status === 'Remediated_Pending_Verification' && canVerify && (
+          {deficiency.remediation_status === RemediationStatus.PendingVerification && canVerify && (
             <button
               onClick={() => onVerify(defId)}
               className="px-3 py-1.5 text-xs font-medium border border-green-200 text-green-700 rounded-md hover:bg-green-50 transition-colors shadow-sm"

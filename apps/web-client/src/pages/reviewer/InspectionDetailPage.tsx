@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useInspection, useDeficienciesForInspection } from '../../hooks/useInspections';
 import { useSites, useStructures } from '../../hooks/useRegister';
 import { getUserRole, getActiveClientId } from '../../lib/authStore';
-import { InspectionStatus } from '../../types/index';
+import { InspectionStatus, UserRole } from '../../types/index';
 import Card from '../../components/Card';
 import Skeleton from '../../components/Skeleton';
 import StatusBadge from '../../components/StatusBadge';
@@ -132,7 +132,7 @@ export default function InspectionDetailPage() {
         </Card>
       )}
 
-      {inspection.status === InspectionStatus.Approved && role === 'admin' && (
+      {inspection.status === InspectionStatus.Approved && role === UserRole.admin && (
         <Card padding="lg" className="shadow-card mb-6">
           <h3 className="text-xl font-semibold text-text-primary mb-4">Actions</h3>
           <button

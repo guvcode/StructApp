@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../services/api/apiClient';
 import { ENDPOINTS } from '../../services/api/endpoints';
 import type { PhotoRecord } from '../../types/index';
-import { RemediationStatus } from '../../types/index';
+import { RemediationStatus, UserRole, isReviewerOrAdmin } from '../../types/index';
 import Skeleton from '../../components/Skeleton';
 import { getUserRole } from '../../lib/authStore';
 
@@ -22,8 +22,8 @@ export default function RemediationUpdatePage() {
   const [error, setError] = useState('');
   const role = getUserRole();
 
-  const isContractor = role === 'contractor';
-  const isReviewerAdmin = role === 'reviewer' || role === 'admin';
+  const isContractor = role === UserRole.contractor;
+const isReviewerAdmin = isReviewerOrAdmin(role);
 
   const { data: deficiency, isLoading } = useQuery({
     queryKey: ['remediation-deficiency', id],

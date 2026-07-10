@@ -35,6 +35,24 @@ export function mapToBackendRole(role: string): BackendUserRole {
   return reverseMap[role] ?? BackendUserRole.Contractor;
 }
 
+// --- Guard helpers (string-based, for pages with role:string not User) ---
+
+export function isAdmin(role: string | null): boolean {
+  return role === UserRole.admin;
+}
+
+export function isReviewer(role: string | null): boolean {
+  return role === UserRole.reviewer;
+}
+
+export function isContractor(role: string | null): boolean {
+  return role === UserRole.contractor;
+}
+
+export function isReviewerOrAdmin(role: string | null): boolean {
+  return role === UserRole.reviewer || role === UserRole.admin;
+}
+
 export const ClientRole = {
   primary: 'primary',
   secondary: 'secondary',

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import type { UserRole } from '../types/index';
-import { InspectionStatus, RemediationStatus } from '../types/index';
+import { InspectionStatus, RemediationStatus, TimesheetStatus } from '../types/index';
 import { isFeatureEnabled } from '../lib/featureFlags';
 
 interface SubMenuItem {
@@ -113,7 +113,7 @@ const menuSections: MenuSection[] = [
     { label: 'Verified Closed', route: `/remediation?status=${RemediationStatus.VerifiedClosed}` },
   ]},
   { label: 'Timesheets', route: '/timesheets/review', roles: ['reviewer', 'admin'], phase: 'P1', submenu: [
-    { label: 'Pending Review', route: `/timesheets/review?status=${InspectionStatus.Submitted}` },
+    { label: 'Pending Review', route: `/timesheets/review?status=${TimesheetStatus.Submitted}` },
     { label: 'History', route: '/timesheets/review' },
   ]},
 { label: 'Register', route: '/register', roles: ['reviewer', 'admin'], phase: 'P0', submenu: [

@@ -5,7 +5,7 @@ import Card from '../../components/Card';
 import Skeleton, { StatCardSkeleton } from '../../components/Skeleton';
 import { useState, useEffect } from 'react';
 import { getCachedClientNames } from '../../lib/clientNameCache';
-import { InspectionStatus } from '../../types';
+import { InspectionStatus, UserRole } from '../../types';
 
 export default function AdminDashboardPage() {
   const { data, isLoading } = useAdminDashboardStats();
@@ -44,7 +44,7 @@ export default function AdminDashboardPage() {
 
   const clients = data?.clients ?? [];
   const users = data?.users ?? [];
-  const fieldWorkers = users.filter(u => u.role === 'inspector' || u.role === 'contractor').length;
+  const fieldWorkers = users.filter(u => u.role === UserRole.inspector || u.role === UserRole.contractor).length;
 
   return (
     <div className="p-8 max-w-7xl mx-auto animate-fadeIn">

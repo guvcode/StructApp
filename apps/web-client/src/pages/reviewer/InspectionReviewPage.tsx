@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useInspection, useDeficienciesForInspection } from '../../hooks/useInspections';
 import { getUserRole } from '../../lib/authStore';
-import { InspectionStatus } from '../../types/index';
+import { InspectionStatus, UserRole } from '../../types/index';
 import { ReturnInspectionModal } from '../../components/ReturnInspectionModal';
 import { ApproveInspectionModal } from '../../components/ApproveInspectionModal';
 import { PriorityOverridePanel } from '../../components/PriorityOverridePanel';
@@ -27,7 +27,7 @@ export default function InspectionReviewPage() {
   if (!inspection) return <div className="p-6 text-text-secondary text-center"><Skeleton className="h-8 w-48 mx-auto mb-4" /><Skeleton className="h-32 w-full rounded-lg" /></div>;
 
   const isApproved = inspection.status === InspectionStatus.Approved;
-  const isAdmin = role === 'admin';
+  const isAdmin = role === UserRole.admin;
   const selectedDeficiency = deficiencies.find(d => d.id === selectedDef || (d as unknown as Record<string, unknown>).deficiency_id === selectedDef) ?? null;
 
   return (

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useInspection, useDeficienciesForInspection } from '../../hooks/useInspections';
 import type { Deficiency, TriageDecision } from '../../types/index';
+import { DeficiencyStatus } from '../../types/index';
 import Skeleton from '../../components/Skeleton';
 
 export default function InspectionHistoryPage() {
@@ -15,7 +16,7 @@ export default function InspectionHistoryPage() {
   if (loading) return <div className="p-6"><Skeleton className="h-6 w-48 mx-auto mb-2" /><Skeleton className="h-64 w-full rounded-lg" /></div>;
   if (!inspection) return <div className="p-6 text-red-600 text-center">Failed to load inspection history.</div>;
 
-  const unresolvedHistory = deficiencies.filter(d => d.status !== 'Resolved' && d.status !== 'Closed');
+  const unresolvedHistory = deficiencies.filter(d => d.status !== DeficiencyStatus.Resolved && d.status !== DeficiencyStatus.Closed);
 
   const setDecision = (defId: string, field: keyof TriageDecision, value: string) => {
     setDecisions(prev => ({
