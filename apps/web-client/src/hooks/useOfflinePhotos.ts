@@ -68,7 +68,7 @@ export function useOfflinePhotos(deficiencyLocalId: string | undefined): UseOffl
         const file = new File([blob], photo.filename, { type: blob.type || 'image/jpeg' });
 
         // Upload to Cloudinary (EXIF is already stripped, re-read from stored exif)
-        const publicId = `structapp/${clientId}/inspections/${inspectionId}/deficiencies/${deficiencyServerId}/${photo.photoId}`;
+        const publicId = `${clientId}/inspections/${inspectionId}/deficiencies/${deficiencyServerId}/${photo.photoId}`;
         const { cloudinaryUrl } = await uploadPhotoToCloudinary(file, publicId);
 
         // Save to API — build payload with optional camera fields

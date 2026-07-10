@@ -90,7 +90,7 @@ export default function DeficiencyPhotosPage() {
         // Upload to Cloudinary with EXIF stripping
         const clientId = getActiveClientId() || 'unknown';
         const photoId = `photo-${Date.now()}`;
-        const publicId = `structapp/${clientId}/inspections/${deficiency.inspection_id}/deficiencies/${localId}/${photoId}`;
+        const publicId = `${clientId}/inspections/${deficiency.inspection_id}/deficiencies/${localId}/${photoId}`;
         const result = await uploadPhotoToCloudinary(file, publicId);
         cloudinaryUrl = result.cloudinaryUrl;
         exifData = result.exif ?? undefined;

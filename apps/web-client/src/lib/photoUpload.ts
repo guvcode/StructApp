@@ -79,8 +79,8 @@ export async function uploadPhotoToCloudinary(
   // 1. Read EXIF from original file
   const exif = await readExif(file);
 
-  // 2. Strip EXIF by re-encoding through canvas
-  const strippedBlob = await stripExif(file);
+  // 2. Strip EXIF by re-encoding through canvas (fall back to original on mobile gallery formats)
+  const strippedBlob = await stripExif(file).catch(() => file);
 
   // 3. Upload stripped image to Cloudinary
   const formData = new FormData();
