@@ -322,19 +322,18 @@ export interface Timesheet {
   user_name?: string;
 }
 
-export interface TimesheetGroup {
-  id: string;
+export interface TimesheetGridCell {
   user_id: string;
-  user_name?: string;
-  project_id?: string;
-  week_start: string;
-  week_end: string;
+  inspection_id: string;
   entries: Timesheet[];
   total_hours: number;
   status: TimesheetStatus | 'Mixed';
-  rejection_reason?: string;
-  approved_by?: string;
-  approved_at?: string;
+}
+
+export interface TimesheetGridData {
+  inspections: Array<{ inspection_id: string; inspection_name: string }>;
+  contractors: Array<{ user_id: string; user_name: string }>;
+  cells: TimesheetGridCell[];
 }
 
 export interface ReportJob {

@@ -27,6 +27,7 @@ import InspectionReviewPage from './pages/reviewer/InspectionReviewPage';
 import ReviewerDeficiencyDetailPage from './pages/reviewer/DeficiencyDetailPage';
 import RemediationQueuePage from './pages/reviewer/RemediationQueuePage';
 import TimesheetReviewPage from './pages/reviewer/TimesheetReviewPage';
+import TimesheetReviewDetailPage from './pages/reviewer/TimesheetReviewDetailPage';
 import RegisterLandingPage from './pages/reviewer/RegisterLandingPage';
 import ProjectListPage from './pages/reviewer/ProjectListPage';
 import SiteListPage from './pages/reviewer/SiteListPage';
@@ -96,6 +97,7 @@ export default function AppRoutes() {
           </Route>
           <Route path="timesheets/review" element={<FeatureFlagGuard flagId="timesheets" />}>
             <Route index element={<TimesheetReviewPage />} />
+            <Route path="detail" element={<TimesheetReviewDetailPage />} />
           </Route>
           <Route path="register" element={<RegisterLandingPage />} />
           <Route path="register/projects" element={<ProjectListPage />} />

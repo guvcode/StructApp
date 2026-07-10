@@ -1,22 +1,24 @@
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useTimesheetGroups } from '../../hooks/useTimesheets';
 import { useQueryClient } from '@tanstack/react-query';
 import { useClientScope } from '../../hooks/useClientScope';
-import { useSearchSort } from '../../hooks/useSearchSort';
-import ApproveRejectModal from '../../components/ApproveRejectModal';
-import TimesheetDetailModal from '../../components/TimesheetDetailModal';
-import Card from '../../components/Card';
 import Skeleton from '../../components/Skeleton';
 import EmptyState from '../../components/EmptyState';
-import StatusBadge from '../../components/StatusBadge';
-import { TIMESHEET_STATUS_STYLES } from '../../utils/statusMaps';
 import { TimesheetStatus } from '../../types';
-import type { TimesheetGroup, Timesheet } from '../../types/index';
+import type { TimesheetGridData, TimesheetGridCell } from '../../types/index';
 
-function getGroupStatus(group: TimesheetGroup): string {
-  const statuses = new Set(group.entries.map(e => e.status));
-  if (statuses.size === 1) return group.entries[0]?.status ?? 'Unknown';
+const STATUS_DOT_COLORS: Record<string, string> = {
+  Approved: 'bg-green-500',
+  Submitted: 'bg-blue-500',
+  Rejected: 'bg-red-500',
+  Mixed: 'bg-yellow-400',
+};
+
+function getCellStatus(cell: TimesheetGridCell): string {
+  const statuses = new Set(cell.entries.map(e => e.status));
+  if (statuses.has('Rejected')) return 'Rejected';
+  if (statuses.size === 1) return cell.entries[0]?.status ?? 'Draft';
   return 'Mixed';
 }
 
@@ -24,37 +26,65 @@ export default function TimesheetReviewPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { data: groups = [], isLoading, isError, error } = useTimesheetGroups();
-  const [expanded, setExpanded] = useState<Set<string>>(new Set());
-  const [actionTarget, setActionTarget] = useState<{ groupId: string; entryIds: string[]; entryCount: number; action: 'approve' | 'reject' } | null>(null);
-  const [detailTarget, setDetailTarget] = useState<Timesheet | null>(null);
+  const { data: gridData, isLoading, isError, error } = useTimesheetGroups();
+  const [search, setSearch] = useState('');
 
   useClientScope(() => queryClient.invalidateQueries({ queryKey: ['timesheets'] }));
 
-  const { search, setSearch, sortKey, sortDir, toggleSort, sortedFiltered } = useSearchSort(groups, ['user_name', 'id'], 'week_start');
   const statusFilter = searchParams.get('status') || 'All';
-
   const FILTERS = ['All', TimesheetStatus.Submitted, TimesheetStatus.Approved, TimesheetStatus.Rejected, 'Mixed'];
-  const filteredGroups = statusFilter === 'All' ? sortedFiltered : sortedFiltered.filter(g => getGroupStatus(g) === statusFilter);
 
-  const toggleExpand = (id: string) => {
-    setExpanded(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      return next;
+  const filtered = useMemo<TimesheetGridData>(() => {
+    if (!gridData) return { inspections: [], contractors: [], cells: [] };
+
+    const searchLower = search.toLowerCase();
+    const filteredContractors = gridData.contractors.filter(c =>
+      c.user_name.toLowerCase().includes(searchLower)
+    );
+    const filteredInspections = gridData.inspections.filter(i =>
+      i.inspection_name.toLowerCase().includes(searchLower)
+    );
+
+    const contractorIds = new Set(filteredContractors.map(c => c.user_id));
+    const inspectionIds = new Set(filteredInspections.map(i => i.inspection_id));
+
+    const filteredCells = gridData.cells.filter(cell => {
+      if (!contractorIds.has(cell.user_id)) return false;
+      if (!inspectionIds.has(cell.inspection_id)) return false;
+      if (statusFilter === 'All') return true;
+      return getCellStatus(cell) === statusFilter;
     });
-  };
 
-  const canActOn = (group: TimesheetGroup) => group.entries.some(e => e.status === TimesheetStatus.Submitted);
+    const usedInspIds = new Set(filteredCells.map(c => c.inspection_id));
+    const usedConIds = new Set(filteredCells.map(c => c.user_id));
+    const visibleInspections = gridData.inspections.filter(i => usedInspIds.has(i.inspection_id));
+    const visibleContractors = gridData.contractors.filter(c => usedConIds.has(c.user_id));
 
-  const handleApprove = (group: TimesheetGroup) => {
-    const submittedEntries = group.entries.filter(e => e.status === TimesheetStatus.Submitted);
-    setActionTarget({ groupId: group.id, entryIds: submittedEntries.map(e => e.id), entryCount: submittedEntries.length, action: 'approve' });
-  };
+    return {
+      inspections: visibleInspections,
+      contractors: visibleContractors,
+      cells: filteredCells,
+    };
+  }, [gridData, search, statusFilter]);
 
-  const handleReject = (group: TimesheetGroup) => {
-    const submittedEntries = group.entries.filter(e => e.status === TimesheetStatus.Submitted);
-    setActionTarget({ groupId: group.id, entryIds: submittedEntries.map(e => e.id), entryCount: submittedEntries.length, action: 'reject' });
+  const cellMap = useMemo(() => {
+    const map = new Map<string, TimesheetGridCell>();
+    for (const cell of (filtered?.cells ?? [])) {
+      map.set(`${cell.user_id}|${cell.inspection_id}`, cell);
+    }
+    return map;
+  }, [filtered?.cells]);
+
+  const handleCellClick = (cell: TimesheetGridCell) => {
+    navigate('/timesheets/review/detail', {
+      state: {
+        user_id: cell.user_id,
+        inspection_id: cell.inspection_id,
+        entries: cell.entries,
+        total_hours: cell.total_hours,
+        status: cell.status,
+      },
+    });
   };
 
   if (isLoading) return (
@@ -64,6 +94,8 @@ export default function TimesheetReviewPage() {
     </div>
   );
   if (isError) return <div className="p-6 text-red-600 text-center">{(error as Error)?.message || 'Failed to load timesheets.'}</div>;
+
+  const noData = !gridData || gridData.cells.length === 0;
 
   return (
     <div className="p-8 max-w-7xl mx-auto animate-fadeIn">
@@ -88,137 +120,56 @@ export default function TimesheetReviewPage() {
           type="text"
           value={search}
           onChange={e => setSearch(e.target.value)}
-          placeholder="Search by worker..."
-          className="ml-auto px-3 py-1 rounded-lg border border-border bg-surface text-sm text-text-primary placeholder-text-muted focus:outline-none focus:ring-1 focus:ring-accent w-48"
-          aria-label="Search timesheet groups"
+          placeholder="Search by worker or inspection..."
+          className="ml-auto px-3 py-1 rounded-lg border border-border bg-surface text-sm text-text-primary placeholder-text-muted focus:outline-none focus:ring-1 focus:ring-accent w-56"
+          aria-label="Search timesheet grid"
         />
       </div>
 
-      {filteredGroups.length === 0 ? (
-        <Card padding="lg" className="shadow-card">
+      {noData ? (
+        <div className="bg-surface-elevated rounded-lg border border-border/50 p-8 shadow-sm">
           <EmptyState icon="inbox" title="No timesheets pending review" description="All submitted timesheets have been reviewed." />
-        </Card>
-      ) : (
-        <div className="space-y-4">
-          {sortedFiltered.map(group => {
-            const groupStatus = getGroupStatus(group);
-            const isExpanded = expanded.has(group.id);
-
-            return (
-              <Card key={group.id} padding="none" className="shadow-card overflow-hidden">
-                <div className="px-6 py-4 flex items-center justify-between bg-surface-secondary/30 border-b border-border">
-                  <div className="flex items-center gap-4 flex-1 min-w-0">
-                    <button
-                      onClick={() => toggleExpand(group.id)}
-                      className="p-1 hover:bg-surface-secondary rounded transition-colors shrink-0"
-                      aria-label={isExpanded ? 'Collapse' : 'Expand'}
-                    >
-                      <svg className={`w-4 h-4 text-text-secondary transition-transform ${isExpanded ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-text-primary truncate">{group.user_name ?? group.user_id}</p>
-                      <p className="text-xs text-text-secondary">
-                        {group.week_start} – {group.week_end}
-                        <span className="mx-2">·</span>
-                        {group.entries.length} entries
-                        <span className="mx-2">·</span>
-                        {group.total_hours}h total
-                      </p>
-                    </div>
-                    <div className="shrink-0">
-                      <StatusBadge label={groupStatus} map={TIMESHEET_STATUS_STYLES} />
-                    </div>
-                    {canActOn(group) && (
-                      <div className="flex gap-2 shrink-0">
-                        <button
-                          onClick={() => handleApprove(group)}
-                          className="px-3 py-1.5 text-xs font-medium border border-green-200 text-green-700 rounded-md hover:bg-green-50 transition-colors shadow-sm"
-                        >Approve</button>
-                        <button
-                          onClick={() => handleReject(group)}
-                          className="px-3 py-1.5 text-xs font-medium border border-red-200 text-red-700 rounded-md hover:bg-red-50 transition-colors shadow-sm"
-                        >Reject</button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {isExpanded && (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b border-border text-left bg-surface-secondary/20">
-                          <th className="px-6 py-2 text-text-secondary font-semibold">Date</th>
-                          <th className="py-2 text-text-secondary font-semibold">Work Type</th>
-                          <th className="py-2 text-text-secondary font-semibold">Hours</th>
-                          <th className="py-2 text-text-secondary font-semibold">Status</th>
-                          <th className="py-2 text-text-secondary font-semibold">Description</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {(() => {
-                          const inspGroups = new Map<string, { name: string; entries: typeof group.entries }>();
-                          for (const entry of group.entries) {
-                            const key = entry.inspection_id || '__none__';
-                            if (!inspGroups.has(key)) {
-                              inspGroups.set(key, {
-                                name: entry.inspection_name || (entry.inspection_id ? 'Unknown Inspection' : 'Other'),
-                                entries: [],
-                              });
-                            }
-                            inspGroups.get(key)!.entries.push(entry);
-                          }
-                          const rows: JSX.Element[] = [];
-                          for (const [, inspGroup] of inspGroups) {
-                            if (inspGroups.size > 1) {
-                              rows.push(
-                                <tr key={`header-${inspGroup.entries[0]!.id}`} className="bg-surface-secondary/40 border-b border-border/50">
-                                  <td colSpan={5} className="px-6 py-2 text-xs font-semibold text-text-secondary uppercase tracking-wider">
-                                    {inspGroup.name}
-                                    <span className="ml-2 font-normal normal-case">({inspGroup.entries.length})</span>
-                                  </td>
-                                </tr>
-                              );
-                            }
-                            for (const entry of inspGroup.entries) {
-                              rows.push(
-                                <tr key={entry.id} className="border-b border-border/50 hover:bg-surface-hover transition-colors cursor-pointer" onClick={() => setDetailTarget(entry)}>
-                                  <td className="px-6 py-2.5 text-text-primary">{entry.entry_date}</td>
-                                  <td className="py-2.5 text-text-secondary">{entry.work_type ?? '—'}</td>
-                                  <td className="py-2.5 text-text-secondary font-semibold">{entry.hours}h</td>
-                                  <td className="py-2.5"><StatusBadge label={entry.status} map={TIMESHEET_STATUS_STYLES} /></td>
-                                  <td className="py-2.5 text-text-secondary max-w-xs truncate">{entry.notes ?? '—'}</td>
-                                </tr>
-                              );
-                            }
-                          }
-                          return rows;
-                        })()}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </Card>
-            );
-          })}
         </div>
-      )}
-
-      {actionTarget && (
-        <ApproveRejectModal
-          groupId={actionTarget.groupId}
-          entryIds={actionTarget.entryIds}
-          entryCount={actionTarget.entryCount}
-          action={actionTarget.action}
-          onClose={() => setActionTarget(null)}
-          onDone={() => { setActionTarget(null); queryClient.invalidateQueries({ queryKey: ['timesheets'] }); }}
-        />
-      )}
-
-      {detailTarget && (
-        <TimesheetDetailModal entry={detailTarget} onClose={() => setDetailTarget(null)} />
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="border-b border-border bg-surface-secondary/20">
+                <th className="px-4 py-3 text-left text-text-secondary font-semibold sticky left-0 bg-surface-secondary/20 z-10 min-w-[180px]">Inspection</th>
+                {filtered.contractors.map(c => (
+                  <th key={c.user_id} className="px-4 py-3 text-center text-text-secondary font-semibold min-w-[130px]">{c.user_name}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.inspections.map(inspection => (
+                <tr key={inspection.inspection_id} className="border-b border-border/50 hover:bg-surface-hover/30 transition-colors">
+                  <td className="px-4 py-3 font-semibold text-text-primary sticky left-0 bg-surface z-10">{inspection.inspection_name}</td>
+                  {filtered.contractors.map(contractor => {
+                    const cell = cellMap.get(`${contractor.user_id}|${inspection.inspection_id}`);
+                    if (!cell) return (
+                      <td key={contractor.user_id} className="px-4 py-3 text-center text-text-disabled">—</td>
+                    );
+                    const cellStatus = getCellStatus(cell);
+                    return (
+                      <td
+                        key={contractor.user_id}
+                        onClick={() => handleCellClick(cell)}
+                        className="px-4 py-3 text-center cursor-pointer hover:bg-surface-hover transition-colors rounded"
+                      >
+                        <div className="flex items-center justify-center gap-2">
+                          <span className={`w-2 h-2 rounded-full shrink-0 ${STATUS_DOT_COLORS[cellStatus] ?? 'bg-gray-300'}`} />
+                          <span className="font-medium text-text-primary">{cell.total_hours}h</span>
+                          <span className="text-text-muted text-xs">({cell.entries.length})</span>
+                        </div>
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );
