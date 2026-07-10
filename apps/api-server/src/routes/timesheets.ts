@@ -16,7 +16,6 @@ const batchEntrySchema = z.object({
 const batchCreateSchema = z.object({
   entry_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   entries: z.array(batchEntrySchema).min(1).max(20),
-  client_id: z.string().optional(),
   project_id: z.string().uuid().optional(),
   inspection_id: z.string().uuid().optional(),
 }).refine(
@@ -30,7 +29,7 @@ const groupRejectSchema = z.object({ entry_ids: z.array(z.string().uuid()).min(1
 router.get('/', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const inspectorId = req.user!.sub;
-    const clientId = req.user!.client_id;
+    const clientId = (req.query.client_id as string) || req.user!.client_id;
     const entries = await getTimesheetsForInspector(inspectorId, clientId);
     res.json({ success: true, data: entries });
   } catch (err) {
@@ -45,13 +44,14 @@ router.post('/batch', requireAuth, async (req: Request, res: Response, next: Nex
     if (!parsed.success) {
       return res.status(422).json({ success: false, error_code: 'VALIDATION_ERROR', message: 'Invalid batch data', details: parsed.error.flatten() });
     }
-    const clientId = parsed.data.client_id || user.client_id;
 
-    // Resolve project_id: direct or derived from inspection_id
+    // Resolve project_id and client_id: direct or derived from inspection_id
     let projectId = parsed.data.project_id;
-    if (!projectId && parsed.data.inspection_id) {
+    let clientId: string | null = null;
+
+    if (parsed.data.inspection_id) {
       const inspResult = await pool.query(
-        `SELECT s.project_id FROM inspections i
+        `SELECT s.project_id, s.client_id FROM inspections i
          JOIN structures st ON i.structure_id = st.structure_id
          JOIN sites s ON st.site_id = s.site_id
          WHERE i.inspection_id = $1`,
@@ -60,10 +60,23 @@ router.post('/batch', requireAuth, async (req: Request, res: Response, next: Nex
       if (inspResult.rowCount === 0) {
         return res.status(404).json({ success: false, error_code: 'NOT_FOUND', message: 'Inspection not found' });
       }
-      projectId = inspResult.rows[0].project_id;
+      projectId = projectId || inspResult.rows[0].project_id;
+      clientId = inspResult.rows[0].client_id;
+    } else if (parsed.data.project_id) {
+      const projResult = await pool.query(
+        'SELECT client_id FROM projects WHERE project_id = $1',
+        [parsed.data.project_id]
+      );
+      if (projResult.rowCount === 0) {
+        return res.status(404).json({ success: false, error_code: 'NOT_FOUND', message: 'Project not found' });
+      }
+      clientId = projResult.rows[0].client_id;
     }
 
-    const result = await createTimesheetBatch(user.sub, clientId, projectId!, parsed.data.inspection_id ?? null, parsed.data.entry_date, parsed.data.entries);
+    // Fallback to JWT client_id if no inspection or project provided
+    const resolvedClientId = clientId || user.client_id;
+
+    const result = await createTimesheetBatch(user.sub, resolvedClientId, projectId!, parsed.data.inspection_id ?? null, parsed.data.entry_date, parsed.data.entries);
     res.json({ success: true, data: result });
   } catch (err) {
     next(err);

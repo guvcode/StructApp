@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTimesheets, useSubmitTimesheet, useDeleteTimesheet } from '../../hooks/useTimesheets';
-import { getSession } from '../../lib/authStore';
+import { getActiveClientId } from '../../lib/authStore';
 import Skeleton from '../../components/Skeleton';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -15,9 +15,8 @@ const FILTERS = ['All', 'Draft', 'Submitted', 'Approved', 'Rejected'] as const;
 
 export default function TimesheetListPage() {
   const navigate = useNavigate();
-  const session = getSession();
-  const userId = session?.user?.id;
-  const { data: timesheets = [], isLoading, isError, error } = useTimesheets(userId);
+  const activeClientId = getActiveClientId();
+  const { data: timesheets = [], isLoading, isError, error } = useTimesheets(activeClientId);
   const submitTimesheet = useSubmitTimesheet();
   const deleteTimesheet = useDeleteTimesheet();
   const [statusFilter, setStatusFilter] = useState('All');
