@@ -117,7 +117,7 @@ export async function verifyPinLocally(pin: string): Promise<boolean> {
         token: data.token,
         refresh_token: data.refresh_token,
         user: data.user,
-        expires_at: data.expires_at,
+        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
         active_client_id: data.active_client_id,
       });
     } catch {
