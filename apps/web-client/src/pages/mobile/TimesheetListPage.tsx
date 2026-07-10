@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTimesheets, useSubmitTimesheet, useDeleteTimesheet } from '../../hooks/useTimesheets';
 import { getActiveClientId } from '../../lib/authStore';
 import { TimesheetStatus } from '../../types';
 import Skeleton from '../../components/Skeleton';
+import type { Timesheet } from '../../types';
 
 const STATUS_COLORS: Record<string, string> = {
   Draft: 'bg-gray-100 text-gray-700',
@@ -14,6 +15,21 @@ const STATUS_COLORS: Record<string, string> = {
 
 const FILTERS = ['All', TimesheetStatus.Draft, TimesheetStatus.Submitted, TimesheetStatus.Approved, TimesheetStatus.Rejected] as const;
 
+function groupByInspections(timesheets: Timesheet[]): Map<string, { inspectionName: string; entries: Timesheet[] }> {
+  const groups = new Map<string, { inspectionName: string; entries: Timesheet[] }>();
+  for (const ts of timesheets) {
+    const key = ts.inspection_id || '__no_inspection__';
+    if (!groups.has(key)) {
+      groups.set(key, {
+        inspectionName: ts.inspection_name || (ts.inspection_id ? 'Unknown Inspection' : 'Other'),
+        entries: [],
+      });
+    }
+    groups.get(key)!.entries.push(ts);
+  }
+  return groups;
+}
+
 export default function TimesheetListPage() {
   const navigate = useNavigate();
   const activeClientId = getActiveClientId();
@@ -23,6 +39,8 @@ export default function TimesheetListPage() {
   const [statusFilter, setStatusFilter] = useState('All');
 
   const filtered = statusFilter === 'All' ? timesheets : timesheets.filter(t => t.status === statusFilter);
+
+  const inspectionGroups = useMemo(() => groupByInspections(filtered), [filtered]);
 
   if (isLoading) return <div className="p-4"><Skeleton className="h-6 w-32 mx-auto mb-4" /><Skeleton className="h-48 w-full rounded-lg" /></div>;
   if (isError) return <div className="p-4 text-red-600 text-center">{(error as Error)?.message || 'Failed to load timesheets.'}</div>;
@@ -62,37 +80,50 @@ export default function TimesheetListPage() {
           No timesheet entries found.
         </div>
       ) : (
-        <div className="space-y-2">
-          {filtered.map(ts => (
-            <div key={ts.id} className="bg-surface-primary border border-border rounded-lg p-3">
-              {ts.status === TimesheetStatus.Rejected && ts.rejection_reason && (
-                <div className="bg-red-50 border border-red-200 rounded p-2 mb-2 text-xs text-red-700">
-                  Rejected: {ts.rejection_reason}
-                </div>
-              )}
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-text-primary">{ts.work_type ?? 'No work type'}</p>
-                  <p className="text-xs text-text-secondary mt-0.5">{ts.entry_date} · {ts.hours}h</p>
-                  {ts.notes && <p className="text-xs text-text-secondary mt-0.5">{ts.notes}</p>}
-                  {ts.approved_by && <p className="text-xs text-green-600 mt-0.5">Approved by {ts.approved_by}</p>}
-                </div>
-                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ml-2 ${STATUS_COLORS[ts.status] ?? ''}`}>{ts.status}</span>
-              </div>
-              <div className="flex gap-2 mt-2">
-                {ts.status === TimesheetStatus.Draft && (
-                  <>
-                    <button onClick={() => navigate(`/m/timesheets/${ts.id}`)} className="px-2 py-1 text-xs border border-border rounded text-text-primary" aria-label={`Edit ${ts.work_type}`}>Edit</button>
-                    <button onClick={() => submitTimesheet.mutate(ts.id)} className="px-2 py-1 text-xs border border-accent text-accent rounded" aria-label={`Submit ${ts.work_type}`}>Submit</button>
-                    <button onClick={() => deleteTimesheet.mutate(ts.id)} className="px-2 py-1 text-xs border border-red-300 text-red-600 rounded" aria-label={`Delete ${ts.work_type}`}>Delete</button>
-                  </>
-                )}
-                {ts.status === TimesheetStatus.Submitted && (
-                  <button onClick={() => navigate(`/m/timesheets/${ts.id}`)} className="px-2 py-1 text-xs border border-border rounded text-text-primary" aria-label="View timesheet">View</button>
-                )}
-                {(ts.status === TimesheetStatus.Approved || ts.status === TimesheetStatus.Rejected) && (
-                  <button onClick={() => navigate(`/m/timesheets/${ts.id}`)} className="px-2 py-1 text-xs border border-border rounded text-text-primary" aria-label="View timesheet details">View</button>
-                )}
+        <div className="space-y-4">
+          {Array.from(inspectionGroups.entries()).map(([key, group]) => (
+            <div key={key}>
+              <h2 className="text-sm font-semibold text-text-primary mb-2 flex items-center gap-1.5">
+                <svg className="w-3.5 h-3.5 text-accent shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+                {group.inspectionName}
+                <span className="text-xs font-normal text-text-muted">({group.entries.length})</span>
+              </h2>
+              <div className="space-y-2">
+                {group.entries.map(ts => (
+                  <div key={ts.id} className="bg-surface-primary border border-border rounded-lg p-3">
+                    {ts.status === TimesheetStatus.Rejected && ts.rejection_reason && (
+                      <div className="bg-red-50 border border-red-200 rounded p-2 mb-2 text-xs text-red-700">
+                        Rejected: {ts.rejection_reason}
+                      </div>
+                    )}
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-text-primary">{ts.work_type ?? 'No work type'}</p>
+                        <p className="text-xs text-text-secondary mt-0.5">{ts.entry_date} · {ts.hours}h</p>
+                        {ts.notes && <p className="text-xs text-text-secondary mt-0.5">{ts.notes}</p>}
+                        {ts.approved_by && <p className="text-xs text-green-600 mt-0.5">Approved by {ts.approved_by}</p>}
+                      </div>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ml-2 ${STATUS_COLORS[ts.status] ?? ''}`}>{ts.status}</span>
+                    </div>
+                    <div className="flex gap-2 mt-2">
+                      {ts.status === TimesheetStatus.Draft && (
+                        <>
+                          <button onClick={() => navigate(`/m/timesheets/${ts.id}`)} className="px-2 py-1 text-xs border border-border rounded text-text-primary" aria-label={`Edit ${ts.work_type}`}>Edit</button>
+                          <button onClick={() => submitTimesheet.mutate(ts.id)} className="px-2 py-1 text-xs border border-accent text-accent rounded" aria-label={`Submit ${ts.work_type}`}>Submit</button>
+                          <button onClick={() => deleteTimesheet.mutate(ts.id)} className="px-2 py-1 text-xs border border-red-300 text-red-600 rounded" aria-label={`Delete ${ts.work_type}`}>Delete</button>
+                        </>
+                      )}
+                      {ts.status === TimesheetStatus.Submitted && (
+                        <button onClick={() => navigate(`/m/timesheets/${ts.id}`)} className="px-2 py-1 text-xs border border-border rounded text-text-primary" aria-label="View timesheet">View</button>
+                      )}
+                      {(ts.status === TimesheetStatus.Approved || ts.status === TimesheetStatus.Rejected) && (
+                        <button onClick={() => navigate(`/m/timesheets/${ts.id}`)} className="px-2 py-1 text-xs border border-border rounded text-text-primary" aria-label="View timesheet details">View</button>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           ))}

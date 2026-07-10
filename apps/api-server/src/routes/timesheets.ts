@@ -91,7 +91,7 @@ router.get('/groups', requireAuth, async (req: Request, res: Response, next: Nex
     const isAdminOrReviewer = user.role === 'Admin' || user.role === 'Reviewer';
     const requestedUserId = req.query.user_id as string | undefined;
 
-    let query = `SELECT entry_id AS id, user_id, project_id, inspection_id, client_id, work_type, hours_logged AS hours, entry_date, pre_inspection, status, rejection_reason, approved_by, approved_at, created_at, updated_at FROM timesheet_entries WHERE client_id = $1`;
+    let query = `SELECT te.entry_id AS id, te.user_id, te.project_id, te.inspection_id, te.client_id, te.work_type, te.hours_logged AS hours, te.entry_date, te.pre_inspection, te.status, te.rejection_reason, te.approved_by, te.approved_at, te.created_at, te.updated_at, COALESCE(st.name, s.name) AS inspection_name FROM timesheet_entries te LEFT JOIN inspections i ON te.inspection_id = i.inspection_id LEFT JOIN structures s ON i.structure_id = s.structure_id LEFT JOIN sites st ON s.site_id = st.site_id WHERE te.client_id = $1`;
     const params: unknown[] = [clientId];
     let paramIdx = 2;
 
@@ -133,6 +133,15 @@ router.patch('/:id', requireAuth, async (req: Request, res: Response, next: Next
     const result = await updateTimesheet(req.params.id, user.client_id, user.sub, data);
     res.json({ success: true, data: result });
   } catch (err) {
+    if (err instanceof Error && err.message === 'TIMESHEET_NOT_FOUND') {
+      return res.status(404).json({ success: false, error_code: 'NOT_FOUND', message: 'Timesheet entry not found' });
+    }
+    if (err instanceof Error && err.message === 'TIMESHEET_NOT_DRAFT') {
+      return res.status(400).json({ success: false, error_code: 'NOT_DRAFT', message: 'Only Draft entries can be edited' });
+    }
+    if (err instanceof Error && err.message === 'NO_FIELDS_TO_UPDATE') {
+      return res.status(400).json({ success: false, error_code: 'NO_FIELDS', message: 'No fields provided to update' });
+    }
     next(err);
   }
 });

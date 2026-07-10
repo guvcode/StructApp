@@ -23,6 +23,7 @@ export interface TimesheetEntryRow {
   approved_at: string | null;
   created_at: string;
   updated_at: string;
+  inspection_name: string | null;
 }
 
 export async function getTimesheetsForInspector(
@@ -45,8 +46,12 @@ export async function getTimesheetsForInspector(
       te.approved_by,
       te.approved_at,
       te.created_at,
-      te.updated_at
+      te.updated_at,
+      COALESCE(st.name, s.name) AS inspection_name
      FROM timesheet_entries te
+     LEFT JOIN inspections i ON te.inspection_id = i.inspection_id
+     LEFT JOIN structures s ON i.structure_id = s.structure_id
+     LEFT JOIN sites st ON s.site_id = st.site_id
      WHERE te.user_id = $1 AND te.client_id = $2
      ORDER BY te.entry_date DESC, te.created_at DESC`,
     [inspectorId, clientId]
