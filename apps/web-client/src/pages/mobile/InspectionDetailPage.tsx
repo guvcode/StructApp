@@ -53,9 +53,9 @@ export default function InspectionDetailPage() {
             className="bg-surface-primary border border-border rounded-lg p-3 mb-2 cursor-pointer"
           >
             <p className="text-sm font-semibold text-text-primary">{def.title}</p>
-            <div className="flex gap-2 mt-1">
+            <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1 text-xs">
               {def.risk_rating && (
-                <span className={`text-xs px-1.5 py-0.5 rounded ${
+                <span className={`px-1.5 py-0.5 rounded ${
                   def.risk_rating === 'High' ? 'bg-red-100 text-red-700' :
                   def.risk_rating === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
                   'bg-green-100 text-green-700'
@@ -63,7 +63,9 @@ export default function InspectionDetailPage() {
                   {def.risk_rating}
                 </span>
               )}
-              <span className="text-xs text-text-secondary">{def.priority_tier}</span>
+              <span className="text-text-secondary">{def.priority_tier}</span>
+              {def.category && <span className="text-text-secondary">{def.category}</span>}
+              {def.sub_component && <span className="text-text-secondary">{def.sub_component}</span>}
             </div>
           </div>
           );
