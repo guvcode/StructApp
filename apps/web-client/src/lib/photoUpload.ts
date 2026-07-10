@@ -69,12 +69,12 @@ async function readExif(file: File): Promise<PhotoUploadResult['exif']> {
  * Upload an image file to Cloudinary (EXIF-stripped) and return the URL + EXIF metadata.
  *
  * @param file - The raw image file from the camera/gallery
- * @param folderPath - The Cloudinary folder path, e.g. 'structapp/{clientId}/sites/{siteId}/inspections/{inspectionId}/deficiencies/{deficiencyId}'
+ * @param publicId - The Cloudinary public ID including full folder path, e.g. 'structapp/{clientId}/inspections/{inspectionId}/deficiencies/{deficiencyId}/photo-{timestamp}'
  * @returns The Cloudinary URL and extracted EXIF metadata
  */
 export async function uploadPhotoToCloudinary(
   file: File,
-  folderPath: string,
+  publicId: string,
 ): Promise<PhotoUploadResult> {
   // 1. Read EXIF from original file
   const exif = await readExif(file);
@@ -86,7 +86,7 @@ export async function uploadPhotoToCloudinary(
   const formData = new FormData();
   formData.append('file', strippedBlob, file.name);
   formData.append('upload_preset', UPLOAD_PRESET);
-  formData.append('folder', folderPath);
+  formData.append('public_id', publicId);
 
   const response = await fetch(UPLOAD_URL, { method: 'POST', body: formData });
   if (!response.ok) {

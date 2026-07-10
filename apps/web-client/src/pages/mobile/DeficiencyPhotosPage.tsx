@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useParams, useNavigate } from 'react-router-dom';
 import { apiClient } from '../../services/api/apiClient';
@@ -6,6 +6,7 @@ import { ENDPOINTS } from '../../services/api/endpoints';
 import { useOfflinePhotos } from '../../hooks/useOfflinePhotos';
 import { uploadPhotoToCloudinary } from '../../lib/photoUpload';
 import { getActiveClientId } from '../../lib/authStore';
+import { getDeficiencyPhotos } from '../../services/api/photos';
 import type { OfflinePhoto } from '../../lib/db';
 
 export default function DeficiencyPhotosPage() {
@@ -38,6 +39,36 @@ export default function DeficiencyPhotosPage() {
   });
   const isReadOnly = inspection?.status === 'Submitted' || inspection?.status === 'Approved';
 
+  const { data: serverPhotos = [] } = useQuery({
+    queryKey: ['deficiency-photos', localId],
+    queryFn: () => getDeficiencyPhotos(localId!),
+    enabled: !!localId && localId !== 'new',
+    retry: false,
+  });
+
+  const displayPhotos = useMemo(() => {
+    const localUrls = new Set(photos.map(p => p.cloudinaryUrl).filter(Boolean));
+    const serverMapped: Array<{ id: string; imgSrc: string; caption: string; createdAt: string; syncState: string; serverPhotoId?: string }> = serverPhotos
+      .filter(sp => !localUrls.has(sp.storage_url))
+      .map(sp => ({
+        id: sp.photo_id,
+        imgSrc: sp.storage_url,
+        caption: sp.caption,
+        createdAt: sp.created_at,
+        syncState: 'synced',
+        serverPhotoId: sp.photo_id,
+      }));
+    const localMapped = photos.map(p => ({
+      id: p.photoId,
+      imgSrc: p.fileData || p.cloudinaryUrl || '',
+      caption: p.caption,
+      createdAt: p.createdAt,
+      syncState: p.syncState,
+      photoId: p.photoId,
+    }));
+    return [...serverMapped, ...localMapped].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  }, [photos, serverPhotos]);
+
   const handleFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -58,8 +89,9 @@ export default function DeficiencyPhotosPage() {
       if (isSaved && deficiency?.inspection_id) {
         // Upload to Cloudinary with EXIF stripping
         const clientId = getActiveClientId() || 'unknown';
-        const folderPath = `structapp/${clientId}/inspections/${deficiency.inspection_id}/deficiencies/${localId}`;
-        const result = await uploadPhotoToCloudinary(file, folderPath);
+        const photoId = `photo-${Date.now()}`;
+        const publicId = `structapp/${clientId}/inspections/${deficiency.inspection_id}/deficiencies/${localId}/${photoId}`;
+        const result = await uploadPhotoToCloudinary(file, publicId);
         cloudinaryUrl = result.cloudinaryUrl;
         exifData = result.exif ?? undefined;
 
@@ -139,7 +171,7 @@ export default function DeficiencyPhotosPage() {
         <p className="text-sm text-text-secondary">{deficiency.title}</p>
       )}
 
-      {deficiency && (deficiency.priority_tier === 'P1' || deficiency.priority_tier === 'P2') && photos.length === 0 && (
+      {deficiency && (deficiency.priority_tier === 'P1' || deficiency.priority_tier === 'P2') && displayPhotos.length === 0 && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
           This {deficiency.priority_tier} finding requires at least one photo before submission.
         </div>
@@ -213,26 +245,26 @@ export default function DeficiencyPhotosPage() {
       </div>
       )}
 
-      <p className="text-xs text-text-secondary">{photos.length} photo{photos.length !== 1 ? 's' : ''}</p>
+      <p className="text-xs text-text-secondary">{displayPhotos.length} photo{displayPhotos.length !== 1 ? 's' : ''}</p>
 
-      {photos.length === 0 && (
+      {displayPhotos.length === 0 && (
         <div className="text-text-secondary text-sm text-center py-8 border border-dashed border-border rounded-lg">
           No photos yet. Use "Take Photo" or "From Gallery" to add evidence.
         </div>
       )}
 
       <div className="grid grid-cols-2 gap-2">
-        {photos.map(photo => (
-          <div key={photo.photoId} className="bg-surface-primary border border-border rounded-lg p-2">
-            <img src={photo.fileData} alt={photo.caption} className="w-full h-24 object-cover rounded mb-1" />
+        {displayPhotos.map(photo => (
+          <div key={photo.id} className="bg-surface-primary border border-border rounded-lg p-2">
+            <img src={photo.imgSrc} alt={photo.caption} className="w-full h-24 object-cover rounded mb-1" />
             <p className="text-xs text-text-primary truncate">{photo.caption}</p>
             <div className="flex justify-between items-center mt-1">
               {photo.syncState === 'synced' && <span className="text-xs text-green-600">synced</span>}
               {photo.syncState === 'pending' && <span className="text-xs text-yellow-600">pending</span>}
               {photo.syncState === 'failed' && <span className="text-xs text-red-600">failed</span>}
-              {!isReadOnly && (
+              {!isReadOnly && 'photoId' in photo && photo.photoId && (
               <button
-                onClick={() => handleRemove(photo.photoId)}
+                onClick={() => handleRemove(photo.photoId!)}
                 className="text-xs text-red-600"
                 aria-label={`Delete photo: ${photo.caption}`}
               >
