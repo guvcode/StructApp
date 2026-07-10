@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getSession, getActiveClientId } from '../../lib/authStore';
+import { createTimesheetBatch } from '../../services/api/timesheets';
 
 const WORK_TYPES = ['Field Inspection', 'Report Writing', 'Equipment Check', 'Office Work', 'Travel'];
 
@@ -61,17 +62,7 @@ export default function TimesheetDetailPage() {
         ...(getActiveClientId() ? { client_id: getActiveClientId() } : {}),
       };
 
-      const res = await fetch('/api/v1/timesheets/batch', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.token}` },
-        body: JSON.stringify(body),
-      });
-
-      const json = await res.json();
-
-      if (!res.ok) {
-        throw new Error(json.message || `Request failed (${res.status})`);
-      }
+      await createTimesheetBatch(body);
 
       navigate('/m/timesheets');
     } catch (err: unknown) {
