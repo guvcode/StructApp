@@ -201,6 +201,7 @@ export default function DeficiencyDetailPage() {
 
   return (
     <div className="space-y-4">
+      <button onClick={() => navigate(inspectionId ? `/m/inspections/${inspectionId}` : '/m/dashboard')} className="text-sm text-accent">&larr; Back</button>
       {inspection && (
         <button
           onClick={() => navigate(`/m/inspections/${inspectionId}`)}

@@ -52,7 +52,7 @@ export default function ImportCenterPage() {
 
   return (
     <div className="p-8 max-w-7xl animate-fadeIn">
-      <button onClick={() => navigate('/admin')} className="text-sm text-accent mb-4">&larr; Admin Dashboard</button>
+      <button onClick={() => navigate('/admin/dashboard')} className="text-sm text-accent mb-4">&larr; Admin Dashboard</button>
       <h2 className="text-3xl font-bold text-text-primary mb-8">Import Center</h2>
 
       {error && (

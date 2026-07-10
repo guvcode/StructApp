@@ -139,7 +139,7 @@ export default function SyncPage() {
 
   return (
     <div className="space-y-4">
-      <button onClick={() => navigate('/m')} className="text-sm text-accent">&larr; Back</button>
+      <button onClick={() => navigate('/m/dashboard')} className="text-sm text-accent">&larr; Back</button>
       <h2 className="text-lg font-bold text-text-primary">Sync Hub</h2>
       <div className="bg-surface-primary rounded-lg p-3 border border-border">
         <p className="text-sm text-text-primary">

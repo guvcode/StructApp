@@ -52,7 +52,7 @@ export default function ClientListPage() {
   if (isLoading) {
     return (
       <div className="p-8 max-w-7xl animate-fadeIn">
-        <button onClick={() => navigate('/admin')} className="text-sm text-accent mb-4">&larr; Admin Dashboard</button>
+        <button onClick={() => navigate('/admin/dashboard')} className="text-sm text-accent mb-4">&larr; Admin Dashboard</button>
         <div className="flex items-center justify-between mb-8">
           <Skeleton className="h-8 w-32" />
           <Skeleton className="h-10 w-28" />
@@ -64,7 +64,7 @@ export default function ClientListPage() {
 
   return (
     <div className="p-8 max-w-7xl animate-fadeIn">
-      <button onClick={() => navigate('/admin')} className="text-sm text-accent mb-4">&larr; Admin Dashboard</button>
+      <button onClick={() => navigate('/admin/dashboard')} className="text-sm text-accent mb-4">&larr; Admin Dashboard</button>
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-3xl font-bold text-text-primary">Clients</h2>
         <Link
