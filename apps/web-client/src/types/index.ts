@@ -307,6 +307,7 @@ export interface Timesheet {
   user_id: string;
   project_id?: string;
   inspection_id?: string;
+  inspection_name?: string;
   client_id: string;
   entry_date: string;
   hours: number;

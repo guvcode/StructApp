@@ -51,7 +51,7 @@ export default function TimesheetDetailPage() {
           setTimeout(() => navigate('/m/timesheets'), 2000);
           return;
         }
-        setEntryDate(entry.entry_date ?? '');
+        setEntryDate((entry.entry_date ?? '').split('T')[0]);
         setInspectionId(entry.inspection_id ?? '');
         setEntries([{
           id: crypto.randomUUID(),

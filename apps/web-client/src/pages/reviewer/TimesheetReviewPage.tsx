@@ -158,15 +158,44 @@ export default function TimesheetReviewPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {group.entries.map(entry => (
-                          <tr key={entry.id} className="border-b border-border/50 hover:bg-surface-hover transition-colors cursor-pointer" onClick={() => setDetailTarget(entry)}>
-                            <td className="px-6 py-2.5 text-text-primary">{entry.entry_date}</td>
-                            <td className="py-2.5 text-text-secondary">{entry.work_type ?? '—'}</td>
-                            <td className="py-2.5 text-text-secondary font-semibold">{entry.hours}h</td>
-                            <td className="py-2.5"><StatusBadge label={entry.status} map={TIMESHEET_STATUS_STYLES} /></td>
-                            <td className="py-2.5 text-text-secondary max-w-xs truncate">{entry.notes ?? '—'}</td>
-                          </tr>
-                        ))}
+                        {(() => {
+                          const inspGroups = new Map<string, { name: string; entries: typeof group.entries }>();
+                          for (const entry of group.entries) {
+                            const key = entry.inspection_id || '__none__';
+                            if (!inspGroups.has(key)) {
+                              inspGroups.set(key, {
+                                name: entry.inspection_name || (entry.inspection_id ? 'Unknown Inspection' : 'Other'),
+                                entries: [],
+                              });
+                            }
+                            inspGroups.get(key)!.entries.push(entry);
+                          }
+                          const rows: JSX.Element[] = [];
+                          for (const [, inspGroup] of inspGroups) {
+                            if (inspGroups.size > 1) {
+                              rows.push(
+                                <tr key={`header-${inspGroup.entries[0]!.id}`} className="bg-surface-secondary/40 border-b border-border/50">
+                                  <td colSpan={5} className="px-6 py-2 text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                                    {inspGroup.name}
+                                    <span className="ml-2 font-normal normal-case">({inspGroup.entries.length})</span>
+                                  </td>
+                                </tr>
+                              );
+                            }
+                            for (const entry of inspGroup.entries) {
+                              rows.push(
+                                <tr key={entry.id} className="border-b border-border/50 hover:bg-surface-hover transition-colors cursor-pointer" onClick={() => setDetailTarget(entry)}>
+                                  <td className="px-6 py-2.5 text-text-primary">{entry.entry_date}</td>
+                                  <td className="py-2.5 text-text-secondary">{entry.work_type ?? '—'}</td>
+                                  <td className="py-2.5 text-text-secondary font-semibold">{entry.hours}h</td>
+                                  <td className="py-2.5"><StatusBadge label={entry.status} map={TIMESHEET_STATUS_STYLES} /></td>
+                                  <td className="py-2.5 text-text-secondary max-w-xs truncate">{entry.notes ?? '—'}</td>
+                                </tr>
+                              );
+                            }
+                          }
+                          return rows;
+                        })()}
                       </tbody>
                     </table>
                   </div>
