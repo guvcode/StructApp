@@ -1,4 +1,5 @@
 import { useState, Fragment } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useReportJobs, useGenerateReport, useRetryReportJob } from '../../hooks/useReports';
 import { useProjects } from '../../hooks/useRegister';
 import type { ReportJob } from '../../types/index';
@@ -18,6 +19,7 @@ const OUTPUT_TYPE_LABELS: Record<string, string> = {
 };
 
 export default function ReportCenterPage() {
+  const navigate = useNavigate();
   const { data: jobs = [], isLoading, refetch } = useReportJobs();
   const { data: projects = [] } = useProjects(getActiveClientId());
   const generateReport = useGenerateReport();
@@ -70,6 +72,7 @@ export default function ReportCenterPage() {
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8 animate-fadeIn">
+      <button onClick={() => navigate('/')} className="text-sm text-accent mb-4">&larr; Dashboard</button>
       <h1 className="text-3xl font-bold text-text-primary">Report Publishing Center</h1>
 
       {error && <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-sm text-red-700">{error}</div>}

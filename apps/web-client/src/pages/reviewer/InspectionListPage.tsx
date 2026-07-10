@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useInspections } from '../../hooks/useInspections';
 import { useSites } from '../../hooks/useRegister';
@@ -19,6 +19,7 @@ import { INSPECTION_STATUS_STYLES } from '../../utils/statusMaps';
 import { useQueryClient } from '@tanstack/react-query';
 
 export default function InspectionListPage() {
+  const navigate = useNavigate();
   const client = useQueryClient();
   const { data: inspections = [], isLoading, isError, error } = useInspections();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -77,6 +78,7 @@ export default function InspectionListPage() {
 
   return (
     <div className="p-8 max-w-7xl mx-auto animate-fadeIn">
+      <button onClick={() => navigate('/')} className="text-sm text-accent mb-4">&larr; Dashboard</button>
       <h1 className="text-3xl font-bold text-text-primary mb-6">Inspections</h1>
 
       <div className="flex items-center justify-between mb-6">

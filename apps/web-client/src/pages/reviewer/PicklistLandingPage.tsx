@@ -1,11 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { usePicklists } from '../../hooks/usePicklists';
 import { apiClient } from '../../services/api/apiClient';
 import { ENDPOINTS } from '../../services/api/endpoints';
 import Skeleton from '../../components/Skeleton';
 
 export default function PicklistLandingPage() {
+  const navigate = useNavigate();
   const { data: ct = [] } = usePicklists('component-types');
   const { data: wt = [] } = usePicklists('work-types');
   const { data: taxonomyNodes = [] } = useQuery<Array<unknown>>({
@@ -27,6 +28,7 @@ export default function PicklistLandingPage() {
 
   return (
     <div className="p-6 animate-fadeIn">
+      <button onClick={() => navigate('/')} className="text-sm text-accent mb-4">&larr; Dashboard</button>
       <h2 className="text-2xl font-bold text-text-primary mb-6">Register</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Link

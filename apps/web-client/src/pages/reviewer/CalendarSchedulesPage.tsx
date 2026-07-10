@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useSchedules, useCreateSchedule, useUpdateSchedule, useToggleSchedulePause } from '../../hooks/useCalendar';
 import type { InspectionSchedule } from '../../types/index';
 import Card from '../../components/Card';
 
 export default function CalendarSchedulesPage() {
+  const navigate = useNavigate();
   const { data: schedules = [], isLoading, error, refetch } = useSchedules();
   const createSchedule = useCreateSchedule();
   const updateSchedule = useUpdateSchedule();
@@ -54,6 +56,7 @@ export default function CalendarSchedulesPage() {
 
   return (
     <div className="p-8 max-w-7xl animate-fadeIn">
+      <button onClick={() => navigate('/calendar')} className="text-sm text-accent mb-4">&larr; Back to Calendar</button>
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-3xl font-bold text-text-primary">Recurring Schedules</h2>
         <button

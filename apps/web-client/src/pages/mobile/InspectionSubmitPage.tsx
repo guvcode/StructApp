@@ -48,6 +48,7 @@ export default function InspectionSubmitPage() {
 
   return (
     <div className="space-y-4">
+      <button onClick={() => navigate(`/m/inspections/${id}`)} className="text-sm text-accent">&larr; Back to Inspection</button>
       <h2 className="text-lg font-bold text-text-primary">Submit Inspection</h2>
 
       <div className="bg-surface-primary rounded-lg p-3 border border-border">

@@ -1,9 +1,11 @@
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../services/api/apiClient';
 import { ENDPOINTS } from '../../services/api/endpoints';
 
 export default function StructureSearchPage() {
+  const navigate = useNavigate();
   const [query, setQuery] = useState('');
 
   const { data: allStructures = [] } = useQuery({
@@ -24,6 +26,7 @@ export default function StructureSearchPage() {
 
   return (
     <div className="space-y-4">
+      <button onClick={() => navigate('/m')} className="text-sm text-accent">&larr; Back</button>
       <h2 className="text-lg font-bold text-text-primary">Structure Search</h2>
       <input
         placeholder="Search asset tag or description..."

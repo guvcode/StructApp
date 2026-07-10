@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useClients, useUpdateClient } from '../../hooks/useClients';
 import Card from '../../components/Card';
 import Skeleton from '../../components/Skeleton';
@@ -45,12 +45,14 @@ function ClientEditDrawer({ client, onClose, onSaved }: { client: { id: string; 
 }
 
 export default function ClientListPage() {
+  const navigate = useNavigate();
   const { data: clients = [], isLoading, refetch } = useClients();
   const [editingClient, setEditingClient] = useState<{ id: string; name: string; safety_email?: string } | null>(null);
 
   if (isLoading) {
     return (
       <div className="p-8 max-w-7xl animate-fadeIn">
+        <button onClick={() => navigate('/admin')} className="text-sm text-accent mb-4">&larr; Admin Dashboard</button>
         <div className="flex items-center justify-between mb-8">
           <Skeleton className="h-8 w-32" />
           <Skeleton className="h-10 w-28" />
@@ -62,6 +64,7 @@ export default function ClientListPage() {
 
   return (
     <div className="p-8 max-w-7xl animate-fadeIn">
+      <button onClick={() => navigate('/admin')} className="text-sm text-accent mb-4">&larr; Admin Dashboard</button>
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-3xl font-bold text-text-primary">Clients</h2>
         <Link
