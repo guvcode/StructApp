@@ -312,6 +312,7 @@ export interface Timesheet {
   hours: number;
   work_type?: string;
   notes?: string;
+  pre_inspection?: boolean;
   status: TimesheetStatus;
   rejection_reason?: string;
   approved_by?: string;

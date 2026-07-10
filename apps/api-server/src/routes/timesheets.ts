@@ -11,6 +11,7 @@ const batchEntrySchema = z.object({
   work_type: z.string().min(1),
   hours: z.number().positive().max(24),
   notes: z.string().optional(),
+  pre_inspection: z.boolean().optional(),
 });
 
 const batchCreateSchema = z.object({

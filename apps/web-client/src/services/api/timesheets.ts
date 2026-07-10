@@ -26,7 +26,7 @@ export async function createTimesheet(data: Partial<Timesheet>): Promise<Timeshe
   });
 }
 
-export async function createTimesheetBatch(input: { entry_date: string; client_id?: string; project_id?: string; inspection_id?: string; entries: Array<{ work_type: string; hours: number; notes?: string }> }): Promise<{ entries: Timesheet[] }> {
+export async function createTimesheetBatch(input: { entry_date: string; client_id?: string; project_id?: string; inspection_id?: string; entries: Array<{ work_type: string; hours: number; notes?: string; pre_inspection?: boolean }> }): Promise<{ entries: Timesheet[] }> {
   return apiClient(ENDPOINTS.timesheets.batch, {
     method: 'POST',
     body: JSON.stringify(input),
