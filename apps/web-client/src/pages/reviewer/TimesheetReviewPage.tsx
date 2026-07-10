@@ -66,7 +66,7 @@ export default function TimesheetReviewPage() {
 
   return (
     <div className="p-8 max-w-7xl mx-auto animate-fadeIn">
-      <button onClick={() => navigate('/reviewer/dashboard')} className="text-sm text-accent mb-4">&larr; Dashboard</button>
+      <button onClick={() => navigate(-1)} className="text-sm text-accent mb-4">&larr; Back</button>
       <h1 className="text-3xl font-bold text-text-primary mb-6">Timesheet Review</h1>
 
       <div className="flex gap-2 mb-4">
