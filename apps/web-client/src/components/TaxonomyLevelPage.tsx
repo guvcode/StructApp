@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../services/api/apiClient';
 import { ENDPOINTS } from '../services/api/endpoints';
@@ -122,6 +123,13 @@ export function TaxonomyLevelPage({ level }: TaxonomyLevelPageProps) {
 
   return (
     <div className="p-6 animate-fadeIn max-w-2xl">
+      <nav className="flex items-center gap-2 text-sm text-text-secondary mb-6">
+        <Link to="/categories" className="hover:text-accent transition-colors">Categories</Link>
+        <span>/</span>
+        <Link to="/categories/taxonomy" className="hover:text-accent transition-colors">Taxonomy</Link>
+        <span>/</span>
+        <span className="text-text-primary font-medium">{label}</span>
+      </nav>
       {parentLevel && (
         <div className="mb-4">
           <label className="block text-sm font-medium text-text-primary mb-1">{LEVEL_LABELS[parentLevel] ?? parentLevel}</label>

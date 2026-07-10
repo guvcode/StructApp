@@ -94,6 +94,7 @@ export default function RemediationQueuePage() {
                   <th className="py-3 text-text-secondary font-semibold">Priority</th>
                   <th className="py-3 text-text-secondary font-semibold">Structure</th>
                   <th className="py-3 text-text-secondary font-semibold">Deficiency</th>
+                  <th className="py-3 text-text-secondary font-semibold">Category</th>
                   <th className="py-3 text-text-secondary font-semibold">Due Date</th>
                   <th className="py-3 text-text-secondary font-semibold">Evidence</th>
                   <th className="py-3 text-text-secondary font-semibold">Owner</th>
