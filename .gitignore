@@ -35,3 +35,4 @@ coverage/
 
 # Misc
 .kilo/scratch/
+apps/api-server/validate.js

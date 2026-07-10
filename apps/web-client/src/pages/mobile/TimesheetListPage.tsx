@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTimesheets, useSubmitTimesheet, useDeleteTimesheet } from '../../hooks/useTimesheets';
 import { getActiveClientId } from '../../lib/authStore';
+import { TimesheetStatus } from '../../types';
 import Skeleton from '../../components/Skeleton';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -11,7 +12,7 @@ const STATUS_COLORS: Record<string, string> = {
   Rejected: 'bg-red-100 text-red-700',
 };
 
-const FILTERS = ['All', 'Draft', 'Submitted', 'Approved', 'Rejected'] as const;
+const FILTERS = ['All', TimesheetStatus.Draft, TimesheetStatus.Submitted, TimesheetStatus.Approved, TimesheetStatus.Rejected] as const;
 
 export default function TimesheetListPage() {
   const navigate = useNavigate();
@@ -64,7 +65,7 @@ export default function TimesheetListPage() {
         <div className="space-y-2">
           {filtered.map(ts => (
             <div key={ts.id} className="bg-surface-primary border border-border rounded-lg p-3">
-              {ts.status === 'Rejected' && ts.rejection_reason && (
+              {ts.status === TimesheetStatus.Rejected && ts.rejection_reason && (
                 <div className="bg-red-50 border border-red-200 rounded p-2 mb-2 text-xs text-red-700">
                   Rejected: {ts.rejection_reason}
                 </div>
@@ -79,17 +80,17 @@ export default function TimesheetListPage() {
                 <span className={`px-2 py-0.5 rounded-full text-xs font-medium ml-2 ${STATUS_COLORS[ts.status] ?? ''}`}>{ts.status}</span>
               </div>
               <div className="flex gap-2 mt-2">
-                {ts.status === 'Draft' && (
+                {ts.status === TimesheetStatus.Draft && (
                   <>
                     <button onClick={() => navigate(`/m/timesheets/${ts.id}`)} className="px-2 py-1 text-xs border border-border rounded text-text-primary" aria-label={`Edit ${ts.work_type}`}>Edit</button>
                     <button onClick={() => submitTimesheet.mutate(ts.id)} className="px-2 py-1 text-xs border border-accent text-accent rounded" aria-label={`Submit ${ts.work_type}`}>Submit</button>
                     <button onClick={() => deleteTimesheet.mutate(ts.id)} className="px-2 py-1 text-xs border border-red-300 text-red-600 rounded" aria-label={`Delete ${ts.work_type}`}>Delete</button>
                   </>
                 )}
-                {ts.status === 'Submitted' && (
+                {ts.status === TimesheetStatus.Submitted && (
                   <button onClick={() => navigate(`/m/timesheets/${ts.id}`)} className="px-2 py-1 text-xs border border-border rounded text-text-primary" aria-label="View timesheet">View</button>
                 )}
-                {(ts.status === 'Approved' || ts.status === 'Rejected') && (
+                {(ts.status === TimesheetStatus.Approved || ts.status === TimesheetStatus.Rejected) && (
                   <button onClick={() => navigate(`/m/timesheets/${ts.id}`)} className="px-2 py-1 text-xs border border-border rounded text-text-primary" aria-label="View timesheet details">View</button>
                 )}
               </div>

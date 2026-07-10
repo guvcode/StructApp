@@ -1,4 +1,5 @@
 import type { Inspection, Deficiency } from '../types/index';
+import { InspectionStatus } from '../types/index';
 
 interface Props {
   inspection?: Inspection | null;
@@ -6,7 +7,7 @@ interface Props {
 }
 
 export function GovernanceMetadataPanel({ inspection, deficiency }: Props) {
-  const hasReturn = inspection?.status === 'Returned' && inspection.return_reason;
+  const hasReturn = inspection?.status === InspectionStatus.Returned && inspection.return_reason;
   const hasApproved = inspection?.approved_by && inspection.approved_at;
   const hasReopen = inspection?.reopened_by && inspection.reopened_at;
   const hasOverrideDeficiency = deficiency?.override_priority_tier;

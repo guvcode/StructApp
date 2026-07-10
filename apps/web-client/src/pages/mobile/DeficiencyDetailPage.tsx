@@ -8,9 +8,10 @@ import { calculateGlencoreRisk } from '../../utils/riskCalculator';
 import { db } from '../../lib/db';
 import Skeleton from '../../components/Skeleton';
 import { useOfflinePhotos } from '../../hooks/useOfflinePhotos';
+import { InspectionStatus, PriorityTier } from '../../types';
 
 const LIKELIHOOD_OPTIONS = ['A', 'B', 'C', 'D', 'E'] as const;
-const PRIORITY_OPTIONS = ['P1', 'P2', 'P3', 'P4', 'P5'] as const;
+const PRIORITY_OPTIONS = Object.values(PriorityTier);
 
 export default function DeficiencyDetailPage() {
   const { localId } = useParams<{ localId: string }>();
@@ -148,7 +149,7 @@ export default function DeficiencyDetailPage() {
     queryFn: () => apiClient<{ status: string }>(ENDPOINTS.inspections.byId(deficiencyInspectionId!)),
     enabled: !!deficiencyInspectionId && !isNew,
   });
-  const isReadOnly = !isNew && (deficiencyInspection?.status === 'Submitted' || deficiencyInspection?.status === 'Approved');
+  const isReadOnly = !isNew && (deficiencyInspection?.status === InspectionStatus.Submitted || deficiencyInspection?.status === InspectionStatus.Approved);
 
   const { uploadPending } = useOfflinePhotos(localId);
 

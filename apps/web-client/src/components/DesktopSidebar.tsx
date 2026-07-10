@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import type { UserRole } from '../types/index';
+import { InspectionStatus, RemediationStatus } from '../types/index';
 import { isFeatureEnabled } from '../lib/featureFlags';
 
 interface SubMenuItem {
@@ -102,17 +103,17 @@ const menuSections: MenuSection[] = [
   ]},
   { label: 'Inspections', route: '/inspections', roles: ['reviewer', 'admin'], phase: 'P0', submenu: [
     { label: 'All Inspections', route: '/inspections' },
-    { label: 'Submitted', route: '/inspections?status=Submitted' },
-    { label: 'Returned', route: '/inspections?status=Returned' },
-    { label: 'Approved', route: '/inspections?status=Approved' },
+    { label: 'Submitted', route: `/inspections?status=${InspectionStatus.Submitted}` },
+    { label: 'Returned', route: `/inspections?status=${InspectionStatus.Returned}` },
+    { label: 'Approved', route: `/inspections?status=${InspectionStatus.Approved}` },
   ]},
   { label: 'Remediation', route: '/remediation', roles: ['reviewer', 'admin'], phase: 'P1', submenu: [
-    { label: 'Open', route: '/remediation?status=Open' },
-    { label: 'Pending Verification', route: '/remediation?status=Remediated_Pending_Verification' },
-    { label: 'Verified Closed', route: '/remediation?status=Verified_Closed' },
+    { label: 'Open', route: `/remediation?status=${RemediationStatus.Open}` },
+    { label: 'Pending Verification', route: `/remediation?status=${RemediationStatus.PendingVerification}` },
+    { label: 'Verified Closed', route: `/remediation?status=${RemediationStatus.VerifiedClosed}` },
   ]},
   { label: 'Timesheets', route: '/timesheets/review', roles: ['reviewer', 'admin'], phase: 'P1', submenu: [
-    { label: 'Pending Review', route: '/timesheets/review?status=Submitted' },
+    { label: 'Pending Review', route: `/timesheets/review?status=${InspectionStatus.Submitted}` },
     { label: 'History', route: '/timesheets/review' },
   ]},
 { label: 'Register', route: '/register', roles: ['reviewer', 'admin'], phase: 'P0', submenu: [

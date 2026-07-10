@@ -8,6 +8,7 @@ import { apiClient } from '../../services/api/apiClient';
 import { ENDPOINTS } from '../../services/api/endpoints';
 import { db } from '../../lib/db';
 import Skeleton from '../../components/Skeleton';
+import { InspectionStatus } from '../../types';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -76,16 +77,16 @@ export default function DashboardPage() {
   if (isError && online) return <div className="p-6 text-red-600 text-center">Failed to load dashboard data.</div>;
 
   const assigned = displayInspections.filter(
-    (i: { status: string }) => i.status === 'Assigned' || i.status === 'InProgress' || i.status === 'Draft'
+    (i: { status: string }) => i.status === InspectionStatus.Assigned || i.status === InspectionStatus.InProgress || i.status === InspectionStatus.Draft
   );
   const returned = displayInspections.filter(
-    (i: { status: string }) => i.status === 'Returned'
+    (i: { status: string }) => i.status === InspectionStatus.Returned
   );
   const submitted = displayInspections.filter(
-    (i: { status: string }) => i.status === 'Submitted'
+    (i: { status: string }) => i.status === InspectionStatus.Submitted
   );
   const approved = displayInspections.filter(
-    (i: { status: string }) => i.status === 'Approved'
+    (i: { status: string }) => i.status === InspectionStatus.Approved
   );
 
   return (
@@ -189,8 +190,8 @@ export default function DashboardPage() {
         <h3 className="font-semibold text-text-primary mb-2">Active Inspections ({assigned.length})</h3>
         {assigned.map((insp) => {
           const i = insp as { id: string; clientId?: string; client_id?: string; siteId?: string; site_id?: string; status: string; scheduledDate?: string | null; scheduled_date?: string; structureId?: string; structure_id?: string };
-          const statusColor = i.status === 'InProgress' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800';
-          const statusLabel = i.status === 'InProgress' ? 'In Progress' : 'Assigned';
+          const statusColor = i.status === InspectionStatus.InProgress ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800';
+          const statusLabel = i.status === InspectionStatus.InProgress ? 'In Progress' : 'Assigned';
           return (
           <button
             key={i.id}

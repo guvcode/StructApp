@@ -1,0 +1,12 @@
+{
+  "name": "structapp-shared",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./roles": {
+      "types": "./src/roles.ts",
+      "default": "./src/roles.ts"
+    }
+  }
+}

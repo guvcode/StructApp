@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useBulkReassign } from '../hooks/useBulkReassign';
+import { InspectionStatus } from '../types';
 
 export interface InspectionForBulkReassign {
   inspection_id: string;
@@ -27,10 +28,10 @@ export function BulkReassignDialog({
   const [offendingIds, setOffendingIds] = useState<string[] | null>(null);
 
   const openInspections = inspections.filter(
-    (insp) => insp.status !== 'Approved'
+    (insp) => insp.status !== InspectionStatus.Approved
   );
   const approvedInspections = inspections.filter(
-    (insp) => insp.status === 'Approved'
+    (insp) => insp.status === InspectionStatus.Approved
   );
 
   useEffect(() => {

@@ -11,6 +11,7 @@ import Skeleton from '../../components/Skeleton';
 import EmptyState from '../../components/EmptyState';
 import StatusBadge from '../../components/StatusBadge';
 import { TIMESHEET_STATUS_STYLES } from '../../utils/statusMaps';
+import { TimesheetStatus } from '../../types';
 import type { TimesheetGroup, Timesheet } from '../../types/index';
 
 function getGroupStatus(group: TimesheetGroup): string {
@@ -33,7 +34,7 @@ export default function TimesheetReviewPage() {
   const { search, setSearch, sortKey, sortDir, toggleSort, sortedFiltered } = useSearchSort(groups, ['user_name', 'id'], 'week_start');
   const statusFilter = searchParams.get('status') || 'All';
 
-  const FILTERS = ['All', 'Submitted', 'Approved', 'Rejected', 'Mixed'];
+  const FILTERS = ['All', TimesheetStatus.Submitted, TimesheetStatus.Approved, TimesheetStatus.Rejected, 'Mixed'];
   const filteredGroups = statusFilter === 'All' ? sortedFiltered : sortedFiltered.filter(g => getGroupStatus(g) === statusFilter);
 
   const toggleExpand = (id: string) => {
@@ -44,15 +45,15 @@ export default function TimesheetReviewPage() {
     });
   };
 
-  const canActOn = (group: TimesheetGroup) => group.entries.some(e => e.status === 'Submitted');
+  const canActOn = (group: TimesheetGroup) => group.entries.some(e => e.status === TimesheetStatus.Submitted);
 
   const handleApprove = (group: TimesheetGroup) => {
-    const submittedEntries = group.entries.filter(e => e.status === 'Submitted');
+    const submittedEntries = group.entries.filter(e => e.status === TimesheetStatus.Submitted);
     setActionTarget({ groupId: group.id, entryIds: submittedEntries.map(e => e.id), entryCount: submittedEntries.length, action: 'approve' });
   };
 
   const handleReject = (group: TimesheetGroup) => {
-    const submittedEntries = group.entries.filter(e => e.status === 'Submitted');
+    const submittedEntries = group.entries.filter(e => e.status === TimesheetStatus.Submitted);
     setActionTarget({ groupId: group.id, entryIds: submittedEntries.map(e => e.id), entryCount: submittedEntries.length, action: 'reject' });
   };
 

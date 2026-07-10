@@ -5,6 +5,7 @@ import Card from '../../components/Card';
 import Skeleton, { StatCardSkeleton } from '../../components/Skeleton';
 import { useState, useEffect } from 'react';
 import { getCachedClientNames } from '../../lib/clientNameCache';
+import { InspectionStatus } from '../../types';
 
 export default function AdminDashboardPage() {
   const { data, isLoading } = useAdminDashboardStats();
@@ -139,7 +140,7 @@ export default function AdminDashboardPage() {
                         <span className="block">{insp.site_name || clientNames[insp.site_id] || insp.site_id}</span>
                         <span className="block text-xs text-text-secondary mt-0.5">{insp.scheduled_date ? `Scheduled: ${new Date(insp.scheduled_date).toLocaleDateString()}` : ''}</span>
                       </td>
-                      <td className="py-4"><span className={`px-2 py-0.5 text-xs rounded-full ${insp.status === 'Approved' ? 'bg-green-100 text-green-700' : insp.status === 'Submitted' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600'}`}>{insp.status}</span></td>
+                      <td className="py-4"><span className={`px-2 py-0.5 text-xs rounded-full ${insp.status === InspectionStatus.Approved ? 'bg-green-100 text-green-700' : insp.status === InspectionStatus.Submitted ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600'}`}>{insp.status}</span></td>
                       <td className="py-4">
                         <Link
                           to={`/inspections/${insp.id}/detail`}
