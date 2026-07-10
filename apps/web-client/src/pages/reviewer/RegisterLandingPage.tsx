@@ -17,7 +17,7 @@ export default function RegisterLandingPage() {
 
   return (
     <div className="p-6">
-      <button onClick={() => navigate('/')} className="text-sm text-accent mb-4">&larr; Dashboard</button>
+      <button onClick={() => navigate('/reviewer/dashboard')} className="text-sm text-accent mb-4">&larr; Dashboard</button>
       <h2 className="text-2xl font-bold text-text-primary mb-6">Register Overview</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">

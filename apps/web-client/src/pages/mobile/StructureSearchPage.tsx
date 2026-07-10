@@ -26,7 +26,7 @@ export default function StructureSearchPage() {
 
   return (
     <div className="space-y-4">
-      <button onClick={() => navigate('/m')} className="text-sm text-accent">&larr; Back</button>
+      <button onClick={() => navigate('/m/dashboard')} className="text-sm text-accent">&larr; Back</button>
       <h2 className="text-lg font-bold text-text-primary">Structure Search</h2>
       <input
         placeholder="Search asset tag or description..."

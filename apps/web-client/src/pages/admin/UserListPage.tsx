@@ -200,7 +200,7 @@ export default function UserListPage() {
 
   return (
     <div className="p-8 max-w-7xl">
-      <button onClick={() => navigate('/admin')} className="text-sm text-accent mb-4">&larr; Admin Dashboard</button>
+      <button onClick={() => navigate('/admin/dashboard')} className="text-sm text-accent mb-4">&larr; Admin Dashboard</button>
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-3xl font-bold text-text-primary">Users</h2>
         <Link

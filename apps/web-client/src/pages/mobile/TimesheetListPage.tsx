@@ -29,7 +29,7 @@ export default function TimesheetListPage() {
 
   return (
     <div className="p-4 max-w-lg mx-auto">
-      <button onClick={() => navigate('/m')} className="text-sm text-accent mb-2">&larr; Back</button>
+      <button onClick={() => navigate('/m/dashboard')} className="text-sm text-accent mb-2">&larr; Back</button>
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-xl font-bold text-text-primary">Timesheets</h1>
         <button

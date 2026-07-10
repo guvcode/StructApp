@@ -15,7 +15,7 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <button onClick={() => navigate('/m')} className="text-sm text-accent">&larr; Back</button>
+      <button onClick={() => navigate('/m/dashboard')} className="text-sm text-accent">&larr; Back</button>
       <h2 className="text-lg font-bold text-text-primary">Settings</h2>
       <div className="border border-border rounded-md divide-y divide-border bg-surface-primary">
         <div className="px-4 py-3 text-sm text-text-secondary">
