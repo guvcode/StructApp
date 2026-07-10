@@ -359,9 +359,12 @@ export default function DeficiencyDetailPage() {
 
       <div>
         <label className="block text-sm font-medium text-text-primary mb-1">Location</label>
-<input value={locationDesc} onChange={e => setLocationDesc(e.target.value)} disabled={isReadOnly} className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary disabled:opacity-60" placeholder="e.g., Floor 12, column grid C-4" />
+        <input value={locationDesc} onChange={e => setLocationDesc(e.target.value)} disabled={isReadOnly} className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary disabled:opacity-60" placeholder="e.g., Floor 12, column grid C-4" />
+      </div>
 
-        <input value={componentNote} onChange={e => setComponentNote(e.target.value)} disabled={isReadOnly} className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary disabled:opacity-60" />
+      <div>
+        <label className="block text-sm font-medium text-text-primary mb-1">Component Note</label>
+        <input value={componentNote} onChange={e => setComponentNote(e.target.value)} disabled={isReadOnly} className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary disabled:opacity-60" placeholder="Optional note about this component..." />
       </div>
 
       <div className="border-t border-border pt-4">

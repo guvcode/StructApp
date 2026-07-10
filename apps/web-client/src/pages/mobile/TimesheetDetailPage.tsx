@@ -12,6 +12,7 @@ interface Entry {
   workType: string;
   hours: string;
   notes: string;
+  preInspection: boolean;
 }
 
 export default function TimesheetDetailPage() {
@@ -23,7 +24,7 @@ export default function TimesheetDetailPage() {
   const [entryDate, setEntryDate] = useState('');
   const [inspectionId, setInspectionId] = useState('');
   const [inspections, setInspections] = useState<Inspection[]>([]);
-  const [entries, setEntries] = useState<Entry[]>([{ id: crypto.randomUUID(), workType: '', hours: '', notes: '' }]);
+  const [entries, setEntries] = useState<Entry[]>([{ id: crypto.randomUUID(), workType: '', hours: '', notes: '', preInspection: false }]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -36,14 +37,14 @@ export default function TimesheetDetailPage() {
     }
   }, []);
 
-  const addEntry = () => setEntries(prev => [...prev, { id: crypto.randomUUID(), workType: '', hours: '', notes: '' }]);
+  const addEntry = () => setEntries(prev => [...prev, { id: crypto.randomUUID(), workType: '', hours: '', notes: '', preInspection: false }]);
 
   const removeEntry = (entryId: string) => {
     if (entries.length <= 1) return;
     setEntries(prev => prev.filter(e => e.id !== entryId));
   };
 
-  const updateEntry = (entryId: string, field: keyof Entry, value: string) => {
+  const updateEntry = (entryId: string, field: keyof Entry, value: string | boolean) => {
     setEntries(prev => prev.map(e => e.id === entryId ? { ...e, [field]: value } : e));
   };
 
@@ -73,6 +74,7 @@ export default function TimesheetDetailPage() {
         entries: validEntries.map(e => ({
           work_type: e.workType,
           hours: parseFloat(e.hours),
+          pre_inspection: e.preInspection,
           ...(e.notes ? { notes: e.notes } : {}),
         })),
       };
@@ -160,6 +162,15 @@ export default function TimesheetDetailPage() {
                 placeholder="Optional..."
               />
             </div>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={entry.preInspection}
+                onChange={e => updateEntry(entry.id, 'preInspection', e.target.checked)}
+                className="w-4 h-4"
+              />
+              <span className="text-xs text-text-primary">Pre-inspection entry</span>
+            </label>
           </div>
         ))}
       </div>
