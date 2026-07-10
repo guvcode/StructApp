@@ -355,3 +355,11 @@
 | INSP-801 | Migration: cleanup existing duplicate inspections + partial unique index `idx_inspections_active_duplicate_guard` on `(structure_id, inspector_id) WHERE status IN ('Assigned', 'InProgress')` | 6 | 🟩 COMPLETED | None |
 | INSP-802 | Backend: catch unique violation in `createInspection` service → throw `DUPLICATE_INSPECTION`; route handler returns 409 with `error_code: 'DUPLICATE_INSPECTION'` | 6 | 🟩 COMPLETED | INSP-801 |
 | INSP-803 | Frontend: `NewInspectionPage` shows specific error message when duplicate is detected | 6 | 🟩 COMPLETED | INSP-802 |
+
+### 10.9 Timesheet Batch Fix
+
+| Feature ID | Component | Sprint | Status | Dependency |
+|---|---|---|---|---|
+| TSM-901 | Backend: multi-row INSERT with RETURNING * — stores `inspection_id` and `notes→description`, returns `{ entries: [...] }` instead of `{ count }` | 6 | 🟩 COMPLETED | None |
+| TSM-902 | Frontend: update `createTimesheetBatch` return type to `Promise<{ entries: Timesheet[] }>` | 6 | 🟩 COMPLETED | TSM-901 |
+| TSM-903 | Tests: server tests for multi-row INSERT, inspection_id null handling, description mapping | 6 | 🟩 COMPLETED | TSM-901 |
