@@ -27,8 +27,7 @@ router.get(
 
       res.json({
         success: true,
-        data: result.rows,
-        pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+        data: { rows: result.rows, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } },
       });
     } catch (err) {
       next(err);

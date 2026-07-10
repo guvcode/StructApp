@@ -310,6 +310,7 @@
 | BL-031 | Feature | **HTTPS / TLS** — configure proper TLS termination, HSTS headers for production deployment | Medium | 2026-07-07 |
 | BL-032 | Feature | **Rate limiting** — enforce rate limits on auth endpoints (login, refresh, invite, reset) | Medium | 2026-07-07 |
 | BL-033 | Feature | **Network error handling** — unified toast/retry UI for network failures across all API calls | Low | 2026-07-07 |
+| ADM-421 | Email Queue UI — fix data fetch/response shape mismatch (pagination nested in `json.data`), make sidebar link always visible (phase P1 → P0), add frontend tests | Low | 2026-07-10 | 🟩 COMPLETED |
 | REFACTOR-001 | Tech debt | Replace hardcoded status string literals with canonical `InspectionStatus`, `TimesheetStatus`, `PriorityTier`, `RemediationStatus` enums across 12 form/page files | Low | 2026-07-10 |
 
 ## 10.13 Sprint 6 — Taxonomy & Cascading Deficiency Flow (TAX)
