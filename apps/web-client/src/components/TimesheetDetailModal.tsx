@@ -42,7 +42,7 @@ export default function TimesheetDetailModal({ entry, onClose }: TimesheetDetail
 
           <div>
             <p className="text-xs font-semibold text-text-secondary uppercase tracking-wide">Description</p>
-            <p className="text-sm text-text-primary mt-1 whitespace-pre-wrap">{entry.description || '—'}</p>
+            <p className="text-sm text-text-primary mt-1 whitespace-pre-wrap">{entry.notes || '—'}</p>
           </div>
 
           {entry.user_name && (

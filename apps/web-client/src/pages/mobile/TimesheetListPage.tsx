@@ -74,7 +74,7 @@ export default function TimesheetListPage() {
                 <div className="flex-1">
                   <p className="text-sm font-medium text-text-primary">{ts.work_type ?? 'No work type'}</p>
                   <p className="text-xs text-text-secondary mt-0.5">{ts.entry_date} · {ts.hours}h</p>
-                  {ts.description && <p className="text-xs text-text-secondary mt-0.5">{ts.description}</p>}
+                  {ts.notes && <p className="text-xs text-text-secondary mt-0.5">{ts.notes}</p>}
                   {ts.approved_by && <p className="text-xs text-green-600 mt-0.5">Approved by {ts.approved_by}</p>}
                 </div>
                 <span className={`px-2 py-0.5 rounded-full text-xs font-medium ml-2 ${STATUS_COLORS[ts.status] ?? ''}`}>{ts.status}</span>

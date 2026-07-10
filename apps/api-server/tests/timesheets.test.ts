@@ -136,7 +136,7 @@ describe('timesheets service', () => {
   });
 
   describe('updateTimesheet', () => {
-    test('updates work_type, hours_logged, description on a Draft entry', async () => {
+    test('updates work_type, hours_logged, notes on a Draft entry', async () => {
       const mockClient = makeMockClient();
       mockClient.query
         .mockResolvedValueOnce({}) // BEGIN
@@ -204,8 +204,8 @@ describe('timesheets service', () => {
     test('inserts multiple entries with inspection_id and notes via multi-row INSERT RETURNING *', async () => {
       const mockClient = makeMockClient();
       const returnedRows = [
-        { entry_id: 'e1', user_id: 'user-1', project_id: 'proj-1', inspection_id: 'insp-1', client_id: 'client-1', work_type: 'Field Inspection', hours_logged: '8.00', description: 'Check main beam', entry_date: '2026-07-10', status: 'Draft', rejection_reason: null, approved_by: null, approved_at: null, created_at: '2026-07-10T10:00:00Z', updated_at: '2026-07-10T10:00:00Z' },
-        { entry_id: 'e2', user_id: 'user-1', project_id: 'proj-1', inspection_id: 'insp-1', client_id: 'client-1', work_type: 'Report Writing', hours_logged: '4.00', description: null, entry_date: '2026-07-10', status: 'Draft', rejection_reason: null, approved_by: null, approved_at: null, created_at: '2026-07-10T10:00:00Z', updated_at: '2026-07-10T10:00:00Z' },
+        { entry_id: 'e1', user_id: 'user-1', project_id: 'proj-1', inspection_id: 'insp-1', client_id: 'client-1', work_type: 'Field Inspection', hours_logged: '8.00', notes: 'Check main beam', entry_date: '2026-07-10', status: 'Draft', rejection_reason: null, approved_by: null, approved_at: null, created_at: '2026-07-10T10:00:00Z', updated_at: '2026-07-10T10:00:00Z' },
+        { entry_id: 'e2', user_id: 'user-1', project_id: 'proj-1', inspection_id: 'insp-1', client_id: 'client-1', work_type: 'Report Writing', hours_logged: '4.00', notes: null, entry_date: '2026-07-10', status: 'Draft', rejection_reason: null, approved_by: null, approved_at: null, created_at: '2026-07-10T10:00:00Z', updated_at: '2026-07-10T10:00:00Z' },
       ];
       mockClient.query
         .mockResolvedValueOnce({}) // BEGIN
@@ -225,10 +225,10 @@ describe('timesheets service', () => {
       expect(result).toHaveProperty('entries');
       expect(result.entries).toHaveLength(2);
       expect(result.entries[0]!.work_type).toBe('Field Inspection');
-      expect(result.entries[0]!.description).toBe('Check main beam');
+      expect(result.entries[0]!.notes).toBe('Check main beam');
       expect(result.entries[0]!.inspection_id).toBe('insp-1');
       expect(result.entries[1]!.work_type).toBe('Report Writing');
-      expect(result.entries[1]!.description).toBeNull();
+      expect(result.entries[1]!.notes).toBeNull();
       expect(result.entries[1]!.inspection_id).toBe('insp-1');
 
       // Verify multi-row INSERT
@@ -243,7 +243,7 @@ describe('timesheets service', () => {
       mockClient.query
         .mockResolvedValueOnce({}) // BEGIN
         .mockResolvedValueOnce({}) // set_config
-        .mockResolvedValueOnce({ rows: [{ entry_id: 'e1', user_id: 'user-1', project_id: 'proj-1', inspection_id: null, client_id: 'client-1', work_type: 'Office Work', hours_logged: '6.00', description: null, entry_date: '2026-07-10', status: 'Draft', rejection_reason: null, approved_by: null, approved_at: null, created_at: '2026-07-10T10:00:00Z', updated_at: '2026-07-10T10:00:00Z' }], rowCount: 1 }) // INSERT RETURNING *
+        .mockResolvedValueOnce({ rows: [{ entry_id: 'e1', user_id: 'user-1', project_id: 'proj-1', inspection_id: null, client_id: 'client-1', work_type: 'Office Work', hours_logged: '6.00', notes: null, entry_date: '2026-07-10', status: 'Draft', rejection_reason: null, approved_by: null, approved_at: null, created_at: '2026-07-10T10:00:00Z', updated_at: '2026-07-10T10:00:00Z' }], rowCount: 1 }) // INSERT RETURNING *
         .mockResolvedValueOnce({}); // COMMIT
       mockPool.connect.mockResolvedValue(mockClient);
 

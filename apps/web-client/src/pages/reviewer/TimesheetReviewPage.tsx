@@ -163,7 +163,7 @@ export default function TimesheetReviewPage() {
                             <td className="py-2.5 text-text-secondary">{entry.work_type ?? '—'}</td>
                             <td className="py-2.5 text-text-secondary font-semibold">{entry.hours}h</td>
                             <td className="py-2.5"><StatusBadge label={entry.status} map={TIMESHEET_STATUS_STYLES} /></td>
-                            <td className="py-2.5 text-text-secondary max-w-xs truncate">{entry.description ?? '—'}</td>
+                            <td className="py-2.5 text-text-secondary max-w-xs truncate">{entry.notes ?? '—'}</td>
                           </tr>
                         ))}
                       </tbody>
