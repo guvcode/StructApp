@@ -42,6 +42,7 @@ describe('Migrations', () => {
     expect(tables).toContain('password_reset_tokens');
     expect(tables).toContain('pin_fallback_tokens');
     expect(tables).toContain('deficiency_taxonomy');
+    expect(tables).toContain('structure_taxonomy_templates');
   });
 
   test('taxonomy types are created', async () => {
@@ -76,6 +77,39 @@ describe('Migrations', () => {
       WHERE relname = 'deficiency_taxonomy'
     `);
     expect(result.rows[0].relrowsecurity).toBe(true);
+  });
+
+  test('structure_taxonomy_templates has correct structure', async () => {
+    const columns = await pool.query(`
+      SELECT column_name, data_type, is_nullable
+      FROM information_schema.columns
+      WHERE table_name = 'structure_taxonomy_templates'
+      ORDER BY ordinal_position
+    `);
+    const colNames = columns.rows.map(r => r.column_name);
+    expect(colNames).toContain('template_id');
+    expect(colNames).toContain('client_id');
+    expect(colNames).toContain('structure_type_id');
+    expect(colNames).toContain('taxonomy_node_id');
+    expect(colNames).toContain('created_at');
+  });
+
+  test('structure_taxonomy_templates has RLS enabled', async () => {
+    const result = await pool.query(`
+      SELECT relrowsecurity FROM pg_class
+      WHERE relname = 'structure_taxonomy_templates'
+    `);
+    expect(result.rows[0].relrowsecurity).toBe(true);
+  });
+
+  test('structure_taxonomy_templates has unique constraint', async () => {
+    const result = await pool.query(`
+      SELECT conname FROM pg_constraint
+      WHERE conrelid = 'structure_taxonomy_templates'::regclass
+      AND contype = 'u'
+    `);
+    const constraints = result.rows.map(r => r.conname);
+    expect(constraints).toContain('unique_structure_type_taxonomy_node');
   });
 
   test('deficiency_records has v4 taxonomy and risk columns', async () => {
