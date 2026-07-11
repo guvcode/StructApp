@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo, Fragment } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useRemediationDeficiencies, useHasRemediationEvidence } from '../../hooks/useRemediation';
 import { useQueryClient } from '@tanstack/react-query';
@@ -12,6 +12,7 @@ import Skeleton from '../../components/Skeleton';
 import EmptyState from '../../components/EmptyState';
 import StatusBadge from '../../components/StatusBadge';
 import { REMEDIATION_STATUS_STYLES } from '../../utils/statusMaps';
+import type { Deficiency } from '../../types';
 
 const STATUS_LABELS: Record<string, string> = {
   Open: 'Open',
@@ -19,6 +20,21 @@ const STATUS_LABELS: Record<string, string> = {
   Remediated_Pending_Verification: 'Pending Verification',
   Verified_Closed: 'Verified Closed',
 };
+
+function groupByInspections(deficiencies: Deficiency[]): Map<string, { inspectionName: string; entries: Deficiency[] }> {
+  const groups = new Map<string, { inspectionName: string; entries: Deficiency[] }>();
+  for (const d of deficiencies) {
+    const key = d.inspection_id || '__no_inspection__';
+    if (!groups.has(key)) {
+      groups.set(key, {
+        inspectionName: d.inspection_name || (d.inspection_id ? 'Unknown Inspection' : 'Other'),
+        entries: [],
+      });
+    }
+    groups.get(key)!.entries.push(d);
+  }
+  return groups;
+}
 
 export default function RemediationQueuePage() {
   const navigate = useNavigate();
@@ -36,6 +52,8 @@ export default function RemediationQueuePage() {
     : deficiencies.filter(d => d.remediation_status === statusFilter);
 
   const { search, setSearch, sortKey, sortDir, toggleSort, sortedFiltered } = useSearchSort(filtered, ['title', 'site_name', 'category'], 'priority_tier');
+
+  const inspectionGroups = useMemo(() => groupByInspections(sortedFiltered), [sortedFiltered]);
 
   if (isLoading) return (
     <div className="p-8 max-w-7xl mx-auto animate-fadeIn">
@@ -103,8 +121,23 @@ export default function RemediationQueuePage() {
                 </tr>
               </thead>
               <tbody>
-                {sortedFiltered.map(d => (
-                  <RemediationRow key={d.id} deficiency={d} role={role} onVerify={setVerifyTarget} onOpen={() => navigate(`/deficiencies/${d.id}`)} />
+                {Array.from(inspectionGroups.entries()).map(([key, group]) => (
+                  <Fragment key={key}>
+                    <tr className="bg-surface-secondary/50">
+                      <td colSpan={9} className="px-6 py-2 text-sm font-semibold text-text-primary">
+                        <span className="inline-flex items-center gap-1.5">
+                          <svg className="w-3.5 h-3.5 text-accent shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                          {group.inspectionName}
+                          <span className="text-xs font-normal text-text-muted">({group.entries.length})</span>
+                        </span>
+                      </td>
+                    </tr>
+                    {group.entries.map(d => (
+                      <RemediationRow key={d.id} deficiency={d} role={role} onVerify={setVerifyTarget} onOpen={() => navigate(`/deficiencies/${d.id}`)} />
+                    ))}
+                  </Fragment>
                 ))}
               </tbody>
             </table>

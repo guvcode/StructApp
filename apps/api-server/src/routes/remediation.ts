@@ -15,6 +15,7 @@ router.get('/', requireAuth, async (req: Request, res: Response, next: NextFunct
              d.description, d.remediation_status, d.remediation_due_date,
              d.remediated_at, d.verified_closed_by, d.verified_closed_at,
              d.component_notes, d.created_at, d.updated_at,
+             COALESCE(st.name, s.name) AS inspection_name,
              st.name AS site_name,
              u.display_name AS assignee_name, u.email AS assignee_email
       FROM deficiency_records d
@@ -40,6 +41,7 @@ router.get('/:id', requireAuth, async (req: Request, res: Response, next: NextFu
               d.description, d.remediation_status, d.remediation_due_date,
               d.remediated_at, d.verified_closed_by, d.verified_closed_at,
               d.component_notes, d.created_at, d.updated_at,
+              COALESCE(st.name, s.name) AS inspection_name,
               st.name AS site_name,
               u.display_name AS assignee_name, u.email AS assignee_email
        FROM deficiency_records d
