@@ -44,6 +44,7 @@ import TaxonomySubComponentsPage from './pages/reviewer/taxonomy/TaxonomySubComp
 import TaxonomyFocusAreasPage from './pages/reviewer/taxonomy/TaxonomyFocusAreasPage';
 import TaxonomyDeficiencyCategoriesPage from './pages/reviewer/taxonomy/TaxonomyDeficiencyCategoriesPage';
 import TaxonomyEquipmentTypesPage from './pages/reviewer/taxonomy/TaxonomyEquipmentTypesPage';
+import TaxonomyDetailedDescriptionsPage from './pages/reviewer/taxonomy/TaxonomyDetailedDescriptionsPage';
 import CalendarPage from './pages/reviewer/CalendarPage';
 import CalendarSchedulesPage from './pages/reviewer/CalendarSchedulesPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
