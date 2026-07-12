@@ -262,6 +262,8 @@ export interface Deficiency {
   assignee_name?: string;
 
   category?: string;
+  equipment_type?: string;
+  component?: string;
   sub_component?: string;
   focus_area?: string;
   deficiency_category?: string;

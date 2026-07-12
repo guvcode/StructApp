@@ -14,6 +14,8 @@ export const deficiencySyncSchema = z.object({
   consequences: z.number().int().min(1).max(5).nullable().optional(),
 
   category: z.string().max(100).optional(),
+  equipment_type: z.string().max(255).optional(),
+  component: z.string().max(255).optional(),
   sub_component: z.string().max(255).optional(),
   focus_area: z.string().max(255).optional(),
   deficiency_category: z.string().max(255).optional(),

@@ -87,11 +87,11 @@ export async function processSyncPush(
           `INSERT INTO deficiency_records
              (inspection_id, client_id, previous_deficiency_id, component_type_id, component_notes,
               description, severity, probability, consequences, gps_latitude, gps_longitude, calculated_priority,
-              category, sub_component, focus_area, deficiency_category, detailed_description, mechanisms,
+              category, equipment_type, component, sub_component, focus_area, deficiency_category, detailed_description, mechanisms,
               vibration_present, ndt_required, further_investigation_required, recommended_action,
               consequence_severity, likelihood, most_affected_consequence, risk_rank, risk_rating)
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12,
-                   $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27)
+                   $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29)
            RETURNING deficiency_id, calculated_priority`,
           [
             data.inspection_id,
@@ -107,6 +107,8 @@ export async function processSyncPush(
             data.gps_longitude,
             tier,
             data.category ?? null,
+            data.equipment_type ?? null,
+            data.component ?? null,
             data.sub_component ?? null,
             data.focus_area ?? null,
             data.deficiency_category ?? null,
@@ -233,6 +235,7 @@ export async function processSyncPull(
   deficiencies: Array<{
     deficiency_id: string; inspection_id: string; client_id: string;
     description: string; calculated_priority: string; category: string | null;
+    equipment_type: string | null; component: string | null;
     sub_component: string | null; focus_area: string | null;
     deficiency_category: string | null; detailed_description: string | null;
     mechanisms: string | null; recommended_action: string | null;
@@ -266,7 +269,7 @@ export async function processSyncPull(
       ),
       client.query(
         `SELECT d.deficiency_id, d.inspection_id, d.client_id, d.description,
-                d.calculated_priority, d.category, d.sub_component, d.focus_area,
+                d.calculated_priority, d.category, d.equipment_type, d.component, d.sub_component, d.focus_area,
                 d.deficiency_category, d.detailed_description, d.mechanisms,
                 d.recommended_action, d.consequence_severity, d.likelihood,
                 d.risk_rank, d.risk_rating, d.created_at, d.updated_at

@@ -29,6 +29,8 @@ export type DeficiencyRecord = {
   gpsLatitude?: number;
   gpsLongitude?: number;
   category?: string;
+  equipmentType?: string;
+  component?: string;
   subComponent?: string;
   focusArea?: string;
   deficiencyCategory?: string;
@@ -79,6 +81,8 @@ export type OfflineDeficiency = {
   description: string;
   calculatedPriority: string;
   category: string | null;
+  equipmentType: string | null;
+  component: string | null;
   subComponent: string | null;
   focusArea: string | null;
   deficiencyCategory: string | null;

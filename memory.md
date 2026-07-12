@@ -1,36 +1,42 @@
-# Memory — FIX-013 Timesheet Save Fix
+# Memory — Taxonomy hierarchy fix + save mapping + sync path (FIX-014)
 
-Last updated: 2026-07-10T14:57:00-06:00
+Last updated: 2026-07-12T15:57:00-06:00
 
 ## What was built
 
-Fixed timesheet save not working for draft or submitted entries on `task/TS-fix-timesheet-save`:
+Fixed hierarchy disconnect between equipment_type and component levels for existing clients, plus save mapping and sync path fixes:
 
-- **Server service** (`apps/api-server/src/services/timesheets.ts`): Added `pre_inspection` to `updateTimesheet` params type, SQL SET clause, and RETURNING columns. Allowed editing Submitted entries by reverting status to Draft (previously threw `TIMESHEET_NOT_DRAFT`).
-- **Server route** (`apps/api-server/src/routes/timesheets.ts`): Added extraction of `pre_inspection` from PATCH request body with `Boolean()` coercion.
-- **Client page** (`apps/web-client/src/pages/mobile/TimesheetDetailPage.tsx`): Added `pre_inspection: entry.preInspection` to the update mutation payload.
-- **Tests** (`apps/api-server/tests/timesheets.test.ts`): Updated existing test to verify `pre_inspection` and `notes` in response. Added new test for editing a Submitted entry (expects status to revert to Draft). Changed the NOT_DRAFT test to use an Approved entry (since Submitted no longer errors).
+- **Migration** (`apps/api-server/migrations/1700000028000_fix_existing_client_taxonomy_hierarchy.ts`): Deletes old seed taxonomy (component→sub_component→focus_area parented to categories) and re-inserts correct hierarchy (equipment_type→component→sub_component) for all 4 asset library categories.
+- **Mobile save fix** (`apps/web-client/src/pages/mobile/DeficiencyDetailPage.tsx`): Corrected save mapping — was off by one level (component→sub_component, subComponent→focus_area, etc.). Now correctly maps: equipment_type, component, sub_component, focus_area, deficiency_category, detailed_description.
+- **Types updated**: Added `equipment_type`/`component` to `DeficiencyRow` (api-server), `Deficiency` (web-client types), `DeficiencyRecord`/`OfflineDeficiency` (Dexie db.ts), `deficiencySyncSchema` (sync contract), `PendingDeficiencyPayload` (sync.ts).
+- **CRUD service**: Added `equipment_type`/`component` to `createDeficiency` INSERT query and `updateDeficiency` allowedFields.
+- **Sync path**: Fixed `processSyncPush` INSERT to include `equipment_type`/`component` columns; fixed `processSyncPull` SELECT and return type; fixed `SyncPage.tsx` pull mapping to include new fields; fixed `getPendingDeficiencies` payload mapping.
+- **Reviewer display**: Added `equipment_type` and `component` fields to reviewer `DeficiencyDetailPage.tsx` taxonomy card.
 
 ## Decisions made
 
-- Editing a submitted timesheet reverts it to Draft (must be resubmitted for re-approval). Approved/Rejected entries remain uneditable.
-- `pre_inspection` is included in the PATCH payload for both drafts and submitted entries, ensuring the flag is preserved during edits.
+- Migration 28000 uses recursive CTE to delete old seed hierarchy bottom-up (component nodes parented to categories, with all descendants), then re-inserts via same pattern as `seedAssetLibrary()` and other backfill migrations.
+- All new fields added as optional across all types to maintain backward compatibility with existing records.
 
 ## Problems solved
 
-- `pre_inspection` field was completely missing from the update code path — not extracted in the route handler, not accepted by the service, not sent by the client. Resulted in silent data loss on save.
-- Submitted timesheets could not be edited at all — the service gate kept them from being updated.
+- Existing clients had old hierarchy (category→component) with no equipment_type level. Component nodes were parented to categories, not equipment_type. Backfill added equipment_type nodes but didn't re-parent.
+- Save mapping was off by one since original implementation, causing component to be saved as sub_component, subComponent as focus_area, etc.
+- Sync push/pull completely dropped equipment_type and component values — silent data loss for offline users.
 
 ## Current state
 
-- FIX-013 committed to `task/TS-fix-timesheet-save`
-- All 14 server tests pass, 1 client test passes
-- No regressions detected (only `updateTimesheet` caller is the PATCH route handler)
+- FIX-014 committed to `task/asset-library-taxonomy-template` (commit 74f0e33)
+- TypeScript compiles clean on api-server (only pre-existing TS6059 rootDir errors)
+- Web-client has only pre-existing TS errors (GenericPicklistPage, usePicklists, etc.)
+- All taxonomy data corrected for existing clients via migration
 
 ## Next session starts with
 
-Pick next task from the progress tracker.
+- Remaining backlog items (BL-006 through BL-033)
+- Verify the migration runs correctly on staging
+- If needed, add `is_system` flag to taxonomy table to distinguish seed vs user-created nodes
 
 ## Open questions
 
-None.
+- None

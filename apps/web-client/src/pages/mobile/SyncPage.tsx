@@ -57,7 +57,8 @@ export default function SyncPage() {
       deficiencies: Array<{
         deficiency_id: string; inspection_id: string; client_id: string;
         description: string; calculated_priority: string;
-        category: string | null; sub_component: string | null;
+        category: string | null; equipment_type: string | null; component: string | null;
+        sub_component: string | null;
         focus_area: string | null; deficiency_category: string | null;
         detailed_description: string | null; mechanisms: string | null;
         recommended_action: string | null;
@@ -97,6 +98,8 @@ export default function SyncPage() {
             description: d.description,
             calculatedPriority: d.calculated_priority,
             category: d.category ?? null,
+            equipmentType: d.equipment_type ?? null,
+            component: d.component ?? null,
             subComponent: d.sub_component ?? null,
             focusArea: d.focus_area ?? null,
             deficiencyCategory: d.deficiency_category ?? null,
