@@ -90,21 +90,18 @@ export default function DeficiencyDetailPage() {
   const { data: taxonomyNodes = [] } = useQuery({
     queryKey: ['taxonomy', 'offline'],
     queryFn: async () => {
-      const nodes = await db.offlineTaxonomy.toArray();
-      if (nodes.length > 0) return nodes;
-      const online = await apiClient<Array<{ node_id: string; parent_id: string | null; level: string; label: string }>>(ENDPOINTS.taxonomy.list);
-      await db.offlineTaxonomy.bulkPut(
-        online.map(n => ({
-          nodeId: n.node_id,
-          parentId: n.parent_id,
-          level: n.level,
-          category: '',
-          label: n.label,
-          displayOrder: 0,
-          isActive: true,
-        }))
-      );
-      return db.offlineTaxonomy.toArray();
+      const online = await apiClient<Array<{ node_id: string; parent_id: string | null; level: string; category: string; label: string; display_order: number; is_active: boolean }>>(ENDPOINTS.taxonomy.list);
+      const mapped = online.map(n => ({
+        nodeId: n.node_id,
+        parentId: n.parent_id,
+        level: n.level,
+        category: n.category,
+        label: n.label,
+        displayOrder: n.display_order,
+        isActive: n.is_active,
+      }));
+      await db.offlineTaxonomy.bulkPut(mapped);
+      return mapped;
     },
   });
 

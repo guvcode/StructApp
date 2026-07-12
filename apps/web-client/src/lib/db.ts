@@ -168,7 +168,7 @@ export class StructAppLocalDB extends Dexie {
       offlineTaxonomy: 'nodeId, level, category',
       offlineClients: 'client_id',
     });
-    this.version(5).stores({
+    this.version(6).stores({
       authState: 'id, accessToken, refreshToken, clientId, userId, role',
       deficiencies: '++localId, inspectionId, syncState',
       pinOutbox: '++localId, structureId, pinMode, createdAt',
