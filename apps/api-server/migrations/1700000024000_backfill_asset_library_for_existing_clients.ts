@@ -445,6 +445,18 @@ export const up = (pgm: Migrator) => {
   // Create templates linking structure_type -> component
   parts.push(``);
   parts.push(`    -- =====================================================`);
+  parts.push(`    -- Insert category-level structure_types so structures`);
+  parts.push(`    -- typed at the category level also get matching templates`);
+  parts.push(`    -- =====================================================`);
+  for (const cat of categories) {
+    const escaped = cat.category.replace(/'/g, "''");
+    parts.push(`    INSERT INTO structure_types (client_id, name)`);
+    parts.push(`      VALUES (c.client_id, '${escaped}')`);
+    parts.push(`      ON CONFLICT (client_id, name) DO UPDATE SET name = EXCLUDED.name;`);
+  }
+
+  parts.push(``);
+  parts.push(`    -- =====================================================`);
   parts.push(`    -- Create structure_taxonomy_templates`);
   parts.push(`    -- =====================================================`);
   parts.push(`    FOR comp_record IN SELECT DISTINCT ON (dt.node_id) dt.node_id, dt.label, dt.category`);
