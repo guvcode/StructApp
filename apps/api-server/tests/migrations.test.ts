@@ -14,7 +14,7 @@ describe('Migrations', () => {
     await pool.query('DROP SCHEMA IF EXISTS public CASCADE');
     await pool.query('CREATE SCHEMA public');
 
-    execSync('npx node-pg-migrate up', {
+    execSync('npx node-pg-migrate up --no-single-transaction', {
       cwd: 'apps/api-server',
       env: { ...process.env, DATABASE_URL },
       stdio: 'inherit',
