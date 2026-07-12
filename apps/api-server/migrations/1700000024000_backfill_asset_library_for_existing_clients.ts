@@ -482,18 +482,18 @@ export const down = (pgm: Migrator) => {
     DELETE FROM structure_taxonomy_templates
     WHERE taxonomy_node_id IN (
       SELECT node_id FROM deficiency_taxonomy
-      WHERE level IN ('focus_area', 'sub_component', 'component')
+      WHERE level IN ('sub_component', 'component', 'equipment_type')
       AND category IN ('Process Equipment (Mechanical)', 'Structural Support', 'Foundations & Geotechnical', 'Building Envelope')
       AND node_id NOT IN (SELECT parent_id FROM deficiency_taxonomy WHERE parent_id IS NOT NULL)
     );
-    DELETE FROM deficiency_taxonomy
-    WHERE level = 'focus_area'
-    AND category IN ('Process Equipment (Mechanical)', 'Structural Support', 'Foundations & Geotechnical', 'Building Envelope');
     DELETE FROM deficiency_taxonomy
     WHERE level = 'sub_component'
     AND category IN ('Process Equipment (Mechanical)', 'Structural Support', 'Foundations & Geotechnical', 'Building Envelope');
     DELETE FROM deficiency_taxonomy
     WHERE level = 'component'
+    AND category IN ('Process Equipment (Mechanical)', 'Structural Support', 'Foundations & Geotechnical', 'Building Envelope');
+    DELETE FROM deficiency_taxonomy
+    WHERE level = 'equipment_type'
     AND category IN ('Process Equipment (Mechanical)', 'Structural Support', 'Foundations & Geotechnical', 'Building Envelope');
   `);
 };
