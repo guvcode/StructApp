@@ -5,12 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "start": "NODE_TLS_REJECT_UNAUTHORIZED=0 npx tsx ../../node_modules/node-pg-migrate/bin/node-pg-migrate up && NODE_ENV=production npx tsx src/index.ts",
+    "start": "NODE_TLS_REJECT_UNAUTHORIZED=0 npx tsx ../../node_modules/node-pg-migrate/bin/node-pg-migrate up --no-single-transaction && NODE_ENV=production npx tsx src/index.ts",
     "build": "tsc",
-    "test": "node-pg-migrate up && jest",
-    "migrate": "set NODE_TLS_REJECT_UNAUTHORIZED=0 && npx tsx ../../node_modules/node-pg-migrate/bin/node-pg-migrate up",
-    "migrate:down": "set NODE_TLS_REJECT_UNAUTHORIZED=0 && npx tsx ../../node_modules/node-pg-migrate/bin/node-pg-migrate down",
-    "migrate:prod": "NODE_TLS_REJECT_UNAUTHORIZED=0 npx tsx node_modules/node-pg-migrate/bin/node-pg-migrate up",
+    "test": "node-pg-migrate up --no-single-transaction && jest",
+    "migrate": "set NODE_TLS_REJECT_UNAUTHORIZED=0 && npx tsx ../../node_modules/node-pg-migrate/bin/node-pg-migrate up --no-single-transaction",
+    "migrate:down": "set NODE_TLS_REJECT_UNAUTHORIZED=0 && npx tsx ../../node_modules/node-pg-migrate/bin/node-pg-migrate down --no-single-transaction",
+    "migrate:prod": "NODE_TLS_REJECT_UNAUTHORIZED=0 npx tsx node_modules/node-pg-migrate/bin/node-pg-migrate up --no-single-transaction",
     "seed": "tsx scripts/seed.ts"
   },
   "dependencies": {
