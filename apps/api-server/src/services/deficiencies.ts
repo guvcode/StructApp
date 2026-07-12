@@ -8,6 +8,8 @@ export interface DeficiencyRow {
   description: string;
   calculated_priority: string;
   category: string | null;
+  equipment_type: string | null;
+  component: string | null;
   sub_component: string | null;
   focus_area: string | null;
   deficiency_category: string | null;
@@ -93,7 +95,7 @@ export async function createDeficiency(
     const result = await client.query(
       `INSERT INTO deficiency_records (
         inspection_id, client_id, structure_id, created_by, description,
-        category, sub_component, focus_area, deficiency_category,
+        category, equipment_type, component, sub_component, focus_area, deficiency_category,
         detailed_description, mechanisms, vibration_present, ndt_required,
         further_investigation_required, recommended_action,
         consequence_severity, likelihood, most_affected_consequence,
@@ -103,13 +105,13 @@ export async function createDeficiency(
         $1, $2,
         (SELECT structure_id FROM inspections WHERE inspection_id = $1),
         $3, $4,
-        $5, $6, $7, $8,
-        $9, $10, $11, $12,
-        $13, $14,
-        $15, $16, $17,
-        $18, $19, $20,
-        COALESCE($18::VARCHAR, $21),
-        $22, $23
+        $5, $6, $7, $8, $9, $10,
+        $11, $12, $13, $14,
+        $15, $16,
+        $17, $18, $19,
+        $20, $21, $22,
+        COALESCE($20::VARCHAR, $23),
+        $24, $25
       ) RETURNING *, deficiency_id AS id`,
       [
         inspectionId,
@@ -117,6 +119,8 @@ export async function createDeficiency(
         userId,
         data.description || '',
         data.category || null,
+        data.equipment_type || null,
+        data.component || null,
         data.sub_component || null,
         data.focus_area || null,
         data.deficiency_category || null,
@@ -166,7 +170,7 @@ export async function updateDeficiency(
     if (current.rowCount === 0) throw new Error('DEFICIENCY_NOT_FOUND');
 
     const allowedFields = [
-      'description', 'category', 'sub_component', 'focus_area',
+      'description', 'category', 'equipment_type', 'component', 'sub_component', 'focus_area',
       'deficiency_category', 'detailed_description', 'mechanisms',
       'vibration_present', 'ndt_required', 'further_investigation_required',
       'recommended_action', 'consequence_severity', 'likelihood',

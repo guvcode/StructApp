@@ -145,11 +145,13 @@ export default function DeficiencyDetailPage() {
         </div>
       </Card>
 
-      {(deficiency.category || deficiency.sub_component || deficiency.focus_area || deficiency.deficiency_category || deficiency.detailed_description) && (
+      {(deficiency.category || deficiency.equipment_type || deficiency.component || deficiency.sub_component || deficiency.focus_area || deficiency.deficiency_category || deficiency.detailed_description) && (
         <Card padding="lg">
           <p className="text-xs text-text-secondary uppercase tracking-wide font-semibold mb-3">Taxonomy</p>
           <div className="grid grid-cols-2 gap-3 text-sm">
             {deficiency.category && <div><span className="text-text-secondary">Category</span><p className="text-text-primary">{deficiency.category}</p></div>}
+            {deficiency.equipment_type && <div><span className="text-text-secondary">Equipment Type</span><p className="text-text-primary">{deficiency.equipment_type}</p></div>}
+            {deficiency.component && <div><span className="text-text-secondary">Component</span><p className="text-text-primary">{deficiency.component}</p></div>}
             {deficiency.sub_component && <div><span className="text-text-secondary">Sub-Component</span><p className="text-text-primary">{deficiency.sub_component}</p></div>}
             {deficiency.focus_area && <div><span className="text-text-secondary">Focus Area</span><p className="text-text-primary">{deficiency.focus_area}</p></div>}
             {deficiency.deficiency_category && <div><span className="text-text-secondary">Deficiency Category</span><p className="text-text-primary">{deficiency.deficiency_category}</p></div>}

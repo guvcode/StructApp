@@ -17,6 +17,8 @@ export type PendingDeficiencyPayload = {
   probability?: number | null;
   consequences?: number | null;
   category?: string;
+  equipment_type?: string;
+  component?: string;
   sub_component?: string;
   focus_area?: string;
   deficiency_category?: string;
@@ -144,6 +146,8 @@ export async function getPendingDeficiencies(): Promise<Array<PendingDeficiencyP
         if (r.consequences !== undefined) payload.consequences = r.consequences;
         if (r.componentNotes) payload.component_notes = r.componentNotes;
         if (r.category) payload.category = r.category;
+        if (r.equipmentType) payload.equipment_type = r.equipmentType;
+        if (r.component) payload.component = r.component;
         if (r.subComponent) payload.sub_component = r.subComponent;
         if (r.focusArea) payload.focus_area = r.focusArea;
         if (r.deficiencyCategory) payload.deficiency_category = r.deficiencyCategory;

@@ -1,36 +1,46 @@
-# Memory — FIX-013 Timesheet Save Fix
+# Memory — Asset Library Taxonomy Template (BL-034)
 
-Last updated: 2026-07-10T14:57:00-06:00
+Last updated: 2026-07-11T14:53:00-06:00
 
 ## What was built
 
-Fixed timesheet save not working for draft or submitted entries on `task/TS-fix-timesheet-save`:
+Full WTP Asset Library taxonomy seeding and template linking for new clients:
 
-- **Server service** (`apps/api-server/src/services/timesheets.ts`): Added `pre_inspection` to `updateTimesheet` params type, SQL SET clause, and RETURNING columns. Allowed editing Submitted entries by reverting status to Draft (previously threw `TIMESHEET_NOT_DRAFT`).
-- **Server route** (`apps/api-server/src/routes/timesheets.ts`): Added extraction of `pre_inspection` from PATCH request body with `Boolean()` coercion.
-- **Client page** (`apps/web-client/src/pages/mobile/TimesheetDetailPage.tsx`): Added `pre_inspection: entry.preInspection` to the update mutation payload.
-- **Tests** (`apps/api-server/tests/timesheets.test.ts`): Updated existing test to verify `pre_inspection` and `notes` in response. Added new test for editing a Submitted entry (expects status to revert to Draft). Changed the NOT_DRAFT test to use an Approved entry (since Submitted no longer errors).
+- **Migration** (`apps/api-server/migrations/1700000020000_create_structure_taxonomy_templates.ts`): Created `structure_taxonomy_templates` linking table (`client_id`, `structure_type_id`, `taxonomy_node_id`) with RLS, unique constraint, and indexes.
+- **XLSX seed data** (`apps/api-server/migrations/data/asset-library-seed.json`): Parsed from `.doc/groupings/WTP_Structural_Integrity_Asset_Library_V1.xlsx` — 4 categories, 46 components, 101 sub-components, 104 focus areas.
+- **Client onboarding** (`apps/api-server/src/services/clientOnboarding.ts`): Added `seedAssetLibrary()` that inserts structure_types, deficiency_taxonomy nodes, and template links in a single transaction with `ON CONFLICT` idempotency.
+- **Template API** (`apps/api-server/src/services/structureTemplates.ts`, `apps/api-server/src/routes/structureTemplates.ts`): `GET /api/v1/structure-taxonomy-templates?structure_type_id=:id` returns templates + recursive ancestor chains.
+- **Frontend pinning** (`apps/web-client/src/pages/mobile/DeficiencyDetailPage.tsx`): Fetches templates for the structure's type, groups component options into "Suggested for this asset type" (pinned) and "Other components" via `<optgroup>`.
+- **Tests** (`apps/api-server/tests/structureTemplates.test.ts`): 3 tests covering template list, empty result, ancestor chain. Migration test extended for table structure/RLS/constraint.
 
 ## Decisions made
 
-- Editing a submitted timesheet reverts it to Draft (must be resubmitted for re-approval). Approved/Rejected entries remain uneditable.
-- `pre_inspection` is included in the PATCH payload for both drafts and submitted entries, ensuring the flag is preserved during edits.
+- Linking at `component` level: each structure_type maps to component-level taxonomy nodes. All descendants (sub_component, focus_area) inherit implicitly.
+- Pinned nodes displayed via `<optgroup>` in the component dropdown (most impactful level). Sub-component and below are implicitly pinned by parent selection.
+- Separate API endpoint rather than modifying the existing taxonomy endpoint — cleaner, no impact on existing callers.
+- Optional template fetching — query gracefully handles missing `structure_type_id` or empty results.
 
 ## Problems solved
 
-- `pre_inspection` field was completely missing from the update code path — not extracted in the route handler, not accepted by the service, not sent by the client. Resulted in silent data loss on save.
-- Submitted timesheets could not be edited at all — the service gate kept them from being updated.
+- XLSX parsing: all 4 columns filled on every row (not merged cells). Category/component boundaries detected by value changes rather than empty cells.
+- Parent-child FK resolution: `INSERT ... RETURNING node_id` captures parent IDs for chained inserts, with fallback `SELECT` for the `ON CONFLICT DO NOTHING` case.
+- `category` column correctly set to top-level category label for all descendant nodes.
 
 ## Current state
 
-- FIX-013 committed to `task/TS-fix-timesheet-save`
-- All 14 server tests pass, 1 client test passes
-- No regressions detected (only `updateTimesheet` caller is the PATCH route handler)
+- BL-034 committed to `task/asset-library-taxonomy-template` (2 commits)
+- All existing taxonomy/picklist tests pass (13 tests)
+- New template service tests pass (3 tests)
+- TypeScript compiles clean (no real errors — only pre-existing TS6059 rootDir warnings)
+- No regressions detected
 
 ## Next session starts with
 
-Pick next task from the progress tracker.
+- Backlog: BL-006 through BL-033 (test fixes, features) in progress tracker
+- The `seedDefaultPicklists` and `seedAssetLibrary` functions in `clientOnboarding.ts` need to be wired into the client registration flow (a separate task)
+- The "Import Asset Library" button on the Taxonomy page (Step 7) is deferred to a future task
 
 ## Open questions
 
-None.
+- When client registration flow is built, `seedAssetLibrary` should be called after `seedDefaultPicklists` for new clients
+- Existing clients with the 4 stub categories should get a per-client "Import Asset Library" button (future)
