@@ -26,6 +26,18 @@ export const up = (pgm: Migrator) => {
   pgm.createIndex('structure_taxonomy_templates', 'client_id', { name: 'idx_templates_client' });
   pgm.createIndex('structure_taxonomy_templates', 'structure_type_id', { name: 'idx_templates_structure_type' });
   pgm.createIndex('structure_taxonomy_templates', 'taxonomy_node_id', { name: 'idx_templates_taxonomy_node' });
+
+  pgm.sql(`
+    INSERT INTO structure_taxonomy_templates (client_id, structure_type_id, taxonomy_node_id)
+    SELECT st.client_id, st.structure_type_id, tn.node_id
+    FROM structure_types st
+    INNER JOIN deficiency_taxonomy tn
+      ON tn.client_id = st.client_id
+      AND tn.level = 'component'
+      AND tn.label = st.name
+    WHERE NOT EXISTS (SELECT 1 FROM structure_taxonomy_templates LIMIT 1)
+    ON CONFLICT (structure_type_id, taxonomy_node_id) DO NOTHING;
+  `);
 };
 
 export const down = (pgm: Migrator) => {
