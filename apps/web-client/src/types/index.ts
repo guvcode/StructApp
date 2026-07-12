@@ -239,6 +239,7 @@ export interface Inspection {
 export interface Deficiency {
   id: string;
   inspection_id: string;
+  inspection_name?: string;
   title: string;
   description: string;
   severity: string;
