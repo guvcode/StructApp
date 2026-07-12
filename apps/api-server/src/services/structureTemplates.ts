@@ -24,7 +24,32 @@ export async function getTemplatesForStructureType(
       [clientId, structureTypeId]
     );
 
-    return result.rows;
+    if (result.rows.length > 0) {
+      return result.rows;
+    }
+
+    // Fallback: if no templates found, check if this structure type name matches a taxonomy category.
+    // If so, return all component nodes under that category as virtual templates.
+    const stResult = await client.query(
+      `SELECT name FROM structure_types WHERE structure_type_id = $1 AND client_id = $2`,
+      [structureTypeId, clientId]
+    );
+    if (stResult.rows.length === 0) return [];
+
+    const typeName = stResult.rows[0].name;
+    const compResult = await client.query(
+      `SELECT node_id FROM deficiency_taxonomy
+       WHERE client_id = $1 AND level = 'component' AND category = $2
+       ORDER BY display_order`,
+      [clientId, typeName]
+    );
+
+    return compResult.rows.map((row: { node_id: string }) => ({
+      template_id: '',
+      structure_type_id: structureTypeId,
+      taxonomy_node_id: row.node_id,
+      created_at: '',
+    }));
   } finally {
     client.release();
   }
