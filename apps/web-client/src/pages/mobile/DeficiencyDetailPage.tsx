@@ -52,8 +52,9 @@ export default function DeficiencyDetailPage() {
   useEffect(() => {
     if (!existingDeficiency) return;
     const d = existingDeficiency as Record<string, unknown>;
-    setCategory((d.category as string) || firstCategory);
-    setComponent((d.subComponent as string) || (d.sub_component as string) || '');
+        setCategory((d.category as string) || firstCategory);
+    setEquipmentType((d.equipmentType as string) || (d.equipment_type as string) || '');
+    setComponent((d.component as string) || '');
     setFocusArea((d.focusArea as string) || (d.focus_area as string) || '');
     setDeficiencyCategory((d.deficiencyCategory as string) || (d.deficiency_category as string) || '');
     setDetailedDescription((d.detailedDescription as string) || (d.detailed_description as string) || '');
@@ -124,6 +125,7 @@ export default function DeficiencyDetailPage() {
   const firstCategory = categories.length > 0 ? categories[0] : '';
 
   const [category, setCategory] = useState(firstCategory);
+  const [equipmentType, setEquipmentType] = useState('');
   const [component, setComponent] = useState('');
   const [subComponent, setSubComponent] = useState('');
   const [focusArea, setFocusArea] = useState('');
@@ -142,11 +144,14 @@ export default function DeficiencyDetailPage() {
   const [locationDesc, setLocationDesc] = useState('');
 
   const categoryNode = taxonomyNodes.find(n => n.label === category && n.level === 'category');
-  const componentNodes = categoryNode ? getChildren(categoryNode.nodeId) : [];
+  const equipmentTypeNodes = categoryNode ? getChildren(categoryNode.nodeId).filter(n => n.level === 'equipment_type') : [];
+  const equipmentTypeLabels = equipmentTypeNodes.map(n => n.label);
+  const pinnedEquipmentTypes = equipmentTypeNodes.filter(n => isPinned(n.nodeId)).map(n => n.label);
+  const unpinnedEquipmentTypes = equipmentTypeNodes.filter(n => !isPinned(n.nodeId)).map(n => n.label);
+  const equipmentTypeNode = taxonomyNodes.find(n => n.label === equipmentType && n.parentId === categoryNode?.nodeId);
+  const componentNodes = equipmentTypeNode ? getChildren(equipmentTypeNode.nodeId) : [];
   const components = componentNodes.map(n => n.label);
-  const pinnedComponents = componentNodes.filter(n => isPinned(n.nodeId)).map(n => n.label);
-  const unpinnedComponents = componentNodes.filter(n => !isPinned(n.nodeId)).map(n => n.label);
-  const componentNode = taxonomyNodes.find(n => n.label === component && n.parentId === categoryNode?.nodeId);
+  const componentNode = taxonomyNodes.find(n => n.label === component && n.parentId === equipmentTypeNode?.nodeId);
   const subComponents = componentNode ? getChildren(componentNode.nodeId).map(n => n.label) : [];
   const subComponentNode = taxonomyNodes.find(n => n.label === subComponent && n.parentId === componentNode?.nodeId);
   const focusAreas = subComponentNode ? getChildren(subComponentNode.nodeId).map(n => n.label) : [];
@@ -159,9 +164,20 @@ export default function DeficiencyDetailPage() {
     ? calculateGlencoreRisk(consequenceSeverity as 1|2|3|4|5, likelihood as 'A'|'B'|'C'|'D'|'E')
     : null;
 
+  // Derive component from the taxonomy tree when it's not persisted
+  // but subComponent is known. This bridges the gap.
+  useEffect(() => {
+    if (!component && subComponent && taxonomyNodes.length > 0) {
+      const subComponentNode = taxonomyNodes.find(n => n.label === subComponent && n.level === 'sub_component');
+      if (subComponentNode?.parentId) {
+        const parent = taxonomyNodes.find(n => n.nodeId === subComponentNode.parentId);
+        if (parent) setComponent(parent.label);
+      }
+    }
+  }, [subComponent, taxonomyNodes, component]);
+
   // Derive subComponent from the taxonomy tree when it's not persisted
-  // but focusArea is known. This bridges the gap because the 3rd dropdown
-  // (Sub-Component) has no corresponding DB column.
+  // but focusArea is known.
   useEffect(() => {
     if (!subComponent && focusArea && taxonomyNodes.length > 0) {
       const focusAreaNode = taxonomyNodes.find(n => n.label === focusArea && n.level === 'focus_area');
@@ -188,10 +204,11 @@ export default function DeficiencyDetailPage() {
       const data: Record<string, unknown> = {
         description: description || detailedDescription,
         category,
+        equipment_type: equipmentType,
         sub_component: component,
-        focus_area: focusArea,
-        deficiency_category: deficiencyCategory,
-        detailed_description: detailedDescription,
+        focus_area: subComponent,
+        deficiency_category: focusArea,
+        detailed_description: deficiencyCategory,
         mechanisms,
         vibration_present: vibrationPresent,
         ndt_required: ndtRequired,
@@ -256,23 +273,33 @@ export default function DeficiencyDetailPage() {
 
       <div>
         <label className="block text-sm font-medium text-text-primary mb-1">Category</label>
-        <select value={category} onChange={e => { setCategory(e.target.value); setComponent(''); setSubComponent(''); setFocusArea(''); setDeficiencyCategory(''); setDetailedDescription(''); }} disabled={isReadOnly} className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary disabled:opacity-60">
+        <select value={category} onChange={e => { setCategory(e.target.value); setEquipmentType(''); setComponent(''); setSubComponent(''); setFocusArea(''); setDeficiencyCategory(''); setDetailedDescription(''); }} disabled={isReadOnly} className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary disabled:opacity-60">
           {categories.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
       </div>
 
       {category && (
         <div>
+          <label className="block text-sm font-medium text-text-primary mb-1">Equipment Type</label>
+          <select value={equipmentType} onChange={e => { setEquipmentType(e.target.value); setComponent(''); setSubComponent(''); setFocusArea(''); setDeficiencyCategory(''); setDetailedDescription(''); }} disabled={isReadOnly} className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary disabled:opacity-60">
+            <option value="">Select equipment type...</option>
+            {pinnedEquipmentTypes.length > 0 && <optgroup label="Suggested for this asset type">
+              {pinnedEquipmentTypes.map(c => <option key={c} value={c}>{c}</option>)}
+            </optgroup>}
+            {unpinnedEquipmentTypes.length > 0 && <optgroup label="Other equipment types">
+              {unpinnedEquipmentTypes.map(c => <option key={c} value={c}>{c}</option>)}
+            </optgroup>}
+            {pinnedEquipmentTypes.length === 0 && unpinnedEquipmentTypes.length === 0 && equipmentTypeLabels.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
+      )}
+
+      {equipmentType && (
+        <div>
           <label className="block text-sm font-medium text-text-primary mb-1">Component</label>
           <select value={component} onChange={e => { setComponent(e.target.value); setSubComponent(''); setFocusArea(''); setDeficiencyCategory(''); setDetailedDescription(''); }} disabled={isReadOnly} className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary disabled:opacity-60">
             <option value="">Select component...</option>
-            {pinnedComponents.length > 0 && <optgroup label="Suggested for this asset type">
-              {pinnedComponents.map(c => <option key={c} value={c}>{c}</option>)}
-            </optgroup>}
-            {unpinnedComponents.length > 0 && <optgroup label="Other components">
-              {unpinnedComponents.map(c => <option key={c} value={c}>{c}</option>)}
-            </optgroup>}
-            {pinnedComponents.length === 0 && unpinnedComponents.length === 0 && components.map(c => <option key={c} value={c}>{c}</option>)}
+            {components.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
       )}

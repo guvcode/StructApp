@@ -111,7 +111,7 @@ export async function seedAssetLibrary(pool: Pool, clientId: string): Promise<vo
 
         const compResult = await client.query(
           `INSERT INTO deficiency_taxonomy (client_id, parent_id, level, category, label, display_order)
-           VALUES ($1, $2, 'component', $3, $4, $5)
+           VALUES ($1, $2, 'equipment_type', $3, $4, $5)
            ON CONFLICT (client_id, category, level, label) DO NOTHING
            RETURNING node_id`,
           [clientId, catId, cat.category, comp.name, compOrder]
@@ -123,7 +123,7 @@ export async function seedAssetLibrary(pool: Pool, clientId: string): Promise<vo
         } else {
           const existing = await client.query(
             `SELECT node_id FROM deficiency_taxonomy
-             WHERE client_id = $1 AND level = 'component' AND category = $2 AND label = $3`,
+             WHERE client_id = $1 AND level = 'equipment_type' AND category = $2 AND label = $3`,
             [clientId, cat.category, comp.name]
           );
           compId = existing.rows[0].node_id;
@@ -145,19 +145,19 @@ export async function seedAssetLibrary(pool: Pool, clientId: string): Promise<vo
 
           const subResult = await client.query(
             `INSERT INTO deficiency_taxonomy (client_id, parent_id, level, category, label, display_order)
-             VALUES ($1, $2, 'sub_component', $3, $4, $5)
-             ON CONFLICT (client_id, category, level, label) DO NOTHING
-             RETURNING node_id`,
-            [clientId, compId, cat.category, sub.name, subOrder]
-          );
+VALUES ($1, $2, 'component', $3, $4, $5)
+           ON CONFLICT (client_id, category, level, label) DO NOTHING
+           RETURNING node_id`,
+          [clientId, compId, cat.category, sub.name, subOrder]
+        );
 
-          let subId: string;
-          if (subResult.rows.length > 0) {
-            subId = subResult.rows[0].node_id;
-          } else {
-            const existing = await client.query(
-              `SELECT node_id FROM deficiency_taxonomy
-               WHERE client_id = $1 AND level = 'sub_component' AND category = $2 AND label = $3`,
+        let subId: string;
+        if (subResult.rows.length > 0) {
+          subId = subResult.rows[0].node_id;
+        } else {
+          const existing = await client.query(
+            `SELECT node_id FROM deficiency_taxonomy
+             WHERE client_id = $1 AND level = 'component' AND category = $2 AND label = $3`,
               [clientId, cat.category, sub.name]
             );
             subId = existing.rows[0].node_id;
@@ -169,7 +169,7 @@ export async function seedAssetLibrary(pool: Pool, clientId: string): Promise<vo
 
             await client.query(
               `INSERT INTO deficiency_taxonomy (client_id, parent_id, level, category, label, display_order)
-               VALUES ($1, $2, 'focus_area', $3, $4, $5)
+               VALUES ($1, $2, 'sub_component', $3, $4, $5)
                ON CONFLICT (client_id, category, level, label) DO NOTHING`,
               [clientId, subId, cat.category, focusArea, focusOrder]
             );

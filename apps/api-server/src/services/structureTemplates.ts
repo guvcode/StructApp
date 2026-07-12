@@ -39,7 +39,7 @@ export async function getTemplatesForStructureType(
     const typeName = stResult.rows[0].name;
     const compResult = await client.query(
       `SELECT node_id FROM deficiency_taxonomy
-       WHERE client_id = $1 AND level = 'component' AND category = $2
+       WHERE client_id = $1 AND level = 'equipment_type' AND category = $2
        ORDER BY display_order`,
       [clientId, typeName]
     );

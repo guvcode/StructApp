@@ -43,7 +43,7 @@ import TaxonomyComponentsPage from './pages/reviewer/taxonomy/TaxonomyComponents
 import TaxonomySubComponentsPage from './pages/reviewer/taxonomy/TaxonomySubComponentsPage';
 import TaxonomyFocusAreasPage from './pages/reviewer/taxonomy/TaxonomyFocusAreasPage';
 import TaxonomyDeficiencyCategoriesPage from './pages/reviewer/taxonomy/TaxonomyDeficiencyCategoriesPage';
-import TaxonomyDetailedDescriptionsPage from './pages/reviewer/taxonomy/TaxonomyDetailedDescriptionsPage';
+import TaxonomyEquipmentTypesPage from './pages/reviewer/taxonomy/TaxonomyEquipmentTypesPage';
 import CalendarPage from './pages/reviewer/CalendarPage';
 import CalendarSchedulesPage from './pages/reviewer/CalendarSchedulesPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
@@ -113,6 +113,7 @@ export default function AppRoutes() {
             <Route path="work-types" element={<PicklistWorkTypesPage />} />
             <Route path="taxonomy" element={<TaxonomyLevelLandingPage />} />
             <Route path="taxonomy/categories" element={<TaxonomyCategoriesPage />} />
+            <Route path="taxonomy/equipment-types" element={<TaxonomyEquipmentTypesPage />} />
             <Route path="taxonomy/components" element={<TaxonomyComponentsPage />} />
             <Route path="taxonomy/sub-components" element={<TaxonomySubComponentsPage />} />
             <Route path="taxonomy/focus-areas" element={<TaxonomyFocusAreasPage />} />

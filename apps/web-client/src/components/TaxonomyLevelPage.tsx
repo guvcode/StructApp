@@ -7,9 +7,10 @@ import { PicklistManager } from './PicklistManager';
 import type { PicklistEntry } from '../types';
 import Skeleton from './Skeleton';
 
-const LEVEL_ORDER = ['category', 'component', 'sub_component', 'focus_area', 'deficiency_category', 'detailed_description'];
+const LEVEL_ORDER = ['category', 'equipment_type', 'component', 'sub_component', 'focus_area', 'deficiency_category', 'detailed_description'];
 const LEVEL_LABELS: Record<string, string> = {
   category: 'Category',
+  equipment_type: 'Equipment Type',
   component: 'Component',
   sub_component: 'Sub-Component',
   focus_area: 'Focus Area',
