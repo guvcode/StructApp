@@ -407,7 +407,7 @@ export const up = (pgm: Migrator) => {
   parts.push(`      FOR comp_record IN SELECT * FROM jsonb_to_recordset(cat_record.components) AS x(name text, sub_components jsonb) LOOP`);
   parts.push(`        comp_idx := comp_idx + 1;`);
   parts.push(`        INSERT INTO deficiency_taxonomy (client_id, parent_id, level, category, label, display_order)`);
-  parts.push(`          VALUES (c.client_id, cat_id, 'component', cat_record.category, comp_record.name, comp_idx)`);
+  parts.push(`          VALUES (c.client_id, cat_id, 'equipment_type', cat_record.category, comp_record.name, comp_idx)`);
   parts.push(`          ON CONFLICT (client_id, category, level, label) DO UPDATE SET display_order = EXCLUDED.display_order`);
   parts.push(`          RETURNING node_id INTO comp_id;`);
   parts.push(``);
@@ -415,7 +415,7 @@ export const up = (pgm: Migrator) => {
   parts.push(`        FOR sub_record IN SELECT * FROM jsonb_to_recordset(comp_record.sub_components) AS x(name text, focus_areas jsonb) LOOP`);
   parts.push(`          sub_idx := sub_idx + 1;`);
   parts.push(`          INSERT INTO deficiency_taxonomy (client_id, parent_id, level, category, label, display_order)`);
-  parts.push(`            VALUES (c.client_id, comp_id, 'sub_component', cat_record.category, sub_record.name, sub_idx)`);
+  parts.push(`            VALUES (c.client_id, comp_id, 'component', cat_record.category, sub_record.name, sub_idx)`);
   parts.push(`            ON CONFLICT (client_id, category, level, label) DO UPDATE SET display_order = EXCLUDED.display_order`);
   parts.push(`            RETURNING node_id INTO sub_id;`);
   parts.push(``);
@@ -423,7 +423,7 @@ export const up = (pgm: Migrator) => {
   parts.push(`        FOR focus_val IN SELECT jsonb_array_elements_text(sub_record.focus_areas) LOOP`);
   parts.push(`          focus_idx := focus_idx + 1;`);
   parts.push(`          INSERT INTO deficiency_taxonomy (client_id, parent_id, level, category, label, display_order)`);
-  parts.push(`            VALUES (c.client_id, sub_id, 'focus_area', cat_record.category, focus_val, focus_idx)`);
+  parts.push(`            VALUES (c.client_id, sub_id, 'sub_component', cat_record.category, focus_val, focus_idx)`);
   parts.push(`            ON CONFLICT (client_id, category, level, label) DO UPDATE SET display_order = EXCLUDED.display_order;`);
   parts.push(`        END LOOP;`);
   parts.push(`      END LOOP;`);
