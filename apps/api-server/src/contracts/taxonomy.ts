@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const taxonomyCreateSchema = z.object({
   parent_id: z.string().uuid().nullable(),
-  level: z.enum(['category', 'component', 'sub_component', 'focus_area', 'deficiency_category', 'detailed_description']),
+  level: z.enum(['category', 'equipment_type', 'component', 'sub_component', 'focus_area', 'deficiency_category', 'detailed_description']),
   category: z.string().min(1).max(100),
   label: z.string().min(1).max(255),
   display_order: z.number().int().min(0).optional(),
