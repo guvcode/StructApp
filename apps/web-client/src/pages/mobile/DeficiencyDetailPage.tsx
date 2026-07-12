@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../services/api/apiClient';
@@ -35,7 +35,7 @@ export default function DeficiencyDetailPage() {
 
   const { data: structure } = useQuery({
     queryKey: ['structures', inspection?.structure_id ?? inspection?.structureId],
-    queryFn: () => apiClient<{ id: string; name: string; identifier: string }>(ENDPOINTS.structures.byId(inspection!.structure_id ?? inspection!.structureId!)),
+    queryFn: () => apiClient<{ id: string; name: string; identifier: string; type: string }>(ENDPOINTS.structures.byId(inspection!.structure_id ?? inspection!.structureId!)),
     enabled: !!inspection?.structure_id || !!inspection?.structureId,
   });
 
@@ -70,6 +70,23 @@ export default function DeficiencyDetailPage() {
     setLocationDesc((d.locationDesc as string) || (d.location_desc as string) || '');
   }, [existingDeficiency]);
 
+  const { data: structureTypes = [] } = useQuery({
+    queryKey: ['structure-types'],
+    queryFn: () => apiClient<Array<{ structure_type_id: string; name: string }>>(ENDPOINTS.picklists.byType('structure-types')),
+  });
+
+  const matchingStructureType = useMemo(() => {
+    const typeName = structure?.type;
+    if (!typeName || !structureTypes.length) return null;
+    return structureTypes.find(st => st.name === typeName) ?? null;
+  }, [structure?.type, structureTypes]);
+
+  const { data: templatesData } = useQuery({
+    queryKey: ['structure-taxonomy-templates', matchingStructureType?.structure_type_id],
+    queryFn: () => apiClient<{ templates: Array<{ taxonomy_node_id: string }>; ancestors: Record<string, Array<{ node_id: string }>> }>(ENDPOINTS.structureTaxonomyTemplates.byStructureType(matchingStructureType!.structure_type_id)),
+    enabled: !!matchingStructureType?.structure_type_id,
+  });
+
   const { data: taxonomyNodes = [] } = useQuery({
     queryKey: ['taxonomy', 'offline'],
     queryFn: async () => {
@@ -90,6 +107,19 @@ export default function DeficiencyDetailPage() {
       return db.offlineTaxonomy.toArray();
     },
   });
+
+  const pinnedNodeIds = useMemo(() => {
+    if (!templatesData?.ancestors) return new Set<string>();
+    const ids = new Set<string>();
+    for (const ancestors of Object.values(templatesData.ancestors)) {
+      for (const node of ancestors) {
+        ids.add(node.node_id);
+      }
+    }
+    return ids;
+  }, [templatesData]);
+
+  const isPinned = (nodeId: string) => pinnedNodeIds.has(nodeId);
 
   const categories = taxonomyNodes.filter(n => n.level === 'category').map(n => n.label);
   const getChildren = (parentId: string | null) => taxonomyNodes.filter(n => n.parentId === parentId);
@@ -115,7 +145,10 @@ export default function DeficiencyDetailPage() {
   const [locationDesc, setLocationDesc] = useState('');
 
   const categoryNode = taxonomyNodes.find(n => n.label === category && n.level === 'category');
-  const components = categoryNode ? getChildren(categoryNode.nodeId).map(n => n.label) : [];
+  const componentNodes = categoryNode ? getChildren(categoryNode.nodeId) : [];
+  const components = componentNodes.map(n => n.label);
+  const pinnedComponents = componentNodes.filter(n => isPinned(n.nodeId)).map(n => n.label);
+  const unpinnedComponents = componentNodes.filter(n => !isPinned(n.nodeId)).map(n => n.label);
   const componentNode = taxonomyNodes.find(n => n.label === component && n.parentId === categoryNode?.nodeId);
   const subComponents = componentNode ? getChildren(componentNode.nodeId).map(n => n.label) : [];
   const subComponentNode = taxonomyNodes.find(n => n.label === subComponent && n.parentId === componentNode?.nodeId);
@@ -236,7 +269,13 @@ export default function DeficiencyDetailPage() {
           <label className="block text-sm font-medium text-text-primary mb-1">Component</label>
           <select value={component} onChange={e => { setComponent(e.target.value); setSubComponent(''); setFocusArea(''); setDeficiencyCategory(''); setDetailedDescription(''); }} disabled={isReadOnly} className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary disabled:opacity-60">
             <option value="">Select component...</option>
-            {components.map(c => <option key={c} value={c}>{c}</option>)}
+            {pinnedComponents.length > 0 && <optgroup label="Suggested for this asset type">
+              {pinnedComponents.map(c => <option key={c} value={c}>{c}</option>)}
+            </optgroup>}
+            {unpinnedComponents.length > 0 && <optgroup label="Other components">
+              {unpinnedComponents.map(c => <option key={c} value={c}>{c}</option>)}
+            </optgroup>}
+            {pinnedComponents.length === 0 && unpinnedComponents.length === 0 && components.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
       )}

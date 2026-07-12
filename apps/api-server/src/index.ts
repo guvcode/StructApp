@@ -30,6 +30,7 @@ import { authRouter } from './routes/auth';
 import { reportsRouter } from './routes/reports';
 import { importsRouter } from './routes/imports';
 import { remediationRouter } from './routes/remediation';
+import { structureTemplatesRouter } from './routes/structureTemplates';
 import { usersRouter as usersRouter2 } from './routes/users';
 import { clientsRouter as clientsRouter2 } from './routes/clients';
 
@@ -68,6 +69,7 @@ app.use('/api/v1/remediation/deficiencies', requireAuth, requireRole('Admin', 'R
 app.use('/api/v1', requireAuth, taxonomyRouter);
 app.use('/api/v1', requireAuth, requireRole('Admin', 'Reviewer', 'Contractor'), registerRouter);
 app.use('/api/v1', requireAuth, requireRole('Admin', 'Reviewer'), picklistsRouter);
+app.use('/api/v1', requireAuth, requireRole('Admin', 'Reviewer', 'Contractor'), structureTemplatesRouter);
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
