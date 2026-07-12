@@ -1,46 +1,42 @@
-# Memory — Asset Library Taxonomy Template (BL-034)
+# Memory — Taxonomy hierarchy fix + save mapping + sync path (FIX-014)
 
-Last updated: 2026-07-11T14:53:00-06:00
+Last updated: 2026-07-12T15:57:00-06:00
 
 ## What was built
 
-Full WTP Asset Library taxonomy seeding and template linking for new clients:
+Fixed hierarchy disconnect between equipment_type and component levels for existing clients, plus save mapping and sync path fixes:
 
-- **Migration** (`apps/api-server/migrations/1700000020000_create_structure_taxonomy_templates.ts`): Created `structure_taxonomy_templates` linking table (`client_id`, `structure_type_id`, `taxonomy_node_id`) with RLS, unique constraint, and indexes.
-- **XLSX seed data** (`apps/api-server/migrations/data/asset-library-seed.json`): Parsed from `.doc/groupings/WTP_Structural_Integrity_Asset_Library_V1.xlsx` — 4 categories, 46 components, 101 sub-components, 104 focus areas.
-- **Client onboarding** (`apps/api-server/src/services/clientOnboarding.ts`): Added `seedAssetLibrary()` that inserts structure_types, deficiency_taxonomy nodes, and template links in a single transaction with `ON CONFLICT` idempotency.
-- **Template API** (`apps/api-server/src/services/structureTemplates.ts`, `apps/api-server/src/routes/structureTemplates.ts`): `GET /api/v1/structure-taxonomy-templates?structure_type_id=:id` returns templates + recursive ancestor chains.
-- **Frontend pinning** (`apps/web-client/src/pages/mobile/DeficiencyDetailPage.tsx`): Fetches templates for the structure's type, groups component options into "Suggested for this asset type" (pinned) and "Other components" via `<optgroup>`.
-- **Tests** (`apps/api-server/tests/structureTemplates.test.ts`): 3 tests covering template list, empty result, ancestor chain. Migration test extended for table structure/RLS/constraint.
+- **Migration** (`apps/api-server/migrations/1700000028000_fix_existing_client_taxonomy_hierarchy.ts`): Deletes old seed taxonomy (component→sub_component→focus_area parented to categories) and re-inserts correct hierarchy (equipment_type→component→sub_component) for all 4 asset library categories.
+- **Mobile save fix** (`apps/web-client/src/pages/mobile/DeficiencyDetailPage.tsx`): Corrected save mapping — was off by one level (component→sub_component, subComponent→focus_area, etc.). Now correctly maps: equipment_type, component, sub_component, focus_area, deficiency_category, detailed_description.
+- **Types updated**: Added `equipment_type`/`component` to `DeficiencyRow` (api-server), `Deficiency` (web-client types), `DeficiencyRecord`/`OfflineDeficiency` (Dexie db.ts), `deficiencySyncSchema` (sync contract), `PendingDeficiencyPayload` (sync.ts).
+- **CRUD service**: Added `equipment_type`/`component` to `createDeficiency` INSERT query and `updateDeficiency` allowedFields.
+- **Sync path**: Fixed `processSyncPush` INSERT to include `equipment_type`/`component` columns; fixed `processSyncPull` SELECT and return type; fixed `SyncPage.tsx` pull mapping to include new fields; fixed `getPendingDeficiencies` payload mapping.
+- **Reviewer display**: Added `equipment_type` and `component` fields to reviewer `DeficiencyDetailPage.tsx` taxonomy card.
 
 ## Decisions made
 
-- Linking at `component` level: each structure_type maps to component-level taxonomy nodes. All descendants (sub_component, focus_area) inherit implicitly.
-- Pinned nodes displayed via `<optgroup>` in the component dropdown (most impactful level). Sub-component and below are implicitly pinned by parent selection.
-- Separate API endpoint rather than modifying the existing taxonomy endpoint — cleaner, no impact on existing callers.
-- Optional template fetching — query gracefully handles missing `structure_type_id` or empty results.
+- Migration 28000 uses recursive CTE to delete old seed hierarchy bottom-up (component nodes parented to categories, with all descendants), then re-inserts via same pattern as `seedAssetLibrary()` and other backfill migrations.
+- All new fields added as optional across all types to maintain backward compatibility with existing records.
 
 ## Problems solved
 
-- XLSX parsing: all 4 columns filled on every row (not merged cells). Category/component boundaries detected by value changes rather than empty cells.
-- Parent-child FK resolution: `INSERT ... RETURNING node_id` captures parent IDs for chained inserts, with fallback `SELECT` for the `ON CONFLICT DO NOTHING` case.
-- `category` column correctly set to top-level category label for all descendant nodes.
+- Existing clients had old hierarchy (category→component) with no equipment_type level. Component nodes were parented to categories, not equipment_type. Backfill added equipment_type nodes but didn't re-parent.
+- Save mapping was off by one since original implementation, causing component to be saved as sub_component, subComponent as focus_area, etc.
+- Sync push/pull completely dropped equipment_type and component values — silent data loss for offline users.
 
 ## Current state
 
-- BL-034 committed to `task/asset-library-taxonomy-template` (2 commits)
-- All existing taxonomy/picklist tests pass (13 tests)
-- New template service tests pass (3 tests)
-- TypeScript compiles clean (no real errors — only pre-existing TS6059 rootDir warnings)
-- No regressions detected
+- FIX-014 committed to `task/asset-library-taxonomy-template` (commit 74f0e33)
+- TypeScript compiles clean on api-server (only pre-existing TS6059 rootDir errors)
+- Web-client has only pre-existing TS errors (GenericPicklistPage, usePicklists, etc.)
+- All taxonomy data corrected for existing clients via migration
 
 ## Next session starts with
 
-- Backlog: BL-006 through BL-033 (test fixes, features) in progress tracker
-- The `seedDefaultPicklists` and `seedAssetLibrary` functions in `clientOnboarding.ts` need to be wired into the client registration flow (a separate task)
-- The "Import Asset Library" button on the Taxonomy page (Step 7) is deferred to a future task
+- Remaining backlog items (BL-006 through BL-033)
+- Verify the migration runs correctly on staging
+- If needed, add `is_system` flag to taxonomy table to distinguish seed vs user-created nodes
 
 ## Open questions
 
-- When client registration flow is built, `seedAssetLibrary` should be called after `seedDefaultPicklists` for new clients
-- Existing clients with the 4 stub categories should get a per-client "Import Asset Library" button (future)
+- None
