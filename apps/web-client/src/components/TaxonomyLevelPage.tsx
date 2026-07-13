@@ -7,15 +7,13 @@ import { PicklistManager } from './PicklistManager';
 import type { PicklistEntry } from '../types';
 import Skeleton from './Skeleton';
 
-const LEVEL_ORDER = ['category', 'equipment_type', 'component', 'sub_component', 'focus_area', 'deficiency_category', 'detailed_description'];
+const LEVEL_ORDER = ['category', 'equipment_type', 'component', 'sub_component', 'focus_area'];
 const LEVEL_LABELS: Record<string, string> = {
   category: 'Category',
   equipment_type: 'Equipment Type',
   component: 'Component',
   sub_component: 'Sub-Component',
   focus_area: 'Focus Area',
-  deficiency_category: 'Deficiency Category',
-  detailed_description: 'Detailed Description',
 };
 
 interface TaxonomyNode {
@@ -26,6 +24,8 @@ interface TaxonomyNode {
   label: string;
   display_order: number;
   is_active: boolean;
+  deficiency_codes?: string[] | null;
+  deficiency_mechanisms?: string[] | null;
 }
 
 interface TaxonomyLevelPageProps {
@@ -50,62 +50,10 @@ export function TaxonomyLevelPage({ level }: TaxonomyLevelPageProps) {
     queryFn: () => apiClient(ENDPOINTS.taxonomy.list),
   });
 
-  const nodesByLevel = useMemo(() => {
-    const map: Record<string, TaxonomyNode[]> = {};
-    for (const n of allNodes) {
-      (map[n.level] ??= []).push(n);
-    }
-    return map;
-  }, [allNodes]);
-
-  const childrenByParent = useMemo(() => {
-    const map: Record<string, TaxonomyNode[]> = {};
-    for (const n of allNodes) {
-      if (n.parent_id) {
-        (map[n.parent_id] ??= []).push(n);
-      }
-    }
-    return map;
-  }, [allNodes]);
-
-  const handleAncestorChange = useCallback((ancestorLevel: string, nodeId: string) => {
-    setSelectedAncestors(prev => {
-      const updated = { ...prev, [ancestorLevel]: nodeId };
-      const idx = LEVEL_ORDER.indexOf(ancestorLevel);
-      for (let i = idx + 1; i < LEVEL_ORDER.length; i++) {
-        const level = LEVEL_ORDER[i];
-        if (level) delete updated[level];
-      }
-      return updated;
-    });
-  }, []);
-
-  const ancestorOptions = useMemo(() => {
-    const result: { level: string; options: TaxonomyNode[] }[] = [];
-    for (const ancLevel of ancestorLevels) {
-      if (ancLevel === LEVEL_ORDER[0]) {
-        result.push({
-          level: ancLevel,
-          options: (nodesByLevel[ancLevel] || []).filter(n => n.is_active),
-        });
-      } else {
-        const parentIdx = LEVEL_ORDER.indexOf(ancLevel) - 1;
-        const parentLevel = LEVEL_ORDER[parentIdx]!;
-        const parentId = parentLevel ? selectedAncestors[parentLevel] : undefined;
-        if (parentId) {
-          result.push({
-            level: ancLevel,
-            options: (childrenByParent[parentId] || []).filter(n => n.is_active),
-          });
-        } else {
-          result.push({ level: ancLevel, options: [] });
-        }
-      }
-    }
-    return result;
-  }, [ancestorLevels, nodesByLevel, childrenByParent, selectedAncestors]);
-
-  const immediateParentId = immediateParentLevel ? selectedAncestors[immediateParentLevel] : null;
+  const parents = useMemo(() => {
+    if (!parentLevel) return [];
+    return allNodes.filter(n => n.level === parentLevel && n.is_active);
+  }, [allNodes, parentLevel]);
 
   const entries = useMemo(() => {
     const levelNodes = allNodes.filter(n => n.level === level);

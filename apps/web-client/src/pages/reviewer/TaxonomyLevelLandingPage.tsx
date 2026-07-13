@@ -6,8 +6,6 @@ const LEVELS = [
   { path: 'components', label: 'Components', desc: 'Components within an equipment type' },
   { path: 'sub-components', label: 'Sub-Components', desc: 'Sub-components within a component' },
   { path: 'focus-areas', label: 'Focus Areas', desc: 'Focus areas within a sub-component' },
-  { path: 'deficiency-categories', label: 'Deficiency Categories', desc: 'Categories within a focus area' },
-  { path: 'detailed-descriptions', label: 'Detailed Descriptions', desc: 'Detailed descriptions within a deficiency category' },
 ];
 
 export default function TaxonomyLevelLandingPage() {

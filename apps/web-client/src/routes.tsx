@@ -42,9 +42,7 @@ import TaxonomyCategoriesPage from './pages/reviewer/taxonomy/TaxonomyCategories
 import TaxonomyComponentsPage from './pages/reviewer/taxonomy/TaxonomyComponentsPage';
 import TaxonomySubComponentsPage from './pages/reviewer/taxonomy/TaxonomySubComponentsPage';
 import TaxonomyFocusAreasPage from './pages/reviewer/taxonomy/TaxonomyFocusAreasPage';
-import TaxonomyDeficiencyCategoriesPage from './pages/reviewer/taxonomy/TaxonomyDeficiencyCategoriesPage';
 import TaxonomyEquipmentTypesPage from './pages/reviewer/taxonomy/TaxonomyEquipmentTypesPage';
-import TaxonomyDetailedDescriptionsPage from './pages/reviewer/taxonomy/TaxonomyDetailedDescriptionsPage';
 import CalendarPage from './pages/reviewer/CalendarPage';
 import CalendarSchedulesPage from './pages/reviewer/CalendarSchedulesPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
@@ -118,8 +116,6 @@ export default function AppRoutes() {
             <Route path="taxonomy/components" element={<TaxonomyComponentsPage />} />
             <Route path="taxonomy/sub-components" element={<TaxonomySubComponentsPage />} />
             <Route path="taxonomy/focus-areas" element={<TaxonomyFocusAreasPage />} />
-            <Route path="taxonomy/deficiency-categories" element={<TaxonomyDeficiencyCategoriesPage />} />
-            <Route path="taxonomy/detailed-descriptions" element={<TaxonomyDetailedDescriptionsPage />} />
           </Route>
           <Route path="calendar" element={<FeatureFlagGuard flagId="calendar" />}>
             <Route index element={<CalendarPage />} />

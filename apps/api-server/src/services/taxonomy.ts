@@ -9,6 +9,8 @@ export type TaxonomyNode = {
   label: string;
   display_order: number;
   is_active: boolean;
+  deficiency_codes: string[] | null;
+  deficiency_mechanisms: string[] | null;
 };
 
 export async function listTaxonomy(
@@ -22,14 +24,14 @@ export async function listTaxonomy(
 
     if (includeInactive) {
       const result = await client.query(
-        'SELECT node_id, client_id, parent_id, level, category, label, display_order, is_active FROM deficiency_taxonomy WHERE client_id = $1 ORDER BY display_order, label',
+        'SELECT node_id, client_id, parent_id, level, category, label, display_order, is_active, deficiency_codes, deficiency_mechanisms FROM deficiency_taxonomy WHERE client_id = $1 ORDER BY display_order, label',
         [clientId]
       );
       return result.rows;
     }
 
     const result = await client.query(
-      'SELECT node_id, client_id, parent_id, level, category, label, display_order, is_active FROM deficiency_taxonomy WHERE client_id = $1 AND is_active = TRUE ORDER BY display_order, label',
+      'SELECT node_id, client_id, parent_id, level, category, label, display_order, is_active, deficiency_codes, deficiency_mechanisms FROM deficiency_taxonomy WHERE client_id = $1 AND is_active = TRUE ORDER BY display_order, label',
       [clientId]
     );
     return result.rows;

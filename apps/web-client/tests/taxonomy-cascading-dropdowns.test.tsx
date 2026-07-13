@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+// @vitest-environment jsdom
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -8,6 +9,10 @@ const testQueryClient = new QueryClient({ defaultOptions: { queries: { retry: fa
 function wrap(ui: React.ReactElement) {
   return <QueryClientProvider client={testQueryClient}>{ui}</QueryClientProvider>;
 }
+
+afterEach(() => {
+  cleanup();
+});
 
 const taxonomyNodes = [
   { node_id: 'cat-1', parent_id: null, level: 'category', category: 'Steel', label: 'Steel', display_order: 1, is_active: true },
@@ -18,6 +23,8 @@ const taxonomyNodes = [
   { node_id: 'comp-1', parent_id: 'et-1', level: 'component', category: 'Steel', label: 'Flange', display_order: 1, is_active: true },
   { node_id: 'comp-2', parent_id: 'et-1', level: 'component', category: 'Steel', label: 'Web', display_order: 2, is_active: true },
   { node_id: 'comp-3', parent_id: 'et-2', level: 'component', category: 'Steel', label: 'Base Plate', display_order: 1, is_active: true },
+  // Rogue node — component-level node incorrectly parented to a category (not equipment type)
+  { node_id: 'comp-rogue', parent_id: 'cat-1', level: 'component', category: 'Steel', label: 'Rogue Component', display_order: 99, is_active: true },
   { node_id: 'sub-1', parent_id: 'comp-1', level: 'sub_component', category: 'Steel', label: 'Top Flange', display_order: 1, is_active: true },
   { node_id: 'sub-2', parent_id: 'comp-1', level: 'sub_component', category: 'Steel', label: 'Bottom Flange', display_order: 2, is_active: true },
   { node_id: 'sub-3', parent_id: 'comp-3', level: 'sub_component', category: 'Steel', label: 'Anchor Bolt', display_order: 1, is_active: true },
@@ -98,6 +105,29 @@ describe('TaxonomyLevelPage — Cascading Ancestor Dropdowns', () => {
       expect(screen.getByText('Top Flange')).toBeInTheDocument();
       expect(screen.getByText('Bottom Flange')).toBeInTheDocument();
       expect(screen.queryByText('Anchor Bolt')).not.toBeInTheDocument();
+    });
+  });
+
+it('filters ancestor dropdown options by level — excludes wrong-level children', async () => {
+    const { TaxonomyLevelPage } = await import('../src/components/TaxonomyLevelPage');
+    render(wrap(<MemoryRouter><TaxonomyLevelPage level="sub_component" /></MemoryRouter>));
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/Category/i)).toBeInTheDocument();
+    });
+
+    const categorySelect = screen.getByLabelText(/Category/i);
+    fireEvent.change(categorySelect, { target: { value: 'cat-1' } });
+
+    await waitFor(() => {
+      const equipmentTypeSelect = screen.getByLabelText(/Equipment Type/i);
+      const options = Array.from(equipmentTypeSelect.querySelectorAll('option'));
+      const optionLabels = options.map(o => o.textContent);
+      // Should show equipment_type-level children
+      expect(optionLabels).toContain('Girder');
+      expect(optionLabels).toContain('Column');
+      // Should NOT show component-level children even if parented to the same category
+      expect(optionLabels).not.toContain('Rogue Component');
     });
   });
 
