@@ -368,3 +368,9 @@
 | TSM-902 | Frontend: update `createTimesheetBatch` return type to `Promise<{ entries: Timesheet[] }>` | 6 | 🟩 COMPLETED | TSM-901 |
 | TSM-903 | Tests: server tests for multi-row INSERT, inspection_id null handling, description mapping | 6 | 🟩 COMPLETED | TSM-901 |
 | TSM-904 | Fix: TimesheetDetailPage uses `useCreateTimesheetBatch` hook instead of raw API — ensures React Query cache invalidation so saved entries appear in list | 6 | 🟩 COMPLETED | TSM-902 |
+
+### 10.10 Taxonomy Management — Cascading Ancestor Dropdowns
+
+| Feature ID | Component | Sprint | Status | Dependency |
+|---|---|---|---|---|
+| TAX-621 | TaxonomyLevelPage — replace single-parent filter with cascading ancestor dropdowns for all levels above the target; child selections reset when parent changes; all ancestors shown at once | 6 | 🟩 COMPLETED | TAX-620 |
