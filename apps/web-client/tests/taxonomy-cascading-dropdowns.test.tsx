@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+// @vitest-environment jsdom
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -8,6 +9,10 @@ const testQueryClient = new QueryClient({ defaultOptions: { queries: { retry: fa
 function wrap(ui: React.ReactElement) {
   return <QueryClientProvider client={testQueryClient}>{ui}</QueryClientProvider>;
 }
+
+afterEach(() => {
+  cleanup();
+});
 
 const taxonomyNodes = [
   { node_id: 'cat-1', parent_id: null, level: 'category', category: 'Steel', label: 'Steel', display_order: 1, is_active: true },

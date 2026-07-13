@@ -7,15 +7,13 @@ import { PicklistManager } from './PicklistManager';
 import type { PicklistEntry } from '../types';
 import Skeleton from './Skeleton';
 
-const LEVEL_ORDER = ['category', 'equipment_type', 'component', 'sub_component', 'focus_area', 'deficiency_category', 'detailed_description'];
+const LEVEL_ORDER = ['category', 'equipment_type', 'component', 'sub_component', 'focus_area'];
 const LEVEL_LABELS: Record<string, string> = {
   category: 'Category',
   equipment_type: 'Equipment Type',
   component: 'Component',
   sub_component: 'Sub-Component',
   focus_area: 'Focus Area',
-  deficiency_category: 'Deficiency Category',
-  detailed_description: 'Detailed Description',
 };
 
 interface TaxonomyNode {
@@ -26,6 +24,8 @@ interface TaxonomyNode {
   label: string;
   display_order: number;
   is_active: boolean;
+  deficiency_codes?: string[] | null;
+  deficiency_mechanisms?: string[] | null;
 }
 
 interface TaxonomyLevelPageProps {
