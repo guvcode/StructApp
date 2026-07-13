@@ -64,7 +64,7 @@ export async function processPendingNotifications(): Promise<number> {
         );
       } else {
         await pool.query(
-          `UPDATE notification_queue SET retry_count = $1, last_error = $2, updated_at = NOW() WHERE id = $3`,
+          `UPDATE notification_queue SET retry_count = $1, last_error = $2 WHERE id = $3`,
           [newRetryCount, errorMessage, row.id],
         );
       }
@@ -80,13 +80,23 @@ async function dispatchNotification(
   payload: Record<string, unknown>,
 ): Promise<void> {
   switch (notificationType) {
-    case 'inspection_assigned':
+    case 'inspection_assigned': {
+      const inspectorResult = await pool.query(
+        'SELECT email FROM users WHERE user_id = $1',
+        [payload.inspector_id as string],
+      );
+      const inspectorEmail = inspectorResult.rows[0]?.email;
+      if (!inspectorEmail) {
+        logger.warn({ inspectorId: payload.inspector_id }, 'No email found for inspector (inspection_assigned)');
+        break;
+      }
       await resendAdapter.sendEmail(
-        payload.inspector_email as string,
+        inspectorEmail,
         'Inspection Assigned',
         `A new inspection has been assigned for asset ${payload.asset_tag ?? payload.structure_id}.`,
       );
       break;
+    }
 
     case 'inspection_submitted': {
       const reviewerEmails = payload.reviewer_emails as string[];
