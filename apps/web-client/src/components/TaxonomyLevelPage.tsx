@@ -50,10 +50,29 @@ export function TaxonomyLevelPage({ level }: TaxonomyLevelPageProps) {
     queryFn: () => apiClient(ENDPOINTS.taxonomy.list),
   });
 
-  const parents = useMemo(() => {
-    if (!parentLevel) return [];
-    return allNodes.filter(n => n.level === parentLevel && n.is_active);
-  }, [allNodes, parentLevel]);
+  const immediateParentId = immediateParentLevel ? (selectedAncestors[immediateParentLevel] ?? null) : null;
+
+  const ancestorOptions = useMemo(() => {
+    return ancestorLevels.map(ancLevel => {
+      const parentAncLevelIdx = LEVEL_ORDER.indexOf(ancLevel) - 1;
+      const parentAncLevel = parentAncLevelIdx >= 0 ? LEVEL_ORDER[parentAncLevelIdx] : null;
+      const parentId = parentAncLevel ? (selectedAncestors[parentAncLevel] ?? null) : null;
+      let options = allNodes.filter(n => n.level === ancLevel && n.is_active);
+      if (parentId) options = options.filter(n => n.parent_id === parentId);
+      return { level: ancLevel, options };
+    });
+  }, [allNodes, ancestorLevels, selectedAncestors]);
+
+  const handleAncestorChange = useCallback((ancLevel: string, value: string) => {
+    setSelectedAncestors(prev => {
+      const next = { ...prev };
+      const ancIdx = LEVEL_ORDER.indexOf(ancLevel);
+      LEVEL_ORDER.slice(ancIdx + 1).forEach(l => delete next[l]);
+      if (value) next[ancLevel] = value;
+      else delete next[ancLevel];
+      return next;
+    });
+  }, []);
 
   const entries = useMemo(() => {
     const levelNodes = allNodes.filter(n => n.level === level);
