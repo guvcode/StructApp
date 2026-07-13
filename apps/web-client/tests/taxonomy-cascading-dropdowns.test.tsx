@@ -108,7 +108,7 @@ describe('TaxonomyLevelPage — Cascading Ancestor Dropdowns', () => {
     });
   });
 
-  it('filters ancestor dropdown options by level — excludes wrong-level children', async () => {
+it('filters ancestor dropdown options by level — excludes wrong-level children', async () => {
     const { TaxonomyLevelPage } = await import('../src/components/TaxonomyLevelPage');
     render(wrap(<MemoryRouter><TaxonomyLevelPage level="sub_component" /></MemoryRouter>));
 
