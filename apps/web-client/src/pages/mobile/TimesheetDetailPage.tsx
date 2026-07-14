@@ -97,9 +97,11 @@ export default function TimesheetDetailPage() {
       if (!session?.token) { setError('Not authenticated.'); setSaving(false); return; }
 
       if (isNew) {
+        const activeClientId = getActiveClientId();
         const body = {
           entry_date: entryDate,
           inspection_id: inspectionId,
+          ...(activeClientId ? { client_id: activeClientId } : {}),
           entries: validEntries.map(e => ({
             work_type: e.workType,
             hours: parseFloat(e.hours),

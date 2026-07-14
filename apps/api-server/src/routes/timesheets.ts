@@ -17,6 +17,7 @@ const batchEntrySchema = z.object({
 const batchCreateSchema = z.object({
   entry_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   entries: z.array(batchEntrySchema).min(1).max(20),
+  client_id: z.string().uuid().optional(),
   project_id: z.string().uuid().optional(),
   inspection_id: z.string().uuid().optional(),
 }).refine(
@@ -76,6 +77,15 @@ router.post('/batch', requireAuth, async (req: Request, res: Response, next: Nex
 
     // Fallback to JWT client_id if no inspection or project provided
     const resolvedClientId = clientId || user.client_id;
+
+    // If client_id was provided in the request, validate it matches the resolved client
+    if (parsed.data.client_id && parsed.data.client_id !== resolvedClientId) {
+      return res.status(422).json({
+        success: false,
+        error_code: 'CLIENT_MISMATCH',
+        message: `The provided client_id does not match the inspection's client. Switch to the correct client before creating entries.`,
+      });
+    }
 
     const result = await createTimesheetBatch(user.sub, resolvedClientId, projectId!, parsed.data.inspection_id ?? null, parsed.data.entry_date, parsed.data.entries);
     res.json({ success: true, data: result });
