@@ -42,7 +42,7 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await pool.query(
-        `UPDATE notification_queue SET status = 'pending', retry_count = 0, last_error = NULL, updated_at = NOW()
+        `UPDATE notification_queue SET status = 'pending', retry_count = 0, last_error = NULL
          WHERE id = $1 RETURNING id`,
         [req.params.id]
       );

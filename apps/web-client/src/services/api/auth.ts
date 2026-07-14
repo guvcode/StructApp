@@ -103,3 +103,18 @@ export async function checkServerPin(): Promise<boolean> {
 export async function clearServerPin(): Promise<void> {
   await apiClient(ENDPOINTS.auth.pin, { method: 'DELETE' });
 }
+
+export async function switchClient(targetClientId: string): Promise<void> {
+  const result = await apiClient<{ access_token: string }>(ENDPOINTS.auth.switchClient, {
+    method: 'POST',
+    body: JSON.stringify({ client_id: targetClientId }),
+  });
+  const session = getSession();
+  if (session) {
+    setSession({
+      ...session,
+      token: result.access_token,
+      active_client_id: targetClientId,
+    });
+  }
+}

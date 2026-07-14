@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getSession, setActiveClientId, getActiveClientId } from '../lib/authStore';
+import { getSession, getActiveClientId } from '../lib/authStore';
+import { switchClient } from '../services/api/auth';
 import { apiClient } from '../services/api/apiClient';
 import { ENDPOINTS } from '../services/api/endpoints';
 
@@ -67,9 +68,13 @@ export default function AdminClientSwitcher() {
                 return (
                   <button
                     key={c.id}
-                    onClick={() => {
-                      setActiveClientId(c.id);
+                    onClick={async () => {
                       setOpen(false);
+                      try {
+                        await switchClient(c.id);
+                      } catch {
+                        return;
+                      }
                       window.location.reload();
                     }}
                     className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors ${

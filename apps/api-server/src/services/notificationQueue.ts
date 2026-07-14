@@ -81,11 +81,12 @@ async function dispatchNotification(
 ): Promise<void> {
   switch (notificationType) {
     case 'inspection_assigned': {
-      const inspectorResult = await pool.query(
-        'SELECT email FROM users WHERE user_id = $1',
-        [payload.inspector_id as string],
-      );
+      const [inspectorResult, structureResult] = await Promise.all([
+        pool.query('SELECT email FROM users WHERE user_id = $1', [payload.inspector_id as string]),
+        pool.query('SELECT asset_tag FROM structures WHERE structure_id = $1', [payload.structure_id as string]),
+      ]);
       const inspectorEmail = inspectorResult.rows[0]?.email;
+      const assetTag = structureResult.rows[0]?.asset_tag;
       if (!inspectorEmail) {
         logger.warn({ inspectorId: payload.inspector_id }, 'No email found for inspector (inspection_assigned)');
         break;
@@ -93,7 +94,7 @@ async function dispatchNotification(
       await resendAdapter.sendEmail(
         inspectorEmail,
         'Inspection Assigned',
-        `A new inspection has been assigned for asset ${payload.asset_tag ?? payload.structure_id}.`,
+        `A new inspection has been assigned for asset ${assetTag ?? payload.structure_id}.`,
       );
       break;
     }

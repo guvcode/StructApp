@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getSession, setActiveClientId, getActiveClientId } from '../lib/authStore';
+import { getSession, getActiveClientId, getUserRole } from '../lib/authStore';
+import { switchClient } from '../services/api/auth';
 import { apiClient } from '../services/api/apiClient';
 import { ENDPOINTS } from '../services/api/endpoints';
 import { cacheClientNames, getCachedClientNames } from '../lib/clientNameCache';
+import { UserRole } from '../types/index';
 
 export default function TenantContextBadge() {
   const [open, setOpen] = useState(false);
@@ -12,11 +14,17 @@ export default function TenantContextBadge() {
   const session = getSession();
   const activeClientId = getActiveClientId();
   const isOffline = !navigator.onLine;
+  const role = getUserRole();
+  const isContractor = role === UserRole.contractor;
 
   const { data: myClients = [] } = useQuery({
-    queryKey: ['clients', 'mine'],
+    queryKey: ['clients', isContractor ? 'with-assigned-inspections' : 'mine'],
     queryFn: async () => {
-      const result = await apiClient<Array<{ client_id: string; name: string }>>(ENDPOINTS.clients.mine);
+      const result = await apiClient<Array<{ client_id: string; name: string }>>(
+        isContractor
+          ? ENDPOINTS.clients.withAssignedInspections
+          : ENDPOINTS.clients.mine
+      );
       cacheClientNames(result);
       return result;
     },
@@ -78,9 +86,14 @@ export default function TenantContextBadge() {
                 return (
                   <button
                     key={c.client_id}
-                    onClick={() => {
-                      setActiveClientId(c.client_id);
+                    onClick={async () => {
                       setOpen(false);
+                      try {
+                        await switchClient(c.client_id);
+                      } catch {
+                        // if switch fails, stay on current client
+                        return;
+                      }
                       window.location.reload();
                     }}
                     className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors ${
