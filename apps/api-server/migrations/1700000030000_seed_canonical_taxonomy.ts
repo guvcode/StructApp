@@ -41,10 +41,6 @@ export const up = (pgm: Migrator) => {
     BEGIN
       FOR c IN SELECT client_id FROM clients LOOP
 
-        IF (SELECT COUNT(*) FROM deficiency_taxonomy WHERE client_id = c.client_id AND level = 'focus_area' AND is_active = TRUE) > 50 THEN
-          CONTINUE;
-        END IF;
-
         UPDATE deficiency_taxonomy SET is_active = FALSE WHERE client_id = c.client_id;
 `);
 
