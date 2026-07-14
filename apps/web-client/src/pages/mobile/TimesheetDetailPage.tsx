@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getSession, getActiveClientId } from '../../lib/authStore';
 import { useCreateTimesheetBatch, useUpdateTimesheet } from '../../hooks/useTimesheets';
+import { formatDate } from '../../utils/dates';
 import { getInspections } from '../../services/api/inspections';
 import { getTimesheetById } from '../../services/api/timesheets';
 import type { Inspection } from '../../types';
@@ -166,7 +167,7 @@ export default function TimesheetDetailPage() {
           <option value="">Select an inspection...</option>
           {inspections.map(insp => (
             <option key={insp.id} value={insp.id}>
-              {insp.site_name} ({insp.status}){insp.scheduled_date ? ` - ${insp.scheduled_date}` : ''}
+              {insp.site_name} ({insp.status}){insp.scheduled_date ? ` - ${formatDate(insp.scheduled_date)}` : ''}
             </option>
           ))}
         </select>

@@ -8,6 +8,7 @@ import { InspectionStatus, UserRole } from '../../types/index';
 import Card from '../../components/Card';
 import Skeleton from '../../components/Skeleton';
 import StatusBadge from '../../components/StatusBadge';
+import { formatDate } from '../../utils/dates';
 import { INSPECTION_STATUS_STYLES } from '../../utils/statusMaps';
 import { ReturnInspectionModal } from '../../components/ReturnInspectionModal';
 import { ApproveInspectionModal } from '../../components/ApproveInspectionModal';
@@ -85,7 +86,7 @@ export default function InspectionDetailPage() {
           </div>
           <div>
             <span className="text-sm text-text-secondary">Scheduled Date</span>
-            <p className="text-text-primary font-medium">{inspection.scheduled_date ?? 'Not set'}</p>
+            <p className="text-text-primary font-medium">{formatDate(inspection.scheduled_date) || 'Not set'}</p>
           </div>
           <div>
             <span className="text-sm text-text-secondary">Created</span>

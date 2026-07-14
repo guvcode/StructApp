@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTimesheets, useSubmitTimesheet, useDeleteTimesheet } from '../../hooks/useTimesheets';
 import { getActiveClientId } from '../../lib/authStore';
 import { TimesheetStatus } from '../../types';
+import { formatDate } from '../../utils/dates';
 import Skeleton from '../../components/Skeleton';
 import type { Timesheet } from '../../types';
 
@@ -101,7 +102,7 @@ export default function TimesheetListPage() {
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
                         <p className="text-sm font-medium text-text-primary">{ts.work_type ?? 'No work type'}</p>
-                        <p className="text-xs text-text-secondary mt-0.5">{ts.entry_date} · {ts.hours}h</p>
+                        <p className="text-xs text-text-secondary mt-0.5">{formatDate(ts.entry_date)} · {ts.hours}h</p>
                         {ts.notes && <p className="text-xs text-text-secondary mt-0.5">{ts.notes}</p>}
                         {ts.approved_by && <p className="text-xs text-green-600 mt-0.5">Approved by {ts.approved_by}</p>}
                       </div>

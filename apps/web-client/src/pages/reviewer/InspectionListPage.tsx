@@ -9,6 +9,7 @@ import { ENDPOINTS } from '../../services/api/endpoints';
 import { InspectionStatus } from '../../types/index';
 import { ReturnInspectionModal } from '../../components/ReturnInspectionModal';
 import { ApproveInspectionModal } from '../../components/ApproveInspectionModal';
+import { formatDate } from '../../utils/dates';
 import { useClientScope } from '../../hooks/useClientScope';
 import { useSearchSort } from '../../hooks/useSearchSort';
 import Card from '../../components/Card';
@@ -151,7 +152,7 @@ export default function InspectionListPage() {
                         <td className="py-4">
                           <StatusBadge label={insp.status} map={INSPECTION_STATUS_STYLES} />
                         </td>
-                        <td className="py-4 text-text-secondary">{insp.scheduled_date ?? '—'}</td>
+                        <td className="py-4 text-text-secondary">{formatDate(insp.scheduled_date) || '—'}</td>
                         <td className="py-4 text-xs text-text-secondary max-w-xs truncate">
                           {insp.status === InspectionStatus.Returned && insp.return_reason
                             ? insp.return_reason

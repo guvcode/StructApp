@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../services/api/apiClient';
 import { ENDPOINTS } from '../../services/api/endpoints';
 import Skeleton from '../../components/Skeleton';
+import { formatDate } from '../../utils/dates';
 import { InspectionStatus } from '../../types';
 
 export default function InspectionDetailPage() {
@@ -34,7 +35,7 @@ export default function InspectionDetailPage() {
       <h2 className="text-lg font-bold text-text-primary">{siteName}</h2>
       <div className="bg-surface-primary rounded-lg p-3 border border-border">
         <p className="text-sm text-text-primary">Status: <span className="font-semibold">{inspection.status}</span></p>
-        <p className="text-xs text-text-secondary">Scheduled: {inspection.scheduled_date ?? 'N/A'}</p>
+        <p className="text-xs text-text-secondary">Scheduled: {formatDate(inspection.scheduled_date) || 'N/A'}</p>
         <p className="text-xs text-text-secondary">Assigned to: {inspection.assignee_name ? `${inspection.assignee_name}${inspection.assignee_email ? ` (${inspection.assignee_email})` : ''}` : inspection.assigned_to}</p>
       </div>
 
