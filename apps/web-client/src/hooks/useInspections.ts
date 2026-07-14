@@ -134,3 +134,25 @@ export function useOverridePriority() {
     },
   });
 }
+
+export function useInspectionHistory(id: string | undefined) {
+  return useQuery({
+    queryKey: ['inspections', id, 'history'],
+    queryFn: () => api.getInspectionHistory(id!),
+    enabled: !!id,
+  });
+}
+
+export function useTriageMutation() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ inspectionId, decisions }: {
+      inspectionId: string;
+      decisions: Array<{ deficiency_id: string; decision: 'resolved' | 'still_outstanding' | 'worsened'; note?: string }>;
+    }) => api.postTriage(inspectionId, decisions),
+    onSuccess: () => {
+      client.invalidateQueries({ queryKey: ['deficiencies'] });
+      client.invalidateQueries({ queryKey: ['inspections'] });
+    },
+  });
+}
