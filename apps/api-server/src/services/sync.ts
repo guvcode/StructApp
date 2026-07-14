@@ -257,13 +257,14 @@ export async function processSyncPull(
       client.query('SELECT component_type_id, name FROM component_types WHERE client_id = $1 AND is_active = TRUE', [clientId]),
       client.query('SELECT work_type_id, name FROM work_types WHERE client_id = $1 AND is_active = TRUE', [clientId]),
       client.query('SELECT node_id, parent_id, level, category, label, display_order, is_active FROM deficiency_taxonomy WHERE client_id = $1 AND is_active = TRUE ORDER BY display_order, label', [clientId]),
-      client.query(
-        `SELECT inspection_id, structure_id, site_id, client_id, inspector_id,
-                assigned_by, status, scheduled_date, created_at, submitted_at,
-                updated_at, returned_reason, approved_by, approved_at
-         FROM inspections
-         WHERE client_id = $1
-         ORDER BY created_at DESC
+client.query(
+        `SELECT i.inspection_id, i.structure_id, st.site_id, i.client_id, i.inspector_id,
+                i.assigned_by, i.status, i.scheduled_date, i.created_at, i.submitted_at,
+                i.updated_at, i.returned_reason, i.approved_by, i.approved_at
+         FROM inspections i
+         JOIN structures st ON i.structure_id = st.structure_id
+         WHERE i.client_id = $1
+         ORDER BY i.created_at DESC
          LIMIT 20`,
         [clientId]
       ),
