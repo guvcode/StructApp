@@ -37,12 +37,25 @@ async function refreshToken(): Promise<boolean> {
       if (json.success && json.data?.access_token) {
         const updated = { ...session, token: json.data.access_token };
         setSession(updated);
+        import('../../lib/db').then(({ db }) => {
+          db.authState.get('current').then(as => {
+            if (as?.pinHash) {
+              const userData = JSON.stringify({
+                token: json.data.access_token,
+                refresh_token: session.refresh_token,
+                user: session.user,
+                expires_at: session.expires_at,
+                active_client_id: session.active_client_id,
+              });
+              db.authState.put({ ...as, accessToken: json.data.access_token, refreshToken: session.refresh_token, userData });
+            }
+          });
+        }).catch(() => {});
         return true;
       }
       clearSession();
       return false;
     } catch {
-      clearSession();
       return false;
     } finally {
       isRefreshing = false;
