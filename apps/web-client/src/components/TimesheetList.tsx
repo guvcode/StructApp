@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { db } from '@/lib/db';
+import { formatDate } from '@/utils/dates';
 import Skeleton from './Skeleton';
 
 export interface TimesheetRow {
@@ -69,7 +70,7 @@ export function TimesheetList() {
                   )}
                 </p>
                 <p className="text-xs text-text-muted mt-1">
-                  {entry.entry_date} · {entry.hours_logged}h · {entry.status}
+                  {formatDate(entry.entry_date)} · {entry.hours_logged}h · {entry.status}
                 </p>
               </div>
             </li>

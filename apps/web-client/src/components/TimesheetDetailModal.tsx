@@ -1,6 +1,7 @@
 import type { Timesheet } from '../types/index';
 import StatusBadge from './StatusBadge';
 import { TIMESHEET_STATUS_STYLES } from '../utils/statusMaps';
+import { formatDate } from '../utils/dates';
 
 interface TimesheetDetailModalProps {
   entry: Timesheet;
@@ -24,7 +25,7 @@ export default function TimesheetDetailModal({ entry, onClose }: TimesheetDetail
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-xs font-semibold text-text-secondary uppercase tracking-wide">Date</p>
-              <p className="text-sm text-text-primary mt-1">{entry.entry_date}</p>
+              <p className="text-sm text-text-primary mt-1">{formatDate(entry.entry_date)}</p>
             </div>
             <div>
               <p className="text-xs font-semibold text-text-secondary uppercase tracking-wide">Hours</p>

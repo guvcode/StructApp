@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getSession, getActiveClientId } from '../../lib/authStore';
 import { useCreateTimesheetBatch, useUpdateTimesheet } from '../../hooks/useTimesheets';
+import { formatDate } from '../../utils/dates';
 import { getInspections } from '../../services/api/inspections';
 import { getTimesheetById } from '../../services/api/timesheets';
 import type { Inspection } from '../../types';
@@ -95,9 +96,9 @@ export default function TimesheetDetailPage() {
     try {
       const session = getSession();
       if (!session?.token) { setError('Not authenticated.'); setSaving(false); return; }
+      const activeClientId = getActiveClientId();
 
       if (isNew) {
-        const activeClientId = getActiveClientId();
         const body = {
           entry_date: entryDate,
           inspection_id: inspectionId,
@@ -122,6 +123,22 @@ export default function TimesheetDetailPage() {
             pre_inspection: entry.preInspection,
           },
         });
+
+        // Create any additional entries beyond the first (editing one, adding more)
+        if (validEntries.length > 1) {
+          const extraEntries = validEntries.slice(1).map(e => ({
+            work_type: e.workType,
+            hours: parseFloat(e.hours),
+            pre_inspection: e.preInspection,
+            ...(e.notes ? { notes: e.notes } : {}),
+          }));
+          await createBatch.mutateAsync({
+            entry_date: entryDate,
+            inspection_id: inspectionId,
+            ...(activeClientId ? { client_id: activeClientId } : {}),
+            entries: extraEntries,
+          });
+        }
       }
 
       navigate('/m/timesheets');
@@ -166,7 +183,7 @@ export default function TimesheetDetailPage() {
           <option value="">Select an inspection...</option>
           {inspections.map(insp => (
             <option key={insp.id} value={insp.id}>
-              {insp.site_name} ({insp.status}){insp.scheduled_date ? ` - ${insp.scheduled_date}` : ''}
+              {insp.site_name} ({insp.status}){insp.scheduled_date ? ` - ${formatDate(insp.scheduled_date)}` : ''}
             </option>
           ))}
         </select>

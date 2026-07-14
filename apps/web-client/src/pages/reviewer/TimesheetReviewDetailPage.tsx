@@ -6,6 +6,7 @@ import { getSession } from '../../lib/authStore';
 import StatusBadge from '../../components/StatusBadge';
 import EmptyState from '../../components/EmptyState';
 import { TIMESHEET_STATUS_STYLES } from '../../utils/statusMaps';
+import { formatDate } from '../../utils/dates';
 import { TimesheetStatus } from '../../types';
 import type { Timesheet } from '../../types/index';
 
@@ -146,7 +147,7 @@ export default function TimesheetReviewDetailPage() {
           <tbody>
             {state.entries.map(entry => (
               <tr key={entry.id} className="border-b border-border/50 hover:bg-surface-hover/30 transition-colors">
-                <td className="px-6 py-3 text-text-primary">{entry.entry_date}</td>
+                <td className="px-6 py-3 text-text-primary">{formatDate(entry.entry_date)}</td>
                 <td className="px-6 py-3 text-text-secondary">{entry.work_type ?? '—'}</td>
                 <td className="px-6 py-3 text-text-primary font-semibold">{entry.hours}h</td>
                 <td className="px-6 py-3"><StatusBadge label={entry.status} map={TIMESHEET_STATUS_STYLES} /></td>

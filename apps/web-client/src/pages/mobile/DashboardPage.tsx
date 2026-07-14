@@ -8,6 +8,7 @@ import { apiClient } from '../../services/api/apiClient';
 import { ENDPOINTS } from '../../services/api/endpoints';
 import { db } from '../../lib/db';
 import Skeleton from '../../components/Skeleton';
+import { formatDate } from '../../utils/dates';
 import { InspectionStatus } from '../../types';
 
 export default function DashboardPage() {
@@ -124,7 +125,7 @@ export default function DashboardPage() {
                 {clientLookup.get(i.clientId ?? i.client_id ?? '') ?? 'Unknown client'}
               </p>
               <p className="text-xs text-red-600 mt-0.5">
-                {siteLookup.get(i.siteId ?? i.site_id ?? '') ?? i.siteId ?? i.site_id} — due {i.scheduledDate ?? i.scheduled_date}
+                {siteLookup.get(i.siteId ?? i.site_id ?? '') ?? i.siteId ?? i.site_id} — due {formatDate(i.scheduledDate ?? i.scheduled_date)}
               </p>
             </button>
             );
@@ -145,7 +146,7 @@ export default function DashboardPage() {
             >
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">Submitted</span>
-                <span className="text-xs text-text-muted">{i.scheduledDate ?? i.scheduled_date}</span>
+                <span className="text-xs text-text-muted">{formatDate(i.scheduledDate ?? i.scheduled_date)}</span>
               </div>
               <p className="text-base font-semibold text-text-primary">
                 {clientLookup.get(i.clientId ?? i.client_id ?? '') ?? i.clientId ?? i.client_id}
@@ -172,7 +173,7 @@ export default function DashboardPage() {
             >
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-800">Approved</span>
-                <span className="text-xs text-text-muted">{i.scheduledDate ?? i.scheduled_date}</span>
+                <span className="text-xs text-text-muted">{formatDate(i.scheduledDate ?? i.scheduled_date)}</span>
               </div>
               <p className="text-base font-semibold text-text-primary">
                 {clientLookup.get(i.clientId ?? i.client_id ?? '') ?? i.clientId ?? i.client_id}
@@ -200,7 +201,7 @@ export default function DashboardPage() {
           >
             <div className="flex items-center gap-2 mb-1">
               <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${statusColor}`}>{statusLabel}</span>
-              <span className="text-xs text-text-muted">{i.scheduledDate ?? i.scheduled_date}</span>
+              <span className="text-xs text-text-muted">{formatDate(i.scheduledDate ?? i.scheduled_date)}</span>
             </div>
             <p className="text-base font-semibold text-text-primary">
               {clientLookup.get(i.clientId ?? i.client_id ?? '') ?? i.clientId ?? i.client_id}
