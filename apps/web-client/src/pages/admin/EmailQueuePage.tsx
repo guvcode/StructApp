@@ -82,8 +82,8 @@ export default function EmailQueuePage() {
                   </td>
                   <td className="py-4 text-text-secondary">{n.retry_count}/3</td>
                   <td className="py-4 text-text-secondary">{new Date(n.created_at).toLocaleString()}</td>
-                  <td className="py-4 text-text-secondary">{n.sent_at ? new Date(n.sent_at).toLocaleString() : '—'}</td>
-                  <td className="py-4 text-xs text-red-600 max-w-xs truncate">{n.last_error ?? '—'}</td>
+                  <td className="py-4 text-text-secondary whitespace-nowrap">{n.sent_at ? new Date(n.sent_at).toLocaleString() : '—'}</td>
+                  <td className="py-4 text-xs text-red-600 break-words whitespace-normal">{n.last_error ?? '—'}</td>
                   <td className="py-4">
                     <div className="flex gap-2">
                         <button
