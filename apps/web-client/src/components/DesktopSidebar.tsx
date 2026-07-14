@@ -122,7 +122,7 @@ const menuSections: MenuSection[] = [
     { label: 'Structures', route: '/register/structures' },
     { label: 'Component Types', route: '/categories/component-types' },
     { label: 'Work Types', route: '/categories/work-types' },
-    { label: 'Other Taxonomies', route: '/categories/taxonomy' },
+    { label: 'Taxonomy', route: '/categories/taxonomy' },
   ]},
   { label: 'Reports', route: '/reports', roles: ['reviewer', 'admin'], phase: 'P1' },
   { label: 'Audit Logs', route: '/admin/audit-logs', roles: ['admin', 'reviewer'], phase: 'P1' },
