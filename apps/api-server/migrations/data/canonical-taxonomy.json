@@ -1,0 +1,4147 @@
+{
+  "meta": {
+    "source": "WTP_Structural_Integrity_Asset_Library_V1.xlsx",
+    "total_nodes": 353,
+    "hierarchy_level_count": 5,
+    "hierarchy_levels": [
+      "category",
+      "equipment_type",
+      "component",
+      "sub_component",
+      "focus_area"
+    ],
+    "note": "Deficiency mechanisms are tags on focus_area nodes, NOT separate hierarchy levels"
+  },
+  "hierarchy_levels": [
+    {
+      "level_key": "category",
+      "display_name": "Asset Category",
+      "expected_parent_level": null
+    },
+    {
+      "level_key": "equipment_type",
+      "display_name": "Equipment Type",
+      "expected_parent_level": "category"
+    },
+    {
+      "level_key": "component",
+      "display_name": "Component",
+      "expected_parent_level": "equipment_type"
+    },
+    {
+      "level_key": "sub_component",
+      "display_name": "Subcomponent",
+      "expected_parent_level": "component"
+    },
+    {
+      "level_key": "focus_area",
+      "display_name": "Focus Area for Structural Integrity Assessment",
+      "expected_parent_level": "sub_component"
+    }
+  ],
+  "deficiency_category_reference": [
+    {
+      "code": "CML",
+      "deficiency_category": "Corrosion & Material Loss",
+      "definition": "General or localized wall thinning from corrosion, pitting, crevice attack, microbiologically influenced corrosion (MIC), or corrosion under insulation.",
+      "relevance": "Accelerated by low pH, high sulfate/chloride content, and dissolved metals typical of acid mine drainage (AMD); prevalent on wetted steel in clarifiers, reactors, and piping."
+    },
+    {
+      "code": "CRK",
+      "deficiency_category": "Cracking Mechanisms",
+      "definition": "Fatigue cracking, stress corrosion cracking, weld/HAZ cracking, thermal fatigue.",
+      "relevance": "Relevant at agitator shafts, rake arm welds, and dosing skid frames subject to cyclic/vibration loading."
+    },
+    {
+      "code": "DFI",
+      "deficiency_category": "Deformation & Mechanical Damage",
+      "definition": "Bulging, buckling, dents, distortion, misalignment, impact damage.",
+      "relevance": "Common on silo shells, rake arms, and pipe supports exposed to abrasive slurry or mobile-equipment impact."
+    },
+    {
+      "code": "CFI",
+      "deficiency_category": "Connection & Joint Failures",
+      "definition": "Bolted, welded, or flanged connection failures; anchor bolt failure; gasket/seal degradation.",
+      "relevance": "Frequent at flanged chemical piping joints and anchor bolts exposed to corrosive spillage or washdown."
+    },
+    {
+      "code": "FDS",
+      "deficiency_category": "Foundation & Settlement",
+      "definition": "Differential settlement, grout deterioration, drainage-related undermining of foundations.",
+      "relevance": "Elevated risk where structures bear on fill placed over disturbed or reclaimed mine ground."
+    },
+    {
+      "code": "CND",
+      "deficiency_category": "Concrete Deterioration",
+      "definition": "Cracking, spalling, scaling, sulfate attack, reinforcement corrosion, freeze-thaw damage.",
+      "relevance": "Sulfate attack and reinforcement corrosion risk are elevated by contact with acidic, sulfate-rich mine water in tanks, basins, and foundations."
+    },
+    {
+      "code": "ENV",
+      "deficiency_category": "Environmental & External Damage",
+      "definition": "Wind, snow/ice, UV degradation, external impact, corrosive atmosphere.",
+      "relevance": "Open basins and reactors create a humid, corrosive atmosphere around structural steel and coatings."
+    },
+    {
+      "code": "GHK",
+      "deficiency_category": "General Housekeeping & Maintenance",
+      "definition": "Missing components, poor maintenance, debris accumulation, trip hazards.",
+      "relevance": "Applies broadly to walkways, platforms, and access structures across the site."
+    },
+    {
+      "code": "MSI",
+      "deficiency_category": "Modification & Structural Integrity",
+      "definition": "Unauthorized modification, addition of load without design review.",
+      "relevance": "Watch for field-added platforms, piping, or equipment not reflected in original design basis."
+    },
+    {
+      "code": "THR",
+      "deficiency_category": "Fire & Thermal Damage",
+      "definition": "Fire exposure, thermal cycling, thermal shock.",
+      "relevance": "Includes exothermic heat generated during lime slaking, and any electrical/fire risk areas."
+    },
+    {
+      "code": "EWF",
+      "deficiency_category": "Envelope Failure",
+      "definition": "Water ingress, roof/wall seal or membrane failure, loss of weatherproofing.",
+      "relevance": "Relevant to chemical storage buildings and roofed control/electrical buildings."
+    },
+    {
+      "code": "SIE",
+      "deficiency_category": "Soil Instability & Erosion",
+      "definition": "Soil erosion, washed-out backfill, voids from poor drainage or water infiltration.",
+      "relevance": "Heightened around basins/ponds and discharge structures with continuous water contact."
+    },
+    {
+      "code": "FH",
+      "deficiency_category": "Frost Heave",
+      "definition": "Ground movement (upward heave, cracking) from freeze-thaw cycling in frost-susceptible soils.",
+      "relevance": "Climate-dependent; relevant for shallow foundations in cold-climate sites."
+    },
+    {
+      "code": "BCF",
+      "deficiency_category": "Bearing Capacity Failure",
+      "definition": "Sudden or local settlement/collapse from inadequate soil bearing capacity.",
+      "relevance": "Higher risk over loosely placed mine backfill or areas with undocumented ground disturbance."
+    },
+    {
+      "code": "PF",
+      "deficiency_category": "Pile Foundations",
+      "definition": "Pile misalignment, breakage, or structural defects in deep foundation elements.",
+      "relevance": "Applies where piles were used to bridge poor or disturbed mine-site ground."
+    },
+    {
+      "code": "LOC",
+      "deficiency_category": "Leakage / Loss of Containment",
+      "definition": "Seal, gasket, or pressure-boundary leakage.",
+      "relevance": "Priority item for chemical containment and any pressurized process/membrane equipment."
+    },
+    {
+      "code": "OPR",
+      "deficiency_category": "Operational & Process-Related Damage",
+      "definition": "Fouling, scaling, blockages, or damage from operating outside design conditions.",
+      "relevance": "Scaling from iron/manganese/gypsum precipitation is common in mine-water treatment process equipment."
+    },
+    {
+      "code": "FLW",
+      "deficiency_category": "Flow-Induced Damage",
+      "definition": "Erosion, abrasion, and cavitation from high-velocity or particulate-laden flow.",
+      "relevance": "A leading damage mechanism here given abrasive lime slurry, HDS recycle, and thickened sludge streams."
+    },
+    {
+      "code": "MSB",
+      "deficiency_category": "Mine Subsidence & Ground Instability",
+      "definition": "Void migration, subsidence, or sinkhole formation from collapse of underlying abandoned mine workings.",
+      "relevance": "Site-specific risk category added for this closed mine site; warrants geotechnical desktop review of historic workings beneath structures."
+    }
+  ],
+  "nodes": [
+    {
+      "node_id": "97d144b2-3d11-4db5-bb4e-6c0d097522b9",
+      "parent_id": null,
+      "level": "category",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Process Equipment (Mechanical)",
+      "display_order": 1,
+      "is_active": true
+    },
+    {
+      "node_id": "3a1d7dc0-d878-4446-adcb-5eae29286d82",
+      "parent_id": "97d144b2-3d11-4db5-bb4e-6c0d097522b9",
+      "level": "equipment_type",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Influent Screen / Bar Rack",
+      "display_order": 1,
+      "is_active": true
+    },
+    {
+      "node_id": "3568cab3-652c-49a4-b459-2f54d378bfe8",
+      "parent_id": "3a1d7dc0-d878-4446-adcb-5eae29286d82",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Screen Assembly",
+      "display_order": 1,
+      "is_active": true
+    },
+    {
+      "node_id": "cf8be6e4-1b62-4700-958b-5786be7ca987",
+      "parent_id": "3568cab3-652c-49a4-b459-2f54d378bfe8",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Bar Rack / Mesh Panel",
+      "display_order": 1,
+      "is_active": true
+    },
+    {
+      "node_id": "29eeae6a-bb3d-42e5-8fed-a10e3856c446",
+      "parent_id": "cf8be6e4-1b62-4700-958b-5786be7ca987",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Section loss, blinding/plugging, distortion of bars from grit and debris loading",
+      "display_order": 1,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CML - Corrosion & Material Loss",
+        "FLW - Flow-Induced Damage"
+      ],
+      "deficiency_codes": [
+        "CML",
+        "FLW"
+      ]
+    },
+    {
+      "node_id": "fa776c0e-a851-411b-8e47-9be3e623015e",
+      "parent_id": "3568cab3-652c-49a4-b459-2f54d378bfe8",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Guide Rails / Frame",
+      "display_order": 2,
+      "is_active": true
+    },
+    {
+      "node_id": "55c08c16-ae58-4ccf-a66d-3bfc40448c6f",
+      "parent_id": "fa776c0e-a851-411b-8e47-9be3e623015e",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Frame corrosion, guide rail wear and misalignment affecting screen travel",
+      "display_order": 2,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CML - Corrosion & Material Loss",
+        "DFI - Deformation & Mechanical Damage"
+      ],
+      "deficiency_codes": [
+        "CML",
+        "DFI"
+      ]
+    },
+    {
+      "node_id": "37926bf3-2312-4dab-91ce-f41c7d574922",
+      "parent_id": "3a1d7dc0-d878-4446-adcb-5eae29286d82",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Support Structure",
+      "display_order": 2,
+      "is_active": true
+    },
+    {
+      "node_id": "df32507b-9f5b-4858-a9ff-b98b2a7e1ca7",
+      "parent_id": "37926bf3-2312-4dab-91ce-f41c7d574922",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Anchor Bolts / Base",
+      "display_order": 3,
+      "is_active": true
+    },
+    {
+      "node_id": "5afc24d7-1a50-40c2-97b2-cf39e5dae59e",
+      "parent_id": "df32507b-9f5b-4858-a9ff-b98b2a7e1ca7",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Anchorage integrity and foundation interface condition",
+      "display_order": 3,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CFI - Connection & Joint Failures",
+        "FDS - Foundation & Settlement"
+      ],
+      "deficiency_codes": [
+        "CFI",
+        "FDS"
+      ]
+    },
+    {
+      "node_id": "ca9af534-d211-4ce8-bb4a-9fd6d371c171",
+      "parent_id": "97d144b2-3d11-4db5-bb4e-6c0d097522b9",
+      "level": "equipment_type",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Equalization / Sump Tank",
+      "display_order": 2,
+      "is_active": true
+    },
+    {
+      "node_id": "a32bb7e5-9c06-4526-b2b4-ffc74521f010",
+      "parent_id": "ca9af534-d211-4ce8-bb4a-9fd6d371c171",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Tank Shell / Wall",
+      "display_order": 3,
+      "is_active": true
+    },
+    {
+      "node_id": "7ac7fd2b-1471-46a1-9587-8216d2db751b",
+      "parent_id": "a32bb7e5-9c06-4526-b2b4-ffc74521f010",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Wall Plate (steel) or Concrete Wall Panel",
+      "display_order": 4,
+      "is_active": true
+    },
+    {
+      "node_id": "b49b45a5-a49a-4e47-8649-4becb77af7c9",
+      "parent_id": "7ac7fd2b-1471-46a1-9587-8216d2db751b",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Wall thinning/corrosion (steel) or cracking, spalling, sulfate attack (concrete) from raw mine-impacted water",
+      "display_order": 4,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CML - Corrosion & Material Loss",
+        "CND - Concrete Deterioration"
+      ],
+      "deficiency_codes": [
+        "CML",
+        "CND"
+      ]
+    },
+    {
+      "node_id": "2c26d353-39b1-43a4-89a5-5fcaebaa56c8",
+      "parent_id": "a32bb7e5-9c06-4526-b2b4-ffc74521f010",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Wall-to-Floor Joint / Waterstop",
+      "display_order": 5,
+      "is_active": true
+    },
+    {
+      "node_id": "31dffe7a-9548-4623-b563-5bc9e33f9493",
+      "parent_id": "2c26d353-39b1-43a4-89a5-5fcaebaa56c8",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Joint leakage, waterstop failure, moisture migration",
+      "display_order": 5,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "EWF - Envelope Failure",
+        "CFI - Connection & Joint Failures"
+      ],
+      "deficiency_codes": [
+        "EWF",
+        "CFI"
+      ]
+    },
+    {
+      "node_id": "09002ccc-b2b5-4d6a-961b-bf50a142ed55",
+      "parent_id": "ca9af534-d211-4ce8-bb4a-9fd6d371c171",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Floor / Sump",
+      "display_order": 4,
+      "is_active": true
+    },
+    {
+      "node_id": "f720ed0b-9e56-45ec-9399-8fcd8d807b04",
+      "parent_id": "09002ccc-b2b5-4d6a-961b-bf50a142ed55",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Base Slab",
+      "display_order": 6,
+      "is_active": true
+    },
+    {
+      "node_id": "a9643013-a063-472b-83f7-7d220a266fde",
+      "parent_id": "f720ed0b-9e56-45ec-9399-8fcd8d807b04",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Grit/silt abrasion, cracking, differential settlement",
+      "display_order": 6,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "FLW - Flow-Induced Damage",
+        "CND - Concrete Deterioration",
+        "FDS - Foundation & Settlement"
+      ],
+      "deficiency_codes": [
+        "FLW",
+        "CND",
+        "FDS"
+      ]
+    },
+    {
+      "node_id": "2ef2fd5a-1d7b-40e7-8365-85baeb8361af",
+      "parent_id": "ca9af534-d211-4ce8-bb4a-9fd6d371c171",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Access",
+      "display_order": 5,
+      "is_active": true
+    },
+    {
+      "node_id": "65bce367-391e-4b5d-ad93-dd0d4848d137",
+      "parent_id": "2ef2fd5a-1d7b-40e7-8365-85baeb8361af",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Manway / Hatch, Platform",
+      "display_order": 7,
+      "is_active": true
+    },
+    {
+      "node_id": "84cb16c4-dfae-4288-af02-a0bed156b07e",
+      "parent_id": "65bce367-391e-4b5d-ad93-dd0d4848d137",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Corrosion of fittings, seal condition, safe access integrity",
+      "display_order": 7,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CML - Corrosion & Material Loss",
+        "EWF - Envelope Failure"
+      ],
+      "deficiency_codes": [
+        "CML",
+        "EWF"
+      ]
+    },
+    {
+      "node_id": "a38693df-87a8-4b33-9bee-bb462f894a51",
+      "parent_id": "97d144b2-3d11-4db5-bb4e-6c0d097522b9",
+      "level": "equipment_type",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Rapid Mix / Reaction Tank",
+      "display_order": 3,
+      "is_active": true
+    },
+    {
+      "node_id": "b1473a28-6c04-46ba-9433-9ae13e862474",
+      "parent_id": "a38693df-87a8-4b33-9bee-bb462f894a51",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Tank Shell",
+      "display_order": 6,
+      "is_active": true
+    },
+    {
+      "node_id": "42482464-88b7-4f33-ad55-5316ecdaf3df",
+      "parent_id": "b1473a28-6c04-46ba-9433-9ae13e862474",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Wall / Internal Lining",
+      "display_order": 8,
+      "is_active": true
+    },
+    {
+      "node_id": "04781308-48d7-4f77-aa0c-ffe049638584",
+      "parent_id": "42482464-88b7-4f33-ad55-5316ecdaf3df",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Chemical and abrasive attack from lime slurry, lining breakdown exposing substrate",
+      "display_order": 8,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CML - Corrosion & Material Loss",
+        "FLW - Flow-Induced Damage"
+      ],
+      "deficiency_codes": [
+        "CML",
+        "FLW"
+      ]
+    },
+    {
+      "node_id": "777a991e-70b1-401d-bfe4-eb8992490318",
+      "parent_id": "a38693df-87a8-4b33-9bee-bb462f894a51",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Agitator / Mixer",
+      "display_order": 7,
+      "is_active": true
+    },
+    {
+      "node_id": "e5bbd590-b2a8-4c1f-9db7-76c6f28c42f3",
+      "parent_id": "777a991e-70b1-401d-bfe4-eb8992490318",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Shaft, Impeller, Mounting",
+      "display_order": 9,
+      "is_active": true
+    },
+    {
+      "node_id": "927974f4-9bf3-4f21-a626-7ce2b548932d",
+      "parent_id": "e5bbd590-b2a8-4c1f-9db7-76c6f28c42f3",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Fatigue cracking, erosion of wetted parts, mounting bolt integrity",
+      "display_order": 9,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "DFI - Deformation & Mechanical Damage",
+        "FLW - Flow-Induced Damage",
+        "CFI - Connection & Joint Failures"
+      ],
+      "deficiency_codes": [
+        "DFI",
+        "FLW",
+        "CFI"
+      ]
+    },
+    {
+      "node_id": "782410c5-237e-47ac-8147-81ac700b1e35",
+      "parent_id": "a38693df-87a8-4b33-9bee-bb462f894a51",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Support / Foundation",
+      "display_order": 8,
+      "is_active": true
+    },
+    {
+      "node_id": "3610e7f4-6302-4a94-8240-1cbb6a388544",
+      "parent_id": "782410c5-237e-47ac-8147-81ac700b1e35",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Baseplate, Anchor Bolts",
+      "display_order": 10,
+      "is_active": true
+    },
+    {
+      "node_id": "6ee590de-9cc0-49e9-ac48-dd39fbdcc980",
+      "parent_id": "3610e7f4-6302-4a94-8240-1cbb6a388544",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Vibration-induced loosening, grout condition under mixer drive",
+      "display_order": 10,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CFI - Connection & Joint Failures",
+        "FDS - Foundation & Settlement"
+      ],
+      "deficiency_codes": [
+        "CFI",
+        "FDS"
+      ]
+    },
+    {
+      "node_id": "a0737350-de49-4c9f-8a92-91449bd7279a",
+      "parent_id": "97d144b2-3d11-4db5-bb4e-6c0d097522b9",
+      "level": "equipment_type",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Lime Reactor / HDS Reaction Tank",
+      "display_order": 4,
+      "is_active": true
+    },
+    {
+      "node_id": "87153403-4b09-4e91-ab90-771a274ae7ad",
+      "parent_id": "b1473a28-6c04-46ba-9433-9ae13e862474",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Wall Plate, Coating/Lining",
+      "display_order": 11,
+      "is_active": true
+    },
+    {
+      "node_id": "27464535-d45a-4494-9325-832244236419",
+      "parent_id": "87153403-4b09-4e91-ab90-771a274ae7ad",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Abrasive and corrosive wear from lime and recycled high-density sludge, coating breakdown",
+      "display_order": 11,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CML - Corrosion & Material Loss",
+        "FLW - Flow-Induced Damage"
+      ],
+      "deficiency_codes": [
+        "CML",
+        "FLW"
+      ]
+    },
+    {
+      "node_id": "1952a737-848a-441f-8717-2d0c88bf0ac3",
+      "parent_id": "a0737350-de49-4c9f-8a92-91449bd7279a",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Internals",
+      "display_order": 9,
+      "is_active": true
+    },
+    {
+      "node_id": "282898f6-7736-4609-8fd2-cec1d951d487",
+      "parent_id": "1952a737-848a-441f-8717-2d0c88bf0ac3",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Agitator/Impeller, Aeration Diffusers, Baffles",
+      "display_order": 12,
+      "is_active": true
+    },
+    {
+      "node_id": "d6e18913-582b-44ae-a3b6-1234c082cbbf",
+      "parent_id": "282898f6-7736-4609-8fd2-cec1d951d487",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Erosion of agitator and diffusers, fatigue cracking, attachment weld condition",
+      "display_order": 12,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "FLW - Flow-Induced Damage",
+        "CRK - Cracking Mechanisms",
+        "DFI - Deformation & Mechanical Damage"
+      ],
+      "deficiency_codes": [
+        "FLW",
+        "CRK",
+        "DFI"
+      ]
+    },
+    {
+      "node_id": "6a244f40-9ef5-4f78-98a7-45b386b5191f",
+      "parent_id": "782410c5-237e-47ac-8147-81ac700b1e35",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Skirt/Legs, Anchor Bolts, Foundation",
+      "display_order": 13,
+      "is_active": true
+    },
+    {
+      "node_id": "0d903d1f-d309-4917-91c6-12f1686d9a14",
+      "parent_id": "6a244f40-9ef5-4f78-98a7-45b386b5191f",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Load path integrity, settlement, anchorage under continuous agitation loading",
+      "display_order": 13,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "FDS - Foundation & Settlement",
+        "CFI - Connection & Joint Failures"
+      ],
+      "deficiency_codes": [
+        "FDS",
+        "CFI"
+      ]
+    },
+    {
+      "node_id": "7b0faed4-2306-4f0f-83b1-a1c8e7e5162f",
+      "parent_id": "97d144b2-3d11-4db5-bb4e-6c0d097522b9",
+      "level": "equipment_type",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Reactivator Clarifier / Thickener",
+      "display_order": 5,
+      "is_active": true
+    },
+    {
+      "node_id": "fff1ee5a-31c5-49f1-ac4e-0802d3fb9ec8",
+      "parent_id": "7b0faed4-2306-4f0f-83b1-a1c8e7e5162f",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Tank Shell / Walls",
+      "display_order": 10,
+      "is_active": true
+    },
+    {
+      "node_id": "002fa810-d477-476b-9cc1-fd37abbfd647",
+      "parent_id": "fff1ee5a-31c5-49f1-ac4e-0802d3fb9ec8",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Wall Plate (steel) or Concrete Wall",
+      "display_order": 14,
+      "is_active": true
+    },
+    {
+      "node_id": "bd612c13-8e7c-4ecc-87f1-615ed13844d5",
+      "parent_id": "002fa810-d477-476b-9cc1-fd37abbfd647",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Wall thinning/corrosion or sulfate attack from sustained contact with mine-impacted water and sludge",
+      "display_order": 14,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CML - Corrosion & Material Loss",
+        "CND - Concrete Deterioration"
+      ],
+      "deficiency_codes": [
+        "CML",
+        "CND"
+      ]
+    },
+    {
+      "node_id": "38ce4b53-5372-4617-b621-1d806b89dc4a",
+      "parent_id": "7b0faed4-2306-4f0f-83b1-a1c8e7e5162f",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Drive Mechanism",
+      "display_order": 11,
+      "is_active": true
+    },
+    {
+      "node_id": "39dc3e14-d491-43eb-b3cd-01fd2481cfab",
+      "parent_id": "38ce4b53-5372-4617-b621-1d806b89dc4a",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Center Column, Bridge/Walkway, Drive Support",
+      "display_order": 15,
+      "is_active": true
+    },
+    {
+      "node_id": "8b1af170-dc8c-4f16-894e-dc9926a68768",
+      "parent_id": "39dc3e14-d491-43eb-b3cd-01fd2481cfab",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Structural integrity of center column and bridge, corrosion, drive misalignment",
+      "display_order": 15,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CML - Corrosion & Material Loss",
+        "DFI - Deformation & Mechanical Damage",
+        "CFI - Connection & Joint Failures"
+      ],
+      "deficiency_codes": [
+        "CML",
+        "DFI",
+        "CFI"
+      ]
+    },
+    {
+      "node_id": "10503165-3500-4b41-b963-6b346e99db85",
+      "parent_id": "7b0faed4-2306-4f0f-83b1-a1c8e7e5162f",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Rake / Scraper Mechanism",
+      "display_order": 12,
+      "is_active": true
+    },
+    {
+      "node_id": "6dc77c95-510b-4d3f-9358-31c554916c2c",
+      "parent_id": "10503165-3500-4b41-b963-6b346e99db85",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Rake Arms, Scraper Blades",
+      "display_order": 16,
+      "is_active": true
+    },
+    {
+      "node_id": "41fd287c-e30a-4cce-bc39-4eed8bf3f832",
+      "parent_id": "6dc77c95-510b-4d3f-9358-31c554916c2c",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Abrasive wear from settled/thickened sludge, bent or corroded arms, torque overload",
+      "display_order": 16,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "FLW - Flow-Induced Damage",
+        "DFI - Deformation & Mechanical Damage"
+      ],
+      "deficiency_codes": [
+        "FLW",
+        "DFI"
+      ]
+    },
+    {
+      "node_id": "86d90253-bfd1-4f0e-983c-857aaad4d2b2",
+      "parent_id": "7b0faed4-2306-4f0f-83b1-a1c8e7e5162f",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Launder & Weir",
+      "display_order": 13,
+      "is_active": true
+    },
+    {
+      "node_id": "0585a601-a9dd-4d54-9f84-c8620ffb929f",
+      "parent_id": "86d90253-bfd1-4f0e-983c-857aaad4d2b2",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Overflow Launder, Weir Plates",
+      "display_order": 17,
+      "is_active": true
+    },
+    {
+      "node_id": "7f8d72a1-582a-4662-83b7-a8ec1a2d85f2",
+      "parent_id": "0585a601-a9dd-4d54-9f84-c8620ffb929f",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Cracking/spalling (concrete) or corrosion (steel), level control accuracy",
+      "display_order": 17,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CND - Concrete Deterioration",
+        "CML - Corrosion & Material Loss"
+      ],
+      "deficiency_codes": [
+        "CND",
+        "CML"
+      ]
+    },
+    {
+      "node_id": "55bb9470-5d5b-42f8-9627-4d682bc71804",
+      "parent_id": "7b0faed4-2306-4f0f-83b1-a1c8e7e5162f",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Underflow System",
+      "display_order": 14,
+      "is_active": true
+    },
+    {
+      "node_id": "09076129-42a3-47b2-aa93-c2ed723ca13b",
+      "parent_id": "55bb9470-5d5b-42f8-9627-4d682bc71804",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Cone/Hopper, Underflow Piping",
+      "display_order": 18,
+      "is_active": true
+    },
+    {
+      "node_id": "80e1eaed-21e5-4284-89bb-e2494172e5a0",
+      "parent_id": "09076129-42a3-47b2-aa93-c2ed723ca13b",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Abrasion from high-density sludge underflow, plugging, structural integrity of cone",
+      "display_order": 18,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "FLW - Flow-Induced Damage",
+        "OPR - Operational & Process-Related Damage"
+      ],
+      "deficiency_codes": [
+        "FLW",
+        "OPR"
+      ]
+    },
+    {
+      "node_id": "cab5c8f1-ab19-4fdd-8bed-51d6a2a18bba",
+      "parent_id": "97d144b2-3d11-4db5-bb4e-6c0d097522b9",
+      "level": "equipment_type",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Lime Silo & Slaking System",
+      "display_order": 6,
+      "is_active": true
+    },
+    {
+      "node_id": "5e93dcf1-5b8f-49ef-ab70-c7a758ba55fe",
+      "parent_id": "cab5c8f1-ab19-4fdd-8bed-51d6a2a18bba",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Silo",
+      "display_order": 15,
+      "is_active": true
+    },
+    {
+      "node_id": "45d8af3e-8466-4f91-95e2-f6542a4b7f28",
+      "parent_id": "5e93dcf1-5b8f-49ef-ab70-c7a758ba55fe",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Shell / Walls",
+      "display_order": 19,
+      "is_active": true
+    },
+    {
+      "node_id": "3b2e3efa-b7ae-477a-8a94-71cdf58bab63",
+      "parent_id": "45d8af3e-8466-4f91-95e2-f6542a4b7f28",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Internal abrasion from lime, external atmospheric corrosion, coating condition",
+      "display_order": 19,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CML - Corrosion & Material Loss",
+        "FLW - Flow-Induced Damage"
+      ],
+      "deficiency_codes": [
+        "CML",
+        "FLW"
+      ]
+    },
+    {
+      "node_id": "9602734c-939a-4d1b-8926-3e2a3cba728b",
+      "parent_id": "5e93dcf1-5b8f-49ef-ab70-c7a758ba55fe",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Support Legs / Skirt",
+      "display_order": 20,
+      "is_active": true
+    },
+    {
+      "node_id": "7de5a2df-4d62-47b5-9012-c5cf54b75030",
+      "parent_id": "9602734c-939a-4d1b-8926-3e2a3cba728b",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Buckling, corrosion, anchorage of support structure",
+      "display_order": 20,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "DFI - Deformation & Mechanical Damage",
+        "CML - Corrosion & Material Loss",
+        "CFI - Connection & Joint Failures"
+      ],
+      "deficiency_codes": [
+        "DFI",
+        "CML",
+        "CFI"
+      ]
+    },
+    {
+      "node_id": "55bafad3-f591-489f-a31e-ace57a878ef9",
+      "parent_id": "5e93dcf1-5b8f-49ef-ab70-c7a758ba55fe",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Discharge Cone / Feeder",
+      "display_order": 21,
+      "is_active": true
+    },
+    {
+      "node_id": "7ccf32f7-7cb4-4586-829f-5d983ab5f574",
+      "parent_id": "55bafad3-f591-489f-a31e-ace57a878ef9",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Wear/abrasion, arching/blockage, structural integrity of cone under cyclic loading",
+      "display_order": 21,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "FLW - Flow-Induced Damage",
+        "OPR - Operational & Process-Related Damage"
+      ],
+      "deficiency_codes": [
+        "FLW",
+        "OPR"
+      ]
+    },
+    {
+      "node_id": "45c6feb3-2339-4978-9274-bafeb1b66e15",
+      "parent_id": "cab5c8f1-ab19-4fdd-8bed-51d6a2a18bba",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Slaker Unit",
+      "display_order": 16,
+      "is_active": true
+    },
+    {
+      "node_id": "ed59198f-b1c4-4fc8-8a09-af0b31f9ef96",
+      "parent_id": "45c6feb3-2339-4978-9274-bafeb1b66e15",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Slaking Chamber, Agitator",
+      "display_order": 22,
+      "is_active": true
+    },
+    {
+      "node_id": "71e2801f-ea1d-4add-af66-05f76ef112b5",
+      "parent_id": "ed59198f-b1c4-4fc8-8a09-af0b31f9ef96",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Thermal and chemical attack from exothermic slaking reaction, erosion of wetted parts",
+      "display_order": 22,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "THR - Fire & Thermal Damage",
+        "FLW - Flow-Induced Damage"
+      ],
+      "deficiency_codes": [
+        "THR",
+        "FLW"
+      ]
+    },
+    {
+      "node_id": "9f62321f-9c56-4041-9938-550cbb855e9d",
+      "parent_id": "97d144b2-3d11-4db5-bb4e-6c0d097522b9",
+      "level": "equipment_type",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Chemical Storage Tank (polymer/coagulant/caustic/acid)",
+      "display_order": 7,
+      "is_active": true
+    },
+    {
+      "node_id": "6d667feb-2469-40d1-9782-617317396229",
+      "parent_id": "b1473a28-6c04-46ba-9433-9ae13e862474",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "FRP / Steel / Poly Wall",
+      "display_order": 23,
+      "is_active": true
+    },
+    {
+      "node_id": "6057fd04-b26d-4f53-9b0b-39022bbb8e3a",
+      "parent_id": "6d667feb-2469-40d1-9782-617317396229",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Chemical compatibility, UV degradation (FRP), wall thinning",
+      "display_order": 23,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CML - Corrosion & Material Loss",
+        "ENV - Environmental & External Damage"
+      ],
+      "deficiency_codes": [
+        "CML",
+        "ENV"
+      ]
+    },
+    {
+      "node_id": "5e022b24-015b-4039-9f81-94a257d6e588",
+      "parent_id": "9f62321f-9c56-4041-9938-550cbb855e9d",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Secondary Containment",
+      "display_order": 17,
+      "is_active": true
+    },
+    {
+      "node_id": "89142399-9628-489d-bce4-47242c232957",
+      "parent_id": "5e022b24-015b-4039-9f81-94a257d6e588",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Containment Bund/Berm, Liner",
+      "display_order": 24,
+      "is_active": true
+    },
+    {
+      "node_id": "ff6bb715-3c97-4aa3-9b64-04196b0d9b81",
+      "parent_id": "89142399-9628-489d-bce4-47242c232957",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Containment integrity, concrete cracking, liner degradation from chemical exposure",
+      "display_order": 24,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CND - Concrete Deterioration",
+        "EWF - Envelope Failure"
+      ],
+      "deficiency_codes": [
+        "CND",
+        "EWF"
+      ]
+    },
+    {
+      "node_id": "17f8db2a-a8a8-4b31-8478-85185a608586",
+      "parent_id": "9f62321f-9c56-4041-9938-550cbb855e9d",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Nozzles / Venting",
+      "display_order": 18,
+      "is_active": true
+    },
+    {
+      "node_id": "18fbd763-ed6c-4f5b-9fba-53564d99af37",
+      "parent_id": "17f8db2a-a8a8-4b31-8478-85185a608586",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Fill/Vent Nozzles, Overflow",
+      "display_order": 25,
+      "is_active": true
+    },
+    {
+      "node_id": "82576207-1d92-4836-a7be-f0af8a8dfd77",
+      "parent_id": "18fbd763-ed6c-4f5b-9fba-53564d99af37",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Leak points, corrosion at connections, vent blockage",
+      "display_order": 25,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CFI - Connection & Joint Failures",
+        "CML - Corrosion & Material Loss"
+      ],
+      "deficiency_codes": [
+        "CFI",
+        "CML"
+      ]
+    },
+    {
+      "node_id": "260b7704-532f-4be1-90b2-3d0279d58228",
+      "parent_id": "97d144b2-3d11-4db5-bb4e-6c0d097522b9",
+      "level": "equipment_type",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Chemical Dosing Skid / Feed Pumps",
+      "display_order": 8,
+      "is_active": true
+    },
+    {
+      "node_id": "8635a579-f2e9-4304-a23c-1747dbd6b88c",
+      "parent_id": "260b7704-532f-4be1-90b2-3d0279d58228",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Skid Frame",
+      "display_order": 19,
+      "is_active": true
+    },
+    {
+      "node_id": "0aa8e369-38ac-427f-a82b-5397fa9c069f",
+      "parent_id": "8635a579-f2e9-4304-a23c-1747dbd6b88c",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Base Frame, Anchor Points",
+      "display_order": 26,
+      "is_active": true
+    },
+    {
+      "node_id": "2a0897c0-13a3-45d0-9a57-2910850dee9f",
+      "parent_id": "0aa8e369-38ac-427f-a82b-5397fa9c069f",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Corrosion from chemical exposure/spillage, frame structural integrity",
+      "display_order": 26,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CML - Corrosion & Material Loss",
+        "DFI - Deformation & Mechanical Damage"
+      ],
+      "deficiency_codes": [
+        "CML",
+        "DFI"
+      ]
+    },
+    {
+      "node_id": "c40d1ea8-5064-4bb0-94f7-56d60cfb90e0",
+      "parent_id": "260b7704-532f-4be1-90b2-3d0279d58228",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Metering Pump",
+      "display_order": 20,
+      "is_active": true
+    },
+    {
+      "node_id": "476c0daf-9826-4809-b5f9-eb2b03a36a76",
+      "parent_id": "c40d1ea8-5064-4bb0-94f7-56d60cfb90e0",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Pump Head, Diaphragm/Seal",
+      "display_order": 27,
+      "is_active": true
+    },
+    {
+      "node_id": "e8aab445-8a94-41db-916f-652ea4a78041",
+      "parent_id": "476c0daf-9826-4809-b5f9-eb2b03a36a76",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Leakage, chemical attack on seals and diaphragms",
+      "display_order": 27,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "LOC - Leakage / Loss of Containment",
+        "CML - Corrosion & Material Loss"
+      ],
+      "deficiency_codes": [
+        "LOC",
+        "CML"
+      ]
+    },
+    {
+      "node_id": "36cb1d06-e884-43a7-9a6e-4981a1cc13d1",
+      "parent_id": "260b7704-532f-4be1-90b2-3d0279d58228",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Piping / Tubing",
+      "display_order": 21,
+      "is_active": true
+    },
+    {
+      "node_id": "02e29c8e-aa42-46dd-ba70-22f47a4275c2",
+      "parent_id": "36cb1d06-e884-43a7-9a6e-4981a1cc13d1",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Chemical Feed Lines, Fittings",
+      "display_order": 28,
+      "is_active": true
+    },
+    {
+      "node_id": "05749e98-7505-4a54-a732-f1274c309136",
+      "parent_id": "02e29c8e-aa42-46dd-ba70-22f47a4275c2",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Chemical corrosion, joint leakage at fittings",
+      "display_order": 28,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CML - Corrosion & Material Loss",
+        "CFI - Connection & Joint Failures"
+      ],
+      "deficiency_codes": [
+        "CML",
+        "CFI"
+      ]
+    },
+    {
+      "node_id": "c2147cde-bc20-4f01-9257-48b65fe5f33b",
+      "parent_id": "97d144b2-3d11-4db5-bb4e-6c0d097522b9",
+      "level": "equipment_type",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Sludge Thickener",
+      "display_order": 9,
+      "is_active": true
+    },
+    {
+      "node_id": "7303cfbe-71f6-4ef5-bbb3-133bb3e18b2e",
+      "parent_id": "b1473a28-6c04-46ba-9433-9ae13e862474",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Wall Plate / Concrete Wall",
+      "display_order": 29,
+      "is_active": true
+    },
+    {
+      "node_id": "14ac5bec-1730-4fde-8220-83c6f749b50f",
+      "parent_id": "7303cfbe-71f6-4ef5-bbb3-133bb3e18b2e",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Abrasive and corrosive wear from thickened sludge",
+      "display_order": 29,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CML - Corrosion & Material Loss",
+        "FLW - Flow-Induced Damage"
+      ],
+      "deficiency_codes": [
+        "CML",
+        "FLW"
+      ]
+    },
+    {
+      "node_id": "3a15118b-727f-4fcf-bf92-37410a6d55de",
+      "parent_id": "c2147cde-bc20-4f01-9257-48b65fe5f33b",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Rake Mechanism",
+      "display_order": 22,
+      "is_active": true
+    },
+    {
+      "node_id": "3965352a-9aad-415d-8e51-a6971f0c7503",
+      "parent_id": "3a15118b-727f-4fcf-bf92-37410a6d55de",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Rake Arms, Drive Unit",
+      "display_order": 30,
+      "is_active": true
+    },
+    {
+      "node_id": "0d015253-b7b7-4fc5-9b0b-cf99bde9be07",
+      "parent_id": "3965352a-9aad-415d-8e51-a6971f0c7503",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Wear from high-solids sludge, torque overload, drive support condition",
+      "display_order": 30,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "FLW - Flow-Induced Damage",
+        "DFI - Deformation & Mechanical Damage"
+      ],
+      "deficiency_codes": [
+        "FLW",
+        "DFI"
+      ]
+    },
+    {
+      "node_id": "d379b7dd-82cc-4fdd-a12e-f306282f8593",
+      "parent_id": "97d144b2-3d11-4db5-bb4e-6c0d097522b9",
+      "level": "equipment_type",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Sludge Dewatering (Filter Press / Belt Press / Centrifuge)",
+      "display_order": 10,
+      "is_active": true
+    },
+    {
+      "node_id": "6fbe90a8-75a7-41e9-91e5-a581990be02b",
+      "parent_id": "d379b7dd-82cc-4fdd-a12e-f306282f8593",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Frame / Skid",
+      "display_order": 23,
+      "is_active": true
+    },
+    {
+      "node_id": "cf1bcac6-e16c-4484-9df9-b1a928c84388",
+      "parent_id": "6fbe90a8-75a7-41e9-91e5-a581990be02b",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Main Frame, Hydraulic Cylinder Mounts",
+      "display_order": 31,
+      "is_active": true
+    },
+    {
+      "node_id": "8360bb6a-60f4-4d36-a257-97004c7f7288",
+      "parent_id": "cf1bcac6-e16c-4484-9df9-b1a928c84388",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Structural fatigue from cyclic press operation, corrosion of frame members",
+      "display_order": 31,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CRK - Cracking Mechanisms",
+        "CML - Corrosion & Material Loss"
+      ],
+      "deficiency_codes": [
+        "CRK",
+        "CML"
+      ]
+    },
+    {
+      "node_id": "a49216ae-9cac-41fe-83e1-2882a325b916",
+      "parent_id": "d379b7dd-82cc-4fdd-a12e-f306282f8593",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Filter Media",
+      "display_order": 24,
+      "is_active": true
+    },
+    {
+      "node_id": "490908e2-de90-418f-81d0-61637ea1a8a6",
+      "parent_id": "a49216ae-9cac-41fe-83e1-2882a325b916",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Filter Plates / Belts",
+      "display_order": 32,
+      "is_active": true
+    },
+    {
+      "node_id": "6f842316-ce51-4181-bb3a-ba6b6ffd6886",
+      "parent_id": "490908e2-de90-418f-81d0-61637ea1a8a6",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Wear, chemical attack, tearing of filter media",
+      "display_order": 32,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "FLW - Flow-Induced Damage",
+        "CML - Corrosion & Material Loss"
+      ],
+      "deficiency_codes": [
+        "FLW",
+        "CML"
+      ]
+    },
+    {
+      "node_id": "edb74ace-60ca-4850-aea4-06a47989a8fc",
+      "parent_id": "d379b7dd-82cc-4fdd-a12e-f306282f8593",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Feed System",
+      "display_order": 25,
+      "is_active": true
+    },
+    {
+      "node_id": "a44bf0d5-b505-439d-b7fd-57543346617e",
+      "parent_id": "edb74ace-60ca-4850-aea4-06a47989a8fc",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Feed Pump, Piping",
+      "display_order": 33,
+      "is_active": true
+    },
+    {
+      "node_id": "e45aef5b-8398-4736-a5b5-7a6aa12909f7",
+      "parent_id": "a44bf0d5-b505-439d-b7fd-57543346617e",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Abrasion from thickened sludge feed, plugging",
+      "display_order": 33,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "FLW - Flow-Induced Damage",
+        "OPR - Operational & Process-Related Damage"
+      ],
+      "deficiency_codes": [
+        "FLW",
+        "OPR"
+      ]
+    },
+    {
+      "node_id": "b5abfb2e-642f-4871-aaa6-7e075fb8f2b2",
+      "parent_id": "97d144b2-3d11-4db5-bb4e-6c0d097522b9",
+      "level": "equipment_type",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Media Filter (Sand / Multimedia)",
+      "display_order": 11,
+      "is_active": true
+    },
+    {
+      "node_id": "8f4d6f47-12a6-4a8e-949d-46a0c2312581",
+      "parent_id": "b5abfb2e-642f-4871-aaa6-7e075fb8f2b2",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Filter Vessel / Basin",
+      "display_order": 26,
+      "is_active": true
+    },
+    {
+      "node_id": "dca317f8-0b86-4219-b7b5-5f471f92b654",
+      "parent_id": "8f4d6f47-12a6-4a8e-949d-46a0c2312581",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Shell (pressure) or Concrete Basin (gravity)",
+      "display_order": 34,
+      "is_active": true
+    },
+    {
+      "node_id": "8f926e99-ce29-4dce-b1cd-1e16a8d1e258",
+      "parent_id": "dca317f8-0b86-4219-b7b5-5f471f92b654",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Corrosion (steel) or cracking (concrete), coating/lining condition",
+      "display_order": 34,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CML - Corrosion & Material Loss",
+        "CND - Concrete Deterioration"
+      ],
+      "deficiency_codes": [
+        "CML",
+        "CND"
+      ]
+    },
+    {
+      "node_id": "5fd38f45-67c6-46c1-ab3d-89b842629246",
+      "parent_id": "b5abfb2e-642f-4871-aaa6-7e075fb8f2b2",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Underdrain System",
+      "display_order": 27,
+      "is_active": true
+    },
+    {
+      "node_id": "f2a12286-fe82-4ef4-a664-d031b2da2db3",
+      "parent_id": "5fd38f45-67c6-46c1-ab3d-89b842629246",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Nozzles/Laterals, Support Plate",
+      "display_order": 35,
+      "is_active": true
+    },
+    {
+      "node_id": "49c4a98c-c565-4e58-bf6e-69dbc9614f52",
+      "parent_id": "f2a12286-fe82-4ef4-a664-d031b2da2db3",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Clogging, structural support of media bed, corrosion of underdrain components",
+      "display_order": 35,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "OPR - Operational & Process-Related Damage",
+        "CML - Corrosion & Material Loss"
+      ],
+      "deficiency_codes": [
+        "OPR",
+        "CML"
+      ]
+    },
+    {
+      "node_id": "3b2f7e3c-705c-4635-b161-4f5716472fe6",
+      "parent_id": "b5abfb2e-642f-4871-aaa6-7e075fb8f2b2",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Backwash System",
+      "display_order": 28,
+      "is_active": true
+    },
+    {
+      "node_id": "497acd8f-322d-4917-bc19-c26144d9643f",
+      "parent_id": "3b2f7e3c-705c-4635-b161-4f5716472fe6",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Backwash Piping, Air Scour",
+      "display_order": 36,
+      "is_active": true
+    },
+    {
+      "node_id": "89572728-c52f-4a8a-89b4-5fd845e3e64e",
+      "parent_id": "497acd8f-322d-4917-bc19-c26144d9643f",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Erosion at high-velocity backwash flow, joint integrity under pressure surges",
+      "display_order": 36,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "FLW - Flow-Induced Damage",
+        "CFI - Connection & Joint Failures"
+      ],
+      "deficiency_codes": [
+        "FLW",
+        "CFI"
+      ]
+    },
+    {
+      "node_id": "59fabf8c-18e3-4d9d-b00b-20027042bc39",
+      "parent_id": "97d144b2-3d11-4db5-bb4e-6c0d097522b9",
+      "level": "equipment_type",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Membrane System (RO/UF)",
+      "display_order": 12,
+      "is_active": true
+    },
+    {
+      "node_id": "db22131b-76b3-49e7-a246-9ef97b90b9ad",
+      "parent_id": "8635a579-f2e9-4304-a23c-1747dbd6b88c",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Frame, Pressure Vessel Racking",
+      "display_order": 37,
+      "is_active": true
+    },
+    {
+      "node_id": "d0de8f36-396a-48b7-a820-de0280430781",
+      "parent_id": "db22131b-76b3-49e7-a246-9ef97b90b9ad",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Structural support of pressure vessels, vibration-induced loosening",
+      "display_order": 37,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "DFI - Deformation & Mechanical Damage",
+        "CFI - Connection & Joint Failures"
+      ],
+      "deficiency_codes": [
+        "DFI",
+        "CFI"
+      ]
+    },
+    {
+      "node_id": "49103e4b-acbe-4d5e-b9ff-697b943ebc94",
+      "parent_id": "59fabf8c-18e3-4d9d-b00b-20027042bc39",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Pressure Vessels / Housings",
+      "display_order": 29,
+      "is_active": true
+    },
+    {
+      "node_id": "13d3f831-13ba-45d3-80f8-cef6fa30c50b",
+      "parent_id": "49103e4b-acbe-4d5e-b9ff-697b943ebc94",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Membrane Housing, End Caps",
+      "display_order": 38,
+      "is_active": true
+    },
+    {
+      "node_id": "6b54252f-974b-4dc3-88be-868c6406686b",
+      "parent_id": "13d3f831-13ba-45d3-80f8-cef6fa30c50b",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Pressure boundary integrity, seal leakage at end caps",
+      "display_order": 38,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "LOC - Leakage / Loss of Containment",
+        "CML - Corrosion & Material Loss"
+      ],
+      "deficiency_codes": [
+        "LOC",
+        "CML"
+      ]
+    },
+    {
+      "node_id": "36ac1fa6-6557-480a-9f73-6b13b0a398e9",
+      "parent_id": "59fabf8c-18e3-4d9d-b00b-20027042bc39",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Piping Manifolds",
+      "display_order": 30,
+      "is_active": true
+    },
+    {
+      "node_id": "9019aa9d-a069-4f1f-8941-08afc1eddcbd",
+      "parent_id": "36ac1fa6-6557-480a-9f73-6b13b0a398e9",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Feed / Permeate / Concentrate Headers",
+      "display_order": 39,
+      "is_active": true
+    },
+    {
+      "node_id": "f1587163-c58d-448d-b53e-014c4f75fa8c",
+      "parent_id": "9019aa9d-a069-4f1f-8941-08afc1eddcbd",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "High-pressure joint integrity, concentrate-stream corrosion (elevated salinity/metals)",
+      "display_order": 39,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CFI - Connection & Joint Failures",
+        "CML - Corrosion & Material Loss"
+      ],
+      "deficiency_codes": [
+        "CFI",
+        "CML"
+      ]
+    },
+    {
+      "node_id": "6f7bf090-f084-4907-b97c-d0429eaab8ba",
+      "parent_id": "97d144b2-3d11-4db5-bb4e-6c0d097522b9",
+      "level": "equipment_type",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Neutralization Tank",
+      "display_order": 13,
+      "is_active": true
+    },
+    {
+      "node_id": "bbba9705-a333-4974-9dde-efb40bc31b2a",
+      "parent_id": "b1473a28-6c04-46ba-9433-9ae13e862474",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Wall / Lining",
+      "display_order": 40,
+      "is_active": true
+    },
+    {
+      "node_id": "c5d006fb-2523-4a44-9b89-6e71869ed732",
+      "parent_id": "bbba9705-a333-4974-9dde-efb40bc31b2a",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Chemical attack from pH swings, lining integrity",
+      "display_order": 40,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CML - Corrosion & Material Loss",
+        "EWF - Envelope Failure"
+      ],
+      "deficiency_codes": [
+        "CML",
+        "EWF"
+      ]
+    },
+    {
+      "node_id": "344b7789-5199-487b-a0da-5de92b0efd31",
+      "parent_id": "6f7bf090-f084-4907-b97c-d0429eaab8ba",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Mixer / Agitator",
+      "display_order": 31,
+      "is_active": true
+    },
+    {
+      "node_id": "697955ab-5341-44c4-a457-4c3fdf88b84b",
+      "parent_id": "344b7789-5199-487b-a0da-5de92b0efd31",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Shaft, pH Probe Mount",
+      "display_order": 41,
+      "is_active": true
+    },
+    {
+      "node_id": "7874e3aa-4eea-48e9-8f9e-01ff3a7c5e29",
+      "parent_id": "697955ab-5341-44c4-a457-4c3fdf88b84b",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Corrosion, fatigue cracking, instrumentation mounting integrity",
+      "display_order": 41,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CML - Corrosion & Material Loss",
+        "CRK - Cracking Mechanisms"
+      ],
+      "deficiency_codes": [
+        "CML",
+        "CRK"
+      ]
+    },
+    {
+      "node_id": "2593849d-efc2-422b-9776-123e766ffd16",
+      "parent_id": "97d144b2-3d11-4db5-bb4e-6c0d097522b9",
+      "level": "equipment_type",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Pumps (Transfer / Recycle / Sludge / Feed / Effluent)",
+      "display_order": 14,
+      "is_active": true
+    },
+    {
+      "node_id": "074f0c06-3b5a-4c61-8bf7-f5a548280aac",
+      "parent_id": "2593849d-efc2-422b-9776-123e766ffd16",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Casing / Volute",
+      "display_order": 32,
+      "is_active": true
+    },
+    {
+      "node_id": "002c6be2-d8f1-42f3-8631-aabe05b008c3",
+      "parent_id": "074f0c06-3b5a-4c61-8bf7-f5a548280aac",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Casing, Wear Rings",
+      "display_order": 42,
+      "is_active": true
+    },
+    {
+      "node_id": "6df159c4-08e0-4c55-9993-575b1accc5e6",
+      "parent_id": "002c6be2-d8f1-42f3-8631-aabe05b008c3",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Erosion/abrasion from slurry, corrosion of casing",
+      "display_order": 42,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CML - Corrosion & Material Loss",
+        "FLW - Flow-Induced Damage"
+      ],
+      "deficiency_codes": [
+        "CML",
+        "FLW"
+      ]
+    },
+    {
+      "node_id": "c29280f1-6028-4c91-b06d-033728df2b84",
+      "parent_id": "2593849d-efc2-422b-9776-123e766ffd16",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Baseplate & Foundation",
+      "display_order": 33,
+      "is_active": true
+    },
+    {
+      "node_id": "e5ee8e10-2f38-443f-9d87-7d9170bd919f",
+      "parent_id": "c29280f1-6028-4c91-b06d-033728df2b84",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Baseplate, Grout, Anchor Bolts",
+      "display_order": 43,
+      "is_active": true
+    },
+    {
+      "node_id": "ead155fa-e265-4b5c-9a6a-a27f134e63da",
+      "parent_id": "e5ee8e10-2f38-443f-9d87-7d9170bd919f",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Grout condition, anchorage integrity, alignment",
+      "display_order": 43,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "FDS - Foundation & Settlement",
+        "CFI - Connection & Joint Failures",
+        "DFI - Deformation & Mechanical Damage"
+      ],
+      "deficiency_codes": [
+        "FDS",
+        "CFI",
+        "DFI"
+      ]
+    },
+    {
+      "node_id": "886d999d-506b-41f8-8a91-2bac4365db89",
+      "parent_id": "2593849d-efc2-422b-9776-123e766ffd16",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Seal / Packing",
+      "display_order": 34,
+      "is_active": true
+    },
+    {
+      "node_id": "d85c7bfd-1278-4b8f-8489-8a5dfc86808b",
+      "parent_id": "886d999d-506b-41f8-8a91-2bac4365db89",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Mechanical Seal, Packing Gland",
+      "display_order": 44,
+      "is_active": true
+    },
+    {
+      "node_id": "a76df05c-f005-4318-8121-f7de4fa227d4",
+      "parent_id": "d85c7bfd-1278-4b8f-8489-8a5dfc86808b",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Leakage, seal wear from abrasive slurry service",
+      "display_order": 44,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "LOC - Leakage / Loss of Containment"
+      ],
+      "deficiency_codes": [
+        "LOC"
+      ]
+    },
+    {
+      "node_id": "8fe6fecc-5e4a-451b-a46b-d8e2e929c742",
+      "parent_id": "2593849d-efc2-422b-9776-123e766ffd16",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Bearing Housing",
+      "display_order": 35,
+      "is_active": true
+    },
+    {
+      "node_id": "7b52444b-3ab2-4b2f-b2ea-4b445a478d67",
+      "parent_id": "8fe6fecc-5e4a-451b-a46b-d8e2e929c742",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Bearings, Coupling Guard",
+      "display_order": 45,
+      "is_active": true
+    },
+    {
+      "node_id": "7d3e7681-c1dd-4db2-8d90-b8f6f4eec92e",
+      "parent_id": "7b52444b-3ab2-4b2f-b2ea-4b445a478d67",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Vibration, overheating, guarding integrity",
+      "display_order": 45,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "DFI - Deformation & Mechanical Damage",
+        "GHK - General Housekeeping & Maintenance"
+      ],
+      "deficiency_codes": [
+        "DFI",
+        "GHK"
+      ]
+    },
+    {
+      "node_id": "efd20941-ae9b-4727-b1e2-3226f75b1d18",
+      "parent_id": "97d144b2-3d11-4db5-bb4e-6c0d097522b9",
+      "level": "equipment_type",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Piping Systems (Process / Chemical / Slurry-Sludge Lines)",
+      "display_order": 15,
+      "is_active": true
+    },
+    {
+      "node_id": "b13b5e71-e6e9-4cf7-92ca-65507113acd9",
+      "parent_id": "efd20941-ae9b-4727-b1e2-3226f75b1d18",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Straight Runs",
+      "display_order": 36,
+      "is_active": true
+    },
+    {
+      "node_id": "211b34f1-645c-4d8f-ae93-e7ca6839850b",
+      "parent_id": "b13b5e71-e6e9-4cf7-92ca-65507113acd9",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Carbon Steel / HDPE / Lined Pipe",
+      "display_order": 46,
+      "is_active": true
+    },
+    {
+      "node_id": "d6eb56b1-fb67-472a-9ea8-417216c87914",
+      "parent_id": "211b34f1-645c-4d8f-ae93-e7ca6839850b",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Wall thinning, internal lining wear (slurry lines), external atmospheric corrosion",
+      "display_order": 46,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CML - Corrosion & Material Loss",
+        "FLW - Flow-Induced Damage"
+      ],
+      "deficiency_codes": [
+        "CML",
+        "FLW"
+      ]
+    },
+    {
+      "node_id": "a5a9ad19-134e-449b-a817-dd1af469076e",
+      "parent_id": "efd20941-ae9b-4727-b1e2-3226f75b1d18",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Fittings / Elbows",
+      "display_order": 37,
+      "is_active": true
+    },
+    {
+      "node_id": "ff7cd213-e0ff-4626-841c-d6be34e8badd",
+      "parent_id": "a5a9ad19-134e-449b-a817-dd1af469076e",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Elbows, Reducers, Wear-Back Plates",
+      "display_order": 47,
+      "is_active": true
+    },
+    {
+      "node_id": "3aa79511-60e0-474e-80e3-c0b81f753d4f",
+      "parent_id": "ff7cd213-e0ff-4626-841c-d6be34e8badd",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Erosion at direction changes carrying abrasive slurry, wear-back condition",
+      "display_order": 47,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "FLW - Flow-Induced Damage"
+      ],
+      "deficiency_codes": [
+        "FLW"
+      ]
+    },
+    {
+      "node_id": "abc9e120-04d3-4d87-857a-d3fa9b610b57",
+      "parent_id": "efd20941-ae9b-4727-b1e2-3226f75b1d18",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Joints / Connections",
+      "display_order": 38,
+      "is_active": true
+    },
+    {
+      "node_id": "cb1fbc31-b114-4c70-8f3d-d9e5a61863f6",
+      "parent_id": "abc9e120-04d3-4d87-857a-d3fa9b610b57",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Flanges, Victaulic/Mechanical Couplings",
+      "display_order": 48,
+      "is_active": true
+    },
+    {
+      "node_id": "3f914812-b7ca-4f97-a191-19e874a0afd7",
+      "parent_id": "cb1fbc31-b114-4c70-8f3d-d9e5a61863f6",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Leakage, bolt and gasket condition",
+      "display_order": 48,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CFI - Connection & Joint Failures",
+        "LOC - Leakage / Loss of Containment"
+      ],
+      "deficiency_codes": [
+        "CFI",
+        "LOC"
+      ]
+    },
+    {
+      "node_id": "4807df6e-8d1e-44a7-88fb-7a4e36459355",
+      "parent_id": "efd20941-ae9b-4727-b1e2-3226f75b1d18",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Supports / Hangers",
+      "display_order": 39,
+      "is_active": true
+    },
+    {
+      "node_id": "93214458-b16e-4dbb-8001-e84917412cee",
+      "parent_id": "4807df6e-8d1e-44a7-88fb-7a4e36459355",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Pipe Shoes, Hangers, Guides",
+      "display_order": 49,
+      "is_active": true
+    },
+    {
+      "node_id": "8922328a-94f2-4d53-ac9c-420c0c06fb57",
+      "parent_id": "93214458-b16e-4dbb-8001-e84917412cee",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Overload, corrosion at contact points, misalignment",
+      "display_order": 49,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "DFI - Deformation & Mechanical Damage",
+        "CML - Corrosion & Material Loss"
+      ],
+      "deficiency_codes": [
+        "DFI",
+        "CML"
+      ]
+    },
+    {
+      "node_id": "7d3a804d-b89d-4cff-9e35-ed7c42558724",
+      "parent_id": "97d144b2-3d11-4db5-bb4e-6c0d097522b9",
+      "level": "equipment_type",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Storage Tank (Treated Water / Effluent)",
+      "display_order": 16,
+      "is_active": true
+    },
+    {
+      "node_id": "d56b51d3-cd1d-43f1-842c-7074a77d7283",
+      "parent_id": "7d3a804d-b89d-4cff-9e35-ed7c42558724",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Shell",
+      "display_order": 40,
+      "is_active": true
+    },
+    {
+      "node_id": "3d7bc5b4-27b6-4ddb-afd7-84e44aa88d1d",
+      "parent_id": "d56b51d3-cd1d-43f1-842c-7074a77d7283",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Shell Courses",
+      "display_order": 50,
+      "is_active": true
+    },
+    {
+      "node_id": "9872a62c-f19e-40dd-af05-556623bb9b57",
+      "parent_id": "3d7bc5b4-27b6-4ddb-afd7-84e44aa88d1d",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Wall thinning, coating condition",
+      "display_order": 50,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CML - Corrosion & Material Loss"
+      ],
+      "deficiency_codes": [
+        "CML"
+      ]
+    },
+    {
+      "node_id": "d30ac07a-fea3-4b15-af63-1d993e6b9ed5",
+      "parent_id": "7d3a804d-b89d-4cff-9e35-ed7c42558724",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Roof",
+      "display_order": 41,
+      "is_active": true
+    },
+    {
+      "node_id": "8413fdd1-29ce-4f98-9e7d-3a8647b1dded",
+      "parent_id": "d30ac07a-fea3-4b15-af63-1d993e6b9ed5",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Roof Structure, Roof Seals",
+      "display_order": 51,
+      "is_active": true
+    },
+    {
+      "node_id": "c1d267fe-5346-46d6-b2d1-799c246bd073",
+      "parent_id": "8413fdd1-29ce-4f98-9e7d-3a8647b1dded",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Deformation, water ingress at seals",
+      "display_order": 51,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "DFI - Deformation & Mechanical Damage",
+        "EWF - Envelope Failure"
+      ],
+      "deficiency_codes": [
+        "DFI",
+        "EWF"
+      ]
+    },
+    {
+      "node_id": "e1911768-4428-48c7-8f86-2a4a67c27ca3",
+      "parent_id": "7d3a804d-b89d-4cff-9e35-ed7c42558724",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Bottom / Foundation Interface",
+      "display_order": 42,
+      "is_active": true
+    },
+    {
+      "node_id": "cff42b7a-7050-4615-965f-474b265e85fd",
+      "parent_id": "e1911768-4428-48c7-8f86-2a4a67c27ca3",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Bottom Plate, Annular Ring, Ring-wall",
+      "display_order": 52,
+      "is_active": true
+    },
+    {
+      "node_id": "8e5bafee-2d3e-4e7c-a31c-363fdceee023",
+      "parent_id": "cff42b7a-7050-4615-965f-474b265e85fd",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Underside corrosion, settlement at ring-wall interface",
+      "display_order": 52,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CML - Corrosion & Material Loss",
+        "FDS - Foundation & Settlement"
+      ],
+      "deficiency_codes": [
+        "CML",
+        "FDS"
+      ]
+    },
+    {
+      "node_id": "b10e979f-b88a-4053-83b9-13a0970a42da",
+      "parent_id": "7d3a804d-b89d-4cff-9e35-ed7c42558724",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Nozzles",
+      "display_order": 43,
+      "is_active": true
+    },
+    {
+      "node_id": "18c92933-d085-4611-8a51-675a9be07315",
+      "parent_id": "b10e979f-b88a-4053-83b9-13a0970a42da",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Inlet/Outlet, Overflow",
+      "display_order": 53,
+      "is_active": true
+    },
+    {
+      "node_id": "de37e487-3dd3-4942-96ea-187b70a4e75f",
+      "parent_id": "18c92933-d085-4611-8a51-675a9be07315",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Leakage, cracking at connections",
+      "display_order": 53,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CFI - Connection & Joint Failures",
+        "CML - Corrosion & Material Loss"
+      ],
+      "deficiency_codes": [
+        "CFI",
+        "CML"
+      ]
+    },
+    {
+      "node_id": "f72d8628-a790-4e1e-801f-52d8c011e310",
+      "parent_id": "97d144b2-3d11-4db5-bb4e-6c0d097522b9",
+      "level": "equipment_type",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Effluent Discharge Structure / Outfall",
+      "display_order": 17,
+      "is_active": true
+    },
+    {
+      "node_id": "8e7b69b8-3516-4e28-9cc7-de4028680efe",
+      "parent_id": "f72d8628-a790-4e1e-801f-52d8c011e310",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Discharge Structure",
+      "display_order": 44,
+      "is_active": true
+    },
+    {
+      "node_id": "41d7ad47-09ee-44cd-9c77-84983df5e3e5",
+      "parent_id": "8e7b69b8-3516-4e28-9cc7-de4028680efe",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Headwall, Discharge Pipe",
+      "display_order": 54,
+      "is_active": true
+    },
+    {
+      "node_id": "4873f940-3a70-450f-a5aa-59f1b3dc8e67",
+      "parent_id": "41d7ad47-09ee-44cd-9c77-84983df5e3e5",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Erosion, structural cracking, scour at point of discharge",
+      "display_order": 54,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "FLW - Flow-Induced Damage",
+        "CND - Concrete Deterioration"
+      ],
+      "deficiency_codes": [
+        "FLW",
+        "CND"
+      ]
+    },
+    {
+      "node_id": "da6cdfd9-0da5-41c7-a06a-71622cc46159",
+      "parent_id": "f72d8628-a790-4e1e-801f-52d8c011e310",
+      "level": "component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Erosion Protection",
+      "display_order": 45,
+      "is_active": true
+    },
+    {
+      "node_id": "a5005654-96d6-4033-8cc3-74bf3fc3e2e4",
+      "parent_id": "da6cdfd9-0da5-41c7-a06a-71622cc46159",
+      "level": "sub_component",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Riprap / Energy Dissipator",
+      "display_order": 55,
+      "is_active": true
+    },
+    {
+      "node_id": "b67b4b2b-f354-42eb-be86-3ff30c4ab933",
+      "parent_id": "a5005654-96d6-4033-8cc3-74bf3fc3e2e4",
+      "level": "focus_area",
+      "category": "Process Equipment (Mechanical)",
+      "label": "Scour, displacement, undermining of receiving channel bank",
+      "display_order": 55,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "SIE - Soil Instability & Erosion",
+        "FDS - Foundation & Settlement"
+      ],
+      "deficiency_codes": [
+        "SIE",
+        "FDS"
+      ]
+    },
+    {
+      "node_id": "c50fa481-f4e7-4b2c-b611-d5bf6db2f6cb",
+      "parent_id": null,
+      "level": "category",
+      "category": "Structural Support",
+      "label": "Structural Support",
+      "display_order": 2,
+      "is_active": true
+    },
+    {
+      "node_id": "9ff54774-ea16-45ee-a77a-90288b175e52",
+      "parent_id": "c50fa481-f4e7-4b2c-b611-d5bf6db2f6cb",
+      "level": "equipment_type",
+      "category": "Structural Support",
+      "label": "Tank / Basin Foundation Interface",
+      "display_order": 18,
+      "is_active": true
+    },
+    {
+      "node_id": "dfe4695c-5e9f-4056-9bd8-d14f3b6896bb",
+      "parent_id": "9ff54774-ea16-45ee-a77a-90288b175e52",
+      "level": "component",
+      "category": "Structural Support",
+      "label": "Concrete Ringwall / Basin Wall",
+      "display_order": 46,
+      "is_active": true
+    },
+    {
+      "node_id": "0adabd31-84ba-415e-8da6-d23622efc4a4",
+      "parent_id": "dfe4695c-5e9f-4056-9bd8-d14f3b6896bb",
+      "level": "sub_component",
+      "category": "Structural Support",
+      "label": "Ringwall, Bearing Pad & Grout",
+      "display_order": 56,
+      "is_active": true
+    },
+    {
+      "node_id": "154499df-af2e-45c2-9d69-bb0e3ca3736c",
+      "parent_id": "0adabd31-84ba-415e-8da6-d23622efc4a4",
+      "level": "focus_area",
+      "category": "Structural Support",
+      "label": "Settlement/differential settlement, load distribution, concrete integrity",
+      "display_order": 56,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "FDS - Foundation & Settlement",
+        "CND - Concrete Deterioration"
+      ],
+      "deficiency_codes": [
+        "FDS",
+        "CND"
+      ]
+    },
+    {
+      "node_id": "3adfd933-bbe6-45af-a3f7-5736fef39157",
+      "parent_id": "9ff54774-ea16-45ee-a77a-90288b175e52",
+      "level": "component",
+      "category": "Structural Support",
+      "label": "Anchor Chairs",
+      "display_order": 47,
+      "is_active": true
+    },
+    {
+      "node_id": "f97714fa-55be-4c97-8857-68bad9e0bb63",
+      "parent_id": "3adfd933-bbe6-45af-a3f7-5736fef39157",
+      "level": "sub_component",
+      "category": "Structural Support",
+      "label": "Anchor Chair, Base Plate",
+      "display_order": 57,
+      "is_active": true
+    },
+    {
+      "node_id": "c471e064-f604-494c-a151-3be25e816480",
+      "parent_id": "f97714fa-55be-4c97-8857-68bad9e0bb63",
+      "level": "focus_area",
+      "category": "Structural Support",
+      "label": "Anchorage corrosion, cracking at anchor chair",
+      "display_order": 57,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CFI - Connection & Joint Failures",
+        "CML - Corrosion & Material Loss"
+      ],
+      "deficiency_codes": [
+        "CFI",
+        "CML"
+      ]
+    },
+    {
+      "node_id": "ca7dc107-04ab-453e-82c2-efa2aece3654",
+      "parent_id": "c50fa481-f4e7-4b2c-b611-d5bf6db2f6cb",
+      "level": "equipment_type",
+      "category": "Structural Support",
+      "label": "Clarifier / Thickener Support",
+      "display_order": 19,
+      "is_active": true
+    },
+    {
+      "node_id": "168533b7-c11c-4d63-8641-8e78da6e8cce",
+      "parent_id": "ca7dc107-04ab-453e-82c2-efa2aece3654",
+      "level": "component",
+      "category": "Structural Support",
+      "label": "Center Column Foundation",
+      "display_order": 48,
+      "is_active": true
+    },
+    {
+      "node_id": "8834200d-0336-4a6c-9cb1-95175c09e514",
+      "parent_id": "168533b7-c11c-4d63-8641-8e78da6e8cce",
+      "level": "sub_component",
+      "category": "Structural Support",
+      "label": "Foundation Pedestal",
+      "display_order": 58,
+      "is_active": true
+    },
+    {
+      "node_id": "d5284816-b05b-4f48-b60c-d02293fb6ab4",
+      "parent_id": "8834200d-0336-4a6c-9cb1-95175c09e514",
+      "level": "focus_area",
+      "category": "Structural Support",
+      "label": "Bearing support, settlement beneath rotating drive column",
+      "display_order": 58,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "FDS - Foundation & Settlement"
+      ],
+      "deficiency_codes": [
+        "FDS"
+      ]
+    },
+    {
+      "node_id": "1a89d980-6a3f-438f-860c-865fdb954be0",
+      "parent_id": "ca7dc107-04ab-453e-82c2-efa2aece3654",
+      "level": "component",
+      "category": "Structural Support",
+      "label": "Bridge / Walkway Support",
+      "display_order": 49,
+      "is_active": true
+    },
+    {
+      "node_id": "a981b5d9-f7b3-4066-8c63-cce31399a61a",
+      "parent_id": "1a89d980-6a3f-438f-860c-865fdb954be0",
+      "level": "sub_component",
+      "category": "Structural Support",
+      "label": "Support Beams, Bracing",
+      "display_order": 59,
+      "is_active": true
+    },
+    {
+      "node_id": "4f1d561c-0544-4bed-93a2-2df7aa46b210",
+      "parent_id": "a981b5d9-f7b3-4066-8c63-cce31399a61a",
+      "level": "focus_area",
+      "category": "Structural Support",
+      "label": "Alignment, corrosion, structural capacity for drive bridge and access walkway",
+      "display_order": 59,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CML - Corrosion & Material Loss",
+        "DFI - Deformation & Mechanical Damage"
+      ],
+      "deficiency_codes": [
+        "CML",
+        "DFI"
+      ]
+    },
+    {
+      "node_id": "bdaa8f66-95d2-4bc6-8851-dee468d29e35",
+      "parent_id": "c50fa481-f4e7-4b2c-b611-d5bf6db2f6cb",
+      "level": "equipment_type",
+      "category": "Structural Support",
+      "label": "Pump Bases / Skids",
+      "display_order": 20,
+      "is_active": true
+    },
+    {
+      "node_id": "9ac5dda9-fc36-4d11-b950-82a332c9497e",
+      "parent_id": "bdaa8f66-95d2-4bc6-8851-dee468d29e35",
+      "level": "component",
+      "category": "Structural Support",
+      "label": "Grouted Steel Base",
+      "display_order": 50,
+      "is_active": true
+    },
+    {
+      "node_id": "4242a100-c6d4-4b61-980d-461712ba1089",
+      "parent_id": "9ac5dda9-fc36-4d11-b950-82a332c9497e",
+      "level": "sub_component",
+      "category": "Structural Support",
+      "label": "Baseplate, Grout",
+      "display_order": 60,
+      "is_active": true
+    },
+    {
+      "node_id": "56d03df5-fa44-4e0f-864a-7d7d50a6b4b6",
+      "parent_id": "4242a100-c6d4-4b61-980d-461712ba1089",
+      "level": "focus_area",
+      "category": "Structural Support",
+      "label": "Grout condition and load transfer under vibrating equipment",
+      "display_order": 60,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "FDS - Foundation & Settlement"
+      ],
+      "deficiency_codes": [
+        "FDS"
+      ]
+    },
+    {
+      "node_id": "afed8d7f-0fe8-4bbe-9067-343451c7551c",
+      "parent_id": "bdaa8f66-95d2-4bc6-8851-dee468d29e35",
+      "level": "component",
+      "category": "Structural Support",
+      "label": "Anchorage",
+      "display_order": 51,
+      "is_active": true
+    },
+    {
+      "node_id": "4e0fdb06-444d-4bd3-afab-3c7fc4873efd",
+      "parent_id": "afed8d7f-0fe8-4bbe-9067-343451c7551c",
+      "level": "sub_component",
+      "category": "Structural Support",
+      "label": "Anchor Bolts",
+      "display_order": 61,
+      "is_active": true
+    },
+    {
+      "node_id": "e82ece3a-4f0c-4e28-957d-76969676ef9c",
+      "parent_id": "4e0fdb06-444d-4bd3-afab-3c7fc4873efd",
+      "level": "focus_area",
+      "category": "Structural Support",
+      "label": "Anchor bolt corrosion, looseness, failure",
+      "display_order": 61,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CFI - Connection & Joint Failures"
+      ],
+      "deficiency_codes": [
+        "CFI"
+      ]
+    },
+    {
+      "node_id": "f8b90f9a-fbf2-48f9-b622-f782a105e9f7",
+      "parent_id": "8635a579-f2e9-4304-a23c-1747dbd6b88c",
+      "level": "sub_component",
+      "category": "Structural Support",
+      "label": "Frame Members",
+      "display_order": 62,
+      "is_active": true
+    },
+    {
+      "node_id": "8f107aaf-59e4-42b1-8842-a9e3db57d728",
+      "parent_id": "f8b90f9a-fbf2-48f9-b622-f782a105e9f7",
+      "level": "focus_area",
+      "category": "Structural Support",
+      "label": "Distortion from vibration or impact",
+      "display_order": 62,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "DFI - Deformation & Mechanical Damage"
+      ],
+      "deficiency_codes": [
+        "DFI"
+      ]
+    },
+    {
+      "node_id": "e5e38e89-3f7c-4233-b7b5-ae4c0f6ddb9c",
+      "parent_id": "c50fa481-f4e7-4b2c-b611-d5bf6db2f6cb",
+      "level": "equipment_type",
+      "category": "Structural Support",
+      "label": "Silo Support Structure",
+      "display_order": 21,
+      "is_active": true
+    },
+    {
+      "node_id": "bcc7e6c9-6709-4d0d-8a83-b1afda377cc5",
+      "parent_id": "e5e38e89-3f7c-4233-b7b5-ae4c0f6ddb9c",
+      "level": "component",
+      "category": "Structural Support",
+      "label": "Support Legs / Skirt",
+      "display_order": 52,
+      "is_active": true
+    },
+    {
+      "node_id": "f4452c36-3fec-42b3-91e7-de9904e1036b",
+      "parent_id": "bcc7e6c9-6709-4d0d-8a83-b1afda377cc5",
+      "level": "sub_component",
+      "category": "Structural Support",
+      "label": "Legs, Skirt, Bracing",
+      "display_order": 63,
+      "is_active": true
+    },
+    {
+      "node_id": "32ed4823-9b6c-4e54-956d-b2c11a289762",
+      "parent_id": "f4452c36-3fec-42b3-91e7-de9904e1036b",
+      "level": "focus_area",
+      "category": "Structural Support",
+      "label": "Buckling, corrosion, lateral stability under wind/seismic and full-silo loading",
+      "display_order": 63,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "DFI - Deformation & Mechanical Damage",
+        "CML - Corrosion & Material Loss"
+      ],
+      "deficiency_codes": [
+        "DFI",
+        "CML"
+      ]
+    },
+    {
+      "node_id": "e3ac74d8-3740-4296-83ce-890c165649a2",
+      "parent_id": "c50fa481-f4e7-4b2c-b611-d5bf6db2f6cb",
+      "level": "equipment_type",
+      "category": "Structural Support",
+      "label": "Pipe Supports / Hangers",
+      "display_order": 22,
+      "is_active": true
+    },
+    {
+      "node_id": "3c08bc08-1c50-499e-a73b-71824c9a7fe5",
+      "parent_id": "e3ac74d8-3740-4296-83ce-890c165649a2",
+      "level": "component",
+      "category": "Structural Support",
+      "label": "Shoe / Saddle",
+      "display_order": 53,
+      "is_active": true
+    },
+    {
+      "node_id": "9a87c13c-807e-4ba0-a520-27929b71b643",
+      "parent_id": "3c08bc08-1c50-499e-a73b-71824c9a7fe5",
+      "level": "sub_component",
+      "category": "Structural Support",
+      "label": "Pipe Shoe, Saddle",
+      "display_order": 64,
+      "is_active": true
+    },
+    {
+      "node_id": "dca98660-b6c2-4071-abd7-735182b95bb4",
+      "parent_id": "9a87c13c-807e-4ba0-a520-27929b71b643",
+      "level": "focus_area",
+      "category": "Structural Support",
+      "label": "Corrosion at pipe-to-support contact points",
+      "display_order": 64,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CML - Corrosion & Material Loss"
+      ],
+      "deficiency_codes": [
+        "CML"
+      ]
+    },
+    {
+      "node_id": "72ac7c53-b913-4895-9103-2c93d8b21742",
+      "parent_id": "e3ac74d8-3740-4296-83ce-890c165649a2",
+      "level": "component",
+      "category": "Structural Support",
+      "label": "U-Bolts & Clamps",
+      "display_order": 54,
+      "is_active": true
+    },
+    {
+      "node_id": "f9991a61-1c17-4a79-be75-cc393af43ab2",
+      "parent_id": "72ac7c53-b913-4895-9103-2c93d8b21742",
+      "level": "sub_component",
+      "category": "Structural Support",
+      "label": "Fasteners",
+      "display_order": 65,
+      "is_active": true
+    },
+    {
+      "node_id": "46f2693f-86c0-40b4-9a25-5aee871bc0bf",
+      "parent_id": "f9991a61-1c17-4a79-be75-cc393af43ab2",
+      "level": "focus_area",
+      "category": "Structural Support",
+      "label": "Fixation adequacy, loose or missing clamps on vibrating/slurry lines",
+      "display_order": 65,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CFI - Connection & Joint Failures"
+      ],
+      "deficiency_codes": [
+        "CFI"
+      ]
+    },
+    {
+      "node_id": "8d529324-b3f1-4928-9ed9-f07ed54fa828",
+      "parent_id": "e3ac74d8-3740-4296-83ce-890c165649a2",
+      "level": "component",
+      "category": "Structural Support",
+      "label": "Guides & Anchors",
+      "display_order": 55,
+      "is_active": true
+    },
+    {
+      "node_id": "dd06f12f-32c5-4fd9-8ae5-10f04030aeb9",
+      "parent_id": "8d529324-b3f1-4928-9ed9-f07ed54fa828",
+      "level": "sub_component",
+      "category": "Structural Support",
+      "label": "Guide Assembly, Anchor Point",
+      "display_order": 66,
+      "is_active": true
+    },
+    {
+      "node_id": "70f4284e-7623-47ea-b2ac-58ddce74538e",
+      "parent_id": "dd06f12f-32c5-4fd9-8ae5-10f04030aeb9",
+      "level": "focus_area",
+      "category": "Structural Support",
+      "label": "Movement control, seized or broken guides restricting thermal/mechanical movement",
+      "display_order": 66,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "DFI - Deformation & Mechanical Damage"
+      ],
+      "deficiency_codes": [
+        "DFI"
+      ]
+    },
+    {
+      "node_id": "5695e16f-fe88-4aca-9f4b-d3b757190396",
+      "parent_id": "c50fa481-f4e7-4b2c-b611-d5bf6db2f6cb",
+      "level": "equipment_type",
+      "category": "Structural Support",
+      "label": "Pipe Racks (process / chemical / slurry lines)",
+      "display_order": 23,
+      "is_active": true
+    },
+    {
+      "node_id": "5825cdfd-3c45-4907-98eb-e0011cd84bbc",
+      "parent_id": "5695e16f-fe88-4aca-9f4b-d3b757190396",
+      "level": "component",
+      "category": "Structural Support",
+      "label": "Transverse Beams",
+      "display_order": 56,
+      "is_active": true
+    },
+    {
+      "node_id": "afdf1d24-8763-4fa0-92f2-5087612e051b",
+      "parent_id": "5825cdfd-3c45-4907-98eb-e0011cd84bbc",
+      "level": "sub_component",
+      "category": "Structural Support",
+      "label": "Beams",
+      "display_order": 67,
+      "is_active": true
+    },
+    {
+      "node_id": "a4b76c55-ecd0-4a6c-86a4-d93e31dd2a12",
+      "parent_id": "afdf1d24-8763-4fa0-92f2-5087612e051b",
+      "level": "focus_area",
+      "category": "Structural Support",
+      "label": "Corrosion, deflection of load-bearing beams",
+      "display_order": 67,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CML - Corrosion & Material Loss",
+        "DFI - Deformation & Mechanical Damage"
+      ],
+      "deficiency_codes": [
+        "CML",
+        "DFI"
+      ]
+    },
+    {
+      "node_id": "4e413bb8-d6fa-4b18-839e-aa2a7112ec41",
+      "parent_id": "5695e16f-fe88-4aca-9f4b-d3b757190396",
+      "level": "component",
+      "category": "Structural Support",
+      "label": "Bracing",
+      "display_order": 57,
+      "is_active": true
+    },
+    {
+      "node_id": "5c89ba52-7ad6-4799-af21-09e1351e80f2",
+      "parent_id": "4e413bb8-d6fa-4b18-839e-aa2a7112ec41",
+      "level": "sub_component",
+      "category": "Structural Support",
+      "label": "Bracing Members",
+      "display_order": 68,
+      "is_active": true
+    },
+    {
+      "node_id": "eaa05fe3-ccd4-4cd8-9ea0-1ca10af88a2b",
+      "parent_id": "5c89ba52-7ad6-4799-af21-09e1351e80f2",
+      "level": "focus_area",
+      "category": "Structural Support",
+      "label": "Lateral stability, loose or disconnected bracing",
+      "display_order": 68,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CFI - Connection & Joint Failures"
+      ],
+      "deficiency_codes": [
+        "CFI"
+      ]
+    },
+    {
+      "node_id": "092910c7-1e7e-48db-8cfb-9754e9a45577",
+      "parent_id": "5695e16f-fe88-4aca-9f4b-d3b757190396",
+      "level": "component",
+      "category": "Structural Support",
+      "label": "Base Plates",
+      "display_order": 58,
+      "is_active": true
+    },
+    {
+      "node_id": "a3778681-0ef4-46bc-8ff4-416160343145",
+      "parent_id": "092910c7-1e7e-48db-8cfb-9754e9a45577",
+      "level": "sub_component",
+      "category": "Structural Support",
+      "label": "Base Plate, Grout",
+      "display_order": 69,
+      "is_active": true
+    },
+    {
+      "node_id": "ae214b5a-9735-4e0e-a4ea-d8da4ccb9c27",
+      "parent_id": "a3778681-0ef4-46bc-8ff4-416160343145",
+      "level": "focus_area",
+      "category": "Structural Support",
+      "label": "Anchorage, grout loss/settlement at base",
+      "display_order": 69,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "FDS - Foundation & Settlement"
+      ],
+      "deficiency_codes": [
+        "FDS"
+      ]
+    },
+    {
+      "node_id": "db7d33e1-6537-4261-b4d2-654f6a3b9938",
+      "parent_id": "c50fa481-f4e7-4b2c-b611-d5bf6db2f6cb",
+      "level": "equipment_type",
+      "category": "Structural Support",
+      "label": "Equipment Frames (mixers, agitators, dosing skids)",
+      "display_order": 24,
+      "is_active": true
+    },
+    {
+      "node_id": "9f028c1f-dead-4f5a-9f2f-eb21c0d633f2",
+      "parent_id": "db7d33e1-6537-4261-b4d2-654f6a3b9938",
+      "level": "component",
+      "category": "Structural Support",
+      "label": "Cross Members",
+      "display_order": 59,
+      "is_active": true
+    },
+    {
+      "node_id": "6224fdc0-c0be-424b-a977-94e122cee785",
+      "parent_id": "f8b90f9a-fbf2-48f9-b622-f782a105e9f7",
+      "level": "focus_area",
+      "category": "Structural Support",
+      "label": "Distortion under dynamic/vibration loading",
+      "display_order": 70,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "DFI - Deformation & Mechanical Damage"
+      ],
+      "deficiency_codes": [
+        "DFI"
+      ]
+    },
+    {
+      "node_id": "1b5e9dd2-ec52-4e9b-b78d-9d7908df5e10",
+      "parent_id": "db7d33e1-6537-4261-b4d2-654f6a3b9938",
+      "level": "component",
+      "category": "Structural Support",
+      "label": "Gusset Plates",
+      "display_order": 60,
+      "is_active": true
+    },
+    {
+      "node_id": "2d63bf56-e960-44d4-9e96-a35f04c7d2ad",
+      "parent_id": "1b5e9dd2-ec52-4e9b-b78d-9d7908df5e10",
+      "level": "sub_component",
+      "category": "Structural Support",
+      "label": "Welded Connections",
+      "display_order": 70,
+      "is_active": true
+    },
+    {
+      "node_id": "5756b56a-04f0-4028-9d99-80c8339551a4",
+      "parent_id": "2d63bf56-e960-44d4-9e96-a35f04c7d2ad",
+      "level": "focus_area",
+      "category": "Structural Support",
+      "label": "Fatigue cracking at gusset welds",
+      "display_order": 71,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CRK - Cracking Mechanisms"
+      ],
+      "deficiency_codes": [
+        "CRK"
+      ]
+    },
+    {
+      "node_id": "51df9057-9137-49eb-b338-a94af2a7024b",
+      "parent_id": "c50fa481-f4e7-4b2c-b611-d5bf6db2f6cb",
+      "level": "equipment_type",
+      "category": "Structural Support",
+      "label": "Anchor Bolts / Baseplates (general)",
+      "display_order": 25,
+      "is_active": true
+    },
+    {
+      "node_id": "4a1d74f9-a288-4349-981c-85b370a4874f",
+      "parent_id": "51df9057-9137-49eb-b338-a94af2a7024b",
+      "level": "component",
+      "category": "Structural Support",
+      "label": "Grout Bed",
+      "display_order": 61,
+      "is_active": true
+    },
+    {
+      "node_id": "ce12139d-58f7-47c9-a9eb-75cd714b14bc",
+      "parent_id": "4a1d74f9-a288-4349-981c-85b370a4874f",
+      "level": "sub_component",
+      "category": "Structural Support",
+      "label": "Grout",
+      "display_order": 71,
+      "is_active": true
+    },
+    {
+      "node_id": "8f12544a-07d4-4af1-9cc1-c774198e8b34",
+      "parent_id": "ce12139d-58f7-47c9-a9eb-75cd714b14bc",
+      "level": "focus_area",
+      "category": "Structural Support",
+      "label": "Load transfer condition, cracking or missing grout",
+      "display_order": 72,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "FDS - Foundation & Settlement"
+      ],
+      "deficiency_codes": [
+        "FDS"
+      ]
+    },
+    {
+      "node_id": "7c34b47d-9d74-436b-9045-1ecbbbe0c0ed",
+      "parent_id": "51df9057-9137-49eb-b338-a94af2a7024b",
+      "level": "component",
+      "category": "Structural Support",
+      "label": "Anchor Plate",
+      "display_order": 62,
+      "is_active": true
+    },
+    {
+      "node_id": "3b722cbb-02eb-4788-9c3a-4f793b8bde52",
+      "parent_id": "7c34b47d-9d74-436b-9045-1ecbbbe0c0ed",
+      "level": "sub_component",
+      "category": "Structural Support",
+      "label": "Plate, Levelling Nuts",
+      "display_order": 72,
+      "is_active": true
+    },
+    {
+      "node_id": "835a7402-be6b-48a8-bbf5-d826f313f520",
+      "parent_id": "3b722cbb-02eb-4788-9c3a-4f793b8bde52",
+      "level": "focus_area",
+      "category": "Structural Support",
+      "label": "Corrosion, alignment, seized levelling nuts",
+      "display_order": 73,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CML - Corrosion & Material Loss"
+      ],
+      "deficiency_codes": [
+        "CML"
+      ]
+    },
+    {
+      "node_id": "fa53f8b5-35a2-4d5f-a126-286078551696",
+      "parent_id": "c50fa481-f4e7-4b2c-b611-d5bf6db2f6cb",
+      "level": "equipment_type",
+      "category": "Structural Support",
+      "label": "Cable Tray Supports",
+      "display_order": 26,
+      "is_active": true
+    },
+    {
+      "node_id": "f3ea68e3-2b07-48f8-aaf5-9b6c8773fba3",
+      "parent_id": "fa53f8b5-35a2-4d5f-a126-286078551696",
+      "level": "component",
+      "category": "Structural Support",
+      "label": "Cantilever Arms / Trapeze Hangers",
+      "display_order": 63,
+      "is_active": true
+    },
+    {
+      "node_id": "e822bf4a-9e4d-4312-ae18-b71d459d63b6",
+      "parent_id": "f3ea68e3-2b07-48f8-aaf5-9b6c8773fba3",
+      "level": "sub_component",
+      "category": "Structural Support",
+      "label": "Support Arms, Hangers",
+      "display_order": 73,
+      "is_active": true
+    },
+    {
+      "node_id": "ddf65201-3d76-4c42-8064-643859161256",
+      "parent_id": "e822bf4a-9e4d-4312-ae18-b71d459d63b6",
+      "level": "focus_area",
+      "category": "Structural Support",
+      "label": "Corrosion, coating failure, loose or corroded hanger rods",
+      "display_order": 74,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CML - Corrosion & Material Loss",
+        "CFI - Connection & Joint Failures"
+      ],
+      "deficiency_codes": [
+        "CML",
+        "CFI"
+      ]
+    },
+    {
+      "node_id": "c5fd574c-6995-47ed-a86f-c62ffd2b889b",
+      "parent_id": "c50fa481-f4e7-4b2c-b611-d5bf6db2f6cb",
+      "level": "equipment_type",
+      "category": "Structural Support",
+      "label": "Structural Steel Supporting Vessels / Tanks",
+      "display_order": 27,
+      "is_active": true
+    },
+    {
+      "node_id": "e3601e76-e5d6-43b3-8c60-447aa0817945",
+      "parent_id": "c5fd574c-6995-47ed-a86f-c62ffd2b889b",
+      "level": "component",
+      "category": "Structural Support",
+      "label": "Saddle Supports",
+      "display_order": 64,
+      "is_active": true
+    },
+    {
+      "node_id": "acccc510-d62d-4bfd-aa5a-be16d66d5712",
+      "parent_id": "e3601e76-e5d6-43b3-8c60-447aa0817945",
+      "level": "sub_component",
+      "category": "Structural Support",
+      "label": "Saddle",
+      "display_order": 74,
+      "is_active": true
+    },
+    {
+      "node_id": "350a93f7-35ac-45a3-b445-07a184b1a1f2",
+      "parent_id": "acccc510-d62d-4bfd-aa5a-be16d66d5712",
+      "level": "focus_area",
+      "category": "Structural Support",
+      "label": "Distortion or corrosion at saddle support points",
+      "display_order": 75,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "DFI - Deformation & Mechanical Damage",
+        "CML - Corrosion & Material Loss"
+      ],
+      "deficiency_codes": [
+        "DFI",
+        "CML"
+      ]
+    },
+    {
+      "node_id": "93a881f7-6bf8-473f-af24-272858e8ab71",
+      "parent_id": "c5fd574c-6995-47ed-a86f-c62ffd2b889b",
+      "level": "component",
+      "category": "Structural Support",
+      "label": "Skirt / Legs",
+      "display_order": 65,
+      "is_active": true
+    },
+    {
+      "node_id": "e0553965-b94d-48d9-89bf-3921473aea8b",
+      "parent_id": "93a881f7-6bf8-473f-af24-272858e8ab71",
+      "level": "sub_component",
+      "category": "Structural Support",
+      "label": "Skirt, Legs",
+      "display_order": 75,
+      "is_active": true
+    },
+    {
+      "node_id": "5b94d485-496b-4faa-81ec-ca7ab6a2aa6f",
+      "parent_id": "e0553965-b94d-48d9-89bf-3921473aea8b",
+      "level": "focus_area",
+      "category": "Structural Support",
+      "label": "Corrosion, cracking at skirt or legs supporting process vessels",
+      "display_order": 76,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CML - Corrosion & Material Loss",
+        "CRK - Cracking Mechanisms"
+      ],
+      "deficiency_codes": [
+        "CML",
+        "CRK"
+      ]
+    },
+    {
+      "node_id": "5cd47794-39b9-484b-8f8f-75916f7d980c",
+      "parent_id": "c5fd574c-6995-47ed-a86f-c62ffd2b889b",
+      "level": "component",
+      "category": "Structural Support",
+      "label": "Welded Connections",
+      "display_order": 66,
+      "is_active": true
+    },
+    {
+      "node_id": "06ac572b-eb35-46c6-9a37-16dd5b6c1f64",
+      "parent_id": "5cd47794-39b9-484b-8f8f-75916f7d980c",
+      "level": "sub_component",
+      "category": "Structural Support",
+      "label": "Critical Welds",
+      "display_order": 76,
+      "is_active": true
+    },
+    {
+      "node_id": "8d12aae0-8fa2-4496-9c72-0d7eb9fe149d",
+      "parent_id": "06ac572b-eb35-46c6-9a37-16dd5b6c1f64",
+      "level": "focus_area",
+      "category": "Structural Support",
+      "label": "Cracking at welded connections under sustained/cyclic loading",
+      "display_order": 77,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CRK - Cracking Mechanisms"
+      ],
+      "deficiency_codes": [
+        "CRK"
+      ]
+    },
+    {
+      "node_id": "7b414315-c9ba-4e68-8dc2-02d23fa04619",
+      "parent_id": null,
+      "level": "category",
+      "category": "Foundations & Geotechnical",
+      "label": "Foundations & Geotechnical",
+      "display_order": 3,
+      "is_active": true
+    },
+    {
+      "node_id": "4d37d617-0a3a-4c3d-9b9e-6bba9e602da6",
+      "parent_id": "7b414315-c9ba-4e68-8dc2-02d23fa04619",
+      "level": "equipment_type",
+      "category": "Foundations & Geotechnical",
+      "label": "Shallow Foundations",
+      "display_order": 28,
+      "is_active": true
+    },
+    {
+      "node_id": "f34e49a4-4f26-42e8-b804-76d49d638757",
+      "parent_id": "4d37d617-0a3a-4c3d-9b9e-6bba9e602da6",
+      "level": "component",
+      "category": "Foundations & Geotechnical",
+      "label": "Pad / Spread Footings",
+      "display_order": 67,
+      "is_active": true
+    },
+    {
+      "node_id": "7d574dd4-4bca-4af8-9d5c-bfd4e81e87de",
+      "parent_id": "f34e49a4-4f26-42e8-b804-76d49d638757",
+      "level": "sub_component",
+      "category": "Foundations & Geotechnical",
+      "label": "Footing",
+      "display_order": 77,
+      "is_active": true
+    },
+    {
+      "node_id": "16b45c3c-dcd5-4269-952c-26f09449a0e7",
+      "parent_id": "7d574dd4-4bca-4af8-9d5c-bfd4e81e87de",
+      "level": "focus_area",
+      "category": "Foundations & Geotechnical",
+      "label": "Uneven or differential settlement, cracking",
+      "display_order": 78,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "FDS - Foundation & Settlement"
+      ],
+      "deficiency_codes": [
+        "FDS"
+      ]
+    },
+    {
+      "node_id": "cf3aeab8-aeef-4884-9064-f8ecbbdb68f0",
+      "parent_id": "4d37d617-0a3a-4c3d-9b9e-6bba9e602da6",
+      "level": "component",
+      "category": "Foundations & Geotechnical",
+      "label": "Strip Footings, Grade Beams",
+      "display_order": 68,
+      "is_active": true
+    },
+    {
+      "node_id": "a3cf9340-8e2b-41bb-9cfc-f72028e8fd67",
+      "parent_id": "cf3aeab8-aeef-4884-9064-f8ecbbdb68f0",
+      "level": "sub_component",
+      "category": "Foundations & Geotechnical",
+      "label": "Footing / Beam",
+      "display_order": 78,
+      "is_active": true
+    },
+    {
+      "node_id": "44ef6069-658c-4ac1-98d5-a3bdd336244a",
+      "parent_id": "a3cf9340-8e2b-41bb-9cfc-f72028e8fd67",
+      "level": "focus_area",
+      "category": "Foundations & Geotechnical",
+      "label": "Cracking of foundation elements, load distribution",
+      "display_order": 79,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CRK - Cracking Mechanisms",
+        "FDS - Foundation & Settlement"
+      ],
+      "deficiency_codes": [
+        "CRK",
+        "FDS"
+      ]
+    },
+    {
+      "node_id": "c6a786e6-38c4-42ea-baaa-f51977cb7fae",
+      "parent_id": "7b414315-c9ba-4e68-8dc2-02d23fa04619",
+      "level": "equipment_type",
+      "category": "Foundations & Geotechnical",
+      "label": "Slabs-on-Grade",
+      "display_order": 29,
+      "is_active": true
+    },
+    {
+      "node_id": "33381836-f73f-47d7-99ad-5170aa0f83fd",
+      "parent_id": "c6a786e6-38c4-42ea-baaa-f51977cb7fae",
+      "level": "component",
+      "category": "Foundations & Geotechnical",
+      "label": "Reinforced Slab, Subgrade/Sub-base",
+      "display_order": 69,
+      "is_active": true
+    },
+    {
+      "node_id": "63027ccb-2b14-47fc-93aa-c612b07be474",
+      "parent_id": "33381836-f73f-47d7-99ad-5170aa0f83fd",
+      "level": "sub_component",
+      "category": "Foundations & Geotechnical",
+      "label": "Slab, Compacted Fill",
+      "display_order": 79,
+      "is_active": true
+    },
+    {
+      "node_id": "900f9c61-d268-428d-b877-80e1cfbef3f4",
+      "parent_id": "63027ccb-2b14-47fc-93aa-c612b07be474",
+      "level": "focus_area",
+      "category": "Foundations & Geotechnical",
+      "label": "Tilting, loss of soil stiffness / bearing capacity, voids beneath slab",
+      "display_order": 80,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "FDS - Foundation & Settlement",
+        "BCF - Bearing Capacity Failure"
+      ],
+      "deficiency_codes": [
+        "FDS",
+        "BCF"
+      ]
+    },
+    {
+      "node_id": "b0a7fecd-04b4-4057-8d75-45f130e962e8",
+      "parent_id": "c6a786e6-38c4-42ea-baaa-f51977cb7fae",
+      "level": "component",
+      "category": "Foundations & Geotechnical",
+      "label": "Control Joints, Vapour Barrier",
+      "display_order": 70,
+      "is_active": true
+    },
+    {
+      "node_id": "f40d5a42-75cd-4218-b8ff-bc7923412f9d",
+      "parent_id": "b0a7fecd-04b4-4057-8d75-45f130e962e8",
+      "level": "sub_component",
+      "category": "Foundations & Geotechnical",
+      "label": "Joint, Barrier",
+      "display_order": 80,
+      "is_active": true
+    },
+    {
+      "node_id": "b9377178-4dd2-439c-8c6e-d1b53616f098",
+      "parent_id": "f40d5a42-75cd-4218-b8ff-bc7923412f9d",
+      "level": "focus_area",
+      "category": "Foundations & Geotechnical",
+      "label": "Joint spalling/differential movement, moisture ingress",
+      "display_order": 81,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CRK - Cracking Mechanisms",
+        "SIE - Soil Instability & Erosion"
+      ],
+      "deficiency_codes": [
+        "CRK",
+        "SIE"
+      ]
+    },
+    {
+      "node_id": "9a423259-3f2f-491f-beb8-2f196fa65cac",
+      "parent_id": "7b414315-c9ba-4e68-8dc2-02d23fa04619",
+      "level": "equipment_type",
+      "category": "Foundations & Geotechnical",
+      "label": "Soil Interaction Zones",
+      "display_order": 30,
+      "is_active": true
+    },
+    {
+      "node_id": "ff0eec36-c98f-44ca-9f6a-10565eb00312",
+      "parent_id": "9a423259-3f2f-491f-beb8-2f196fa65cac",
+      "level": "component",
+      "category": "Foundations & Geotechnical",
+      "label": "Backfill / Surrounding Soil",
+      "display_order": 71,
+      "is_active": true
+    },
+    {
+      "node_id": "f221a795-1227-4657-8f66-772db897457d",
+      "parent_id": "ff0eec36-c98f-44ca-9f6a-10565eb00312",
+      "level": "sub_component",
+      "category": "Foundations & Geotechnical",
+      "label": "Drainage Paths, Perimeter Zones",
+      "display_order": 81,
+      "is_active": true
+    },
+    {
+      "node_id": "cf156cf2-e126-46d9-bb41-58bd119ce7d9",
+      "parent_id": "f221a795-1227-4657-8f66-772db897457d",
+      "level": "focus_area",
+      "category": "Foundations & Geotechnical",
+      "label": "Voids under foundation, washed-out soil, undermining",
+      "display_order": 82,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "SIE - Soil Instability & Erosion"
+      ],
+      "deficiency_codes": [
+        "SIE"
+      ]
+    },
+    {
+      "node_id": "37dd3bbb-277c-41ae-9cc8-a52901e5e4a4",
+      "parent_id": "9a423259-3f2f-491f-beb8-2f196fa65cac",
+      "level": "component",
+      "category": "Foundations & Geotechnical",
+      "label": "Drainage Layer, Perimeter Grading",
+      "display_order": 72,
+      "is_active": true
+    },
+    {
+      "node_id": "6827124f-9366-41d6-aeac-77dc7a8e2cf9",
+      "parent_id": "37dd3bbb-277c-41ae-9cc8-a52901e5e4a4",
+      "level": "sub_component",
+      "category": "Foundations & Geotechnical",
+      "label": "Drain, Grading",
+      "display_order": 82,
+      "is_active": true
+    },
+    {
+      "node_id": "670dfafb-d7ac-4312-96fc-80cd889ce784",
+      "parent_id": "6827124f-9366-41d6-aeac-77dc7a8e2cf9",
+      "level": "focus_area",
+      "category": "Foundations & Geotechnical",
+      "label": "Blocked or eroded drainage, negative grading causing ponding at foundations",
+      "display_order": 83,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "SIE - Soil Instability & Erosion"
+      ],
+      "deficiency_codes": [
+        "SIE"
+      ]
+    },
+    {
+      "node_id": "1ef15582-6b93-40c3-a2a6-5e8022dfe981",
+      "parent_id": "7b414315-c9ba-4e68-8dc2-02d23fa04619",
+      "level": "equipment_type",
+      "category": "Foundations & Geotechnical",
+      "label": "Legacy Mine Ground Interface",
+      "display_order": 31,
+      "is_active": true
+    },
+    {
+      "node_id": "2de293c5-0def-4064-81c9-76ce884eff43",
+      "parent_id": "1ef15582-6b93-40c3-a2a6-5e8022dfe981",
+      "level": "component",
+      "category": "Foundations & Geotechnical",
+      "label": "Backfilled / Reclaimed Ground",
+      "display_order": 73,
+      "is_active": true
+    },
+    {
+      "node_id": "a1d23cef-9072-4462-a8fc-49ba3f98f2bd",
+      "parent_id": "2de293c5-0def-4064-81c9-76ce884eff43",
+      "level": "sub_component",
+      "category": "Foundations & Geotechnical",
+      "label": "Engineered Fill over Former Workings",
+      "display_order": 83,
+      "is_active": true
+    },
+    {
+      "node_id": "b253e835-f581-4cc7-a73a-e37454f9b191",
+      "parent_id": "a1d23cef-9072-4462-a8fc-49ba3f98f2bd",
+      "level": "focus_area",
+      "category": "Foundations & Geotechnical",
+      "label": "Long-term consolidation settlement of placed fill overlying disturbed mine ground",
+      "display_order": 84,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "FDS - Foundation & Settlement",
+        "MSB - Mine Subsidence & Ground Instability"
+      ],
+      "deficiency_codes": [
+        "FDS",
+        "MSB"
+      ]
+    },
+    {
+      "node_id": "1890a04f-9da8-4b43-a5c1-2590b57f0a21",
+      "parent_id": "1ef15582-6b93-40c3-a2a6-5e8022dfe981",
+      "level": "component",
+      "category": "Foundations & Geotechnical",
+      "label": "Void / Subsidence Zones",
+      "display_order": 74,
+      "is_active": true
+    },
+    {
+      "node_id": "9e3af0cf-1902-4e86-961e-80bf12c0282b",
+      "parent_id": "1890a04f-9da8-4b43-a5c1-2590b57f0a21",
+      "level": "sub_component",
+      "category": "Foundations & Geotechnical",
+      "label": "Shallow Voids, Collapsed Workings",
+      "display_order": 84,
+      "is_active": true
+    },
+    {
+      "node_id": "0e33cf2c-b252-4438-b8e1-2759a0257aaf",
+      "parent_id": "9e3af0cf-1902-4e86-961e-80bf12c0282b",
+      "level": "focus_area",
+      "category": "Foundations & Geotechnical",
+      "label": "Subsidence and void migration risk from collapse of underlying abandoned workings; sinkhole potential",
+      "display_order": 85,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "MSB - Mine Subsidence & Ground Instability",
+        "BCF - Bearing Capacity Failure"
+      ],
+      "deficiency_codes": [
+        "MSB",
+        "BCF"
+      ]
+    },
+    {
+      "node_id": "4893b66d-769e-410d-9476-88ff58c595bb",
+      "parent_id": "1ef15582-6b93-40c3-a2a6-5e8022dfe981",
+      "level": "component",
+      "category": "Foundations & Geotechnical",
+      "label": "Old Mine Workings Below Grade",
+      "display_order": 75,
+      "is_active": true
+    },
+    {
+      "node_id": "60c20ea4-50f1-4052-9962-3d48a2ceb746",
+      "parent_id": "4893b66d-769e-410d-9476-88ff58c595bb",
+      "level": "sub_component",
+      "category": "Foundations & Geotechnical",
+      "label": "Shafts, Adits, Stopes (if mapped nearby)",
+      "display_order": 85,
+      "is_active": true
+    },
+    {
+      "node_id": "79dd624a-a832-4ad2-844e-82d1452c1dde",
+      "parent_id": "60c20ea4-50f1-4052-9962-3d48a2ceb746",
+      "level": "focus_area",
+      "category": "Foundations & Geotechnical",
+      "label": "Proximity to unmapped or poorly documented workings; ongoing ground movement monitoring needs",
+      "display_order": 86,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "MSB - Mine Subsidence & Ground Instability"
+      ],
+      "deficiency_codes": [
+        "MSB"
+      ]
+    },
+    {
+      "node_id": "bd94901e-2a6a-4a0d-b932-653650d30229",
+      "parent_id": "7b414315-c9ba-4e68-8dc2-02d23fa04619",
+      "level": "equipment_type",
+      "category": "Foundations & Geotechnical",
+      "label": "Frost-Sensitive Soils (climate-dependent)",
+      "display_order": 32,
+      "is_active": true
+    },
+    {
+      "node_id": "ea974cff-867e-48ea-abfd-5a0a1925078e",
+      "parent_id": "bd94901e-2a6a-4a0d-b932-653650d30229",
+      "level": "component",
+      "category": "Foundations & Geotechnical",
+      "label": "Shallow Foundations in Frost Zone",
+      "display_order": 76,
+      "is_active": true
+    },
+    {
+      "node_id": "f6a58d4c-a0e5-4663-b4a7-83d740050911",
+      "parent_id": "ea974cff-867e-48ea-abfd-5a0a1925078e",
+      "level": "sub_component",
+      "category": "Foundations & Geotechnical",
+      "label": "Frost-Susceptible Soil",
+      "display_order": 86,
+      "is_active": true
+    },
+    {
+      "node_id": "7e18c5c5-592a-4d90-b343-2408279e87f1",
+      "parent_id": "f6a58d4c-a0e5-4663-b4a7-83d740050911",
+      "level": "focus_area",
+      "category": "Foundations & Geotechnical",
+      "label": "Upward movement, cracking and lifting from freeze-thaw cycling",
+      "display_order": 87,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "FH - Frost Heave"
+      ],
+      "deficiency_codes": [
+        "FH"
+      ]
+    },
+    {
+      "node_id": "818e5b72-1eb7-40ee-96f5-b3705005567d",
+      "parent_id": "7b414315-c9ba-4e68-8dc2-02d23fa04619",
+      "level": "equipment_type",
+      "category": "Foundations & Geotechnical",
+      "label": "Concrete Foundations",
+      "display_order": 33,
+      "is_active": true
+    },
+    {
+      "node_id": "77738e72-f735-4510-8963-68916d63782a",
+      "parent_id": "818e5b72-1eb7-40ee-96f5-b3705005567d",
+      "level": "component",
+      "category": "Foundations & Geotechnical",
+      "label": "Footings / Pedestals, Pile Caps",
+      "display_order": 77,
+      "is_active": true
+    },
+    {
+      "node_id": "7c27bc44-f0d6-4cf9-85ef-a6e308577a8a",
+      "parent_id": "77738e72-f735-4510-8963-68916d63782a",
+      "level": "sub_component",
+      "category": "Foundations & Geotechnical",
+      "label": "Concrete Element",
+      "display_order": 87,
+      "is_active": true
+    },
+    {
+      "node_id": "0f3509fd-abb9-45b1-9bed-4ea1c6200684",
+      "parent_id": "7c27bc44-f0d6-4cf9-85ef-a6e308577a8a",
+      "level": "focus_area",
+      "category": "Foundations & Geotechnical",
+      "label": "Spalling, surface/structural cracking",
+      "display_order": 88,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CND - Concrete Deterioration"
+      ],
+      "deficiency_codes": [
+        "CND"
+      ]
+    },
+    {
+      "node_id": "8f34de96-bf3c-4eb2-8bc4-484933114ecb",
+      "parent_id": "818e5b72-1eb7-40ee-96f5-b3705005567d",
+      "level": "component",
+      "category": "Foundations & Geotechnical",
+      "label": "Reinforcement / Rebar",
+      "display_order": 78,
+      "is_active": true
+    },
+    {
+      "node_id": "f0e93aab-4628-493f-8a0e-f95dce590015",
+      "parent_id": "8f34de96-bf3c-4eb2-8bc4-484933114ecb",
+      "level": "sub_component",
+      "category": "Foundations & Geotechnical",
+      "label": "Rebar",
+      "display_order": 88,
+      "is_active": true
+    },
+    {
+      "node_id": "d1459328-68bc-433e-b2fd-0539769f838e",
+      "parent_id": "f0e93aab-4628-493f-8a0e-f95dce590015",
+      "level": "focus_area",
+      "category": "Foundations & Geotechnical",
+      "label": "Corrosion of reinforcement, especially where acidic/sulfate-bearing mine water can reach foundations",
+      "display_order": 89,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CND - Concrete Deterioration"
+      ],
+      "deficiency_codes": [
+        "CND"
+      ]
+    },
+    {
+      "node_id": "50cd89d9-431d-4421-857a-9f98075b23f7",
+      "parent_id": "818e5b72-1eb7-40ee-96f5-b3705005567d",
+      "level": "component",
+      "category": "Foundations & Geotechnical",
+      "label": "Waterproofing",
+      "display_order": 79,
+      "is_active": true
+    },
+    {
+      "node_id": "32366e91-e762-4098-8069-920092ffec73",
+      "parent_id": "50cd89d9-431d-4421-857a-9f98075b23f7",
+      "level": "sub_component",
+      "category": "Foundations & Geotechnical",
+      "label": "Membrane / Coating",
+      "display_order": 89,
+      "is_active": true
+    },
+    {
+      "node_id": "be130dee-d190-43c9-8a9c-c04fe29743b1",
+      "parent_id": "32366e91-e762-4098-8069-920092ffec73",
+      "level": "focus_area",
+      "category": "Foundations & Geotechnical",
+      "label": "Failed waterproofing, water/chemical ingress to foundation concrete",
+      "display_order": 90,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "SIE - Soil Instability & Erosion",
+        "CND - Concrete Deterioration"
+      ],
+      "deficiency_codes": [
+        "SIE",
+        "CND"
+      ]
+    },
+    {
+      "node_id": "aa6e1ca4-827a-4144-9cf6-c75806678f40",
+      "parent_id": "7b414315-c9ba-4e68-8dc2-02d23fa04619",
+      "level": "equipment_type",
+      "category": "Foundations & Geotechnical",
+      "label": "Bearing / Load Transfer Zones",
+      "display_order": 34,
+      "is_active": true
+    },
+    {
+      "node_id": "17e1eaa9-2e36-417c-89f1-4fe26996cc3c",
+      "parent_id": "aa6e1ca4-827a-4144-9cf6-c75806678f40",
+      "level": "component",
+      "category": "Foundations & Geotechnical",
+      "label": "Bearing Soils",
+      "display_order": 80,
+      "is_active": true
+    },
+    {
+      "node_id": "b227c03f-6dca-42bf-9319-d78d408e93ac",
+      "parent_id": "17e1eaa9-2e36-417c-89f1-4fe26996cc3c",
+      "level": "sub_component",
+      "category": "Foundations & Geotechnical",
+      "label": "Foundation-Soil Interface",
+      "display_order": 90,
+      "is_active": true
+    },
+    {
+      "node_id": "1b5e1663-3a77-4f94-bf0c-6d54c19b8875",
+      "parent_id": "b227c03f-6dca-42bf-9319-d78d408e93ac",
+      "level": "focus_area",
+      "category": "Foundations & Geotechnical",
+      "label": "Sudden or differential settlement, local bearing failure under concentrated loads",
+      "display_order": 91,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "BCF - Bearing Capacity Failure"
+      ],
+      "deficiency_codes": [
+        "BCF"
+      ]
+    },
+    {
+      "node_id": "3e07e03e-571f-47ed-ae1d-8ccb07bc6c64",
+      "parent_id": "7b414315-c9ba-4e68-8dc2-02d23fa04619",
+      "level": "equipment_type",
+      "category": "Foundations & Geotechnical",
+      "label": "Deep Foundations (where used)",
+      "display_order": 35,
+      "is_active": true
+    },
+    {
+      "node_id": "68958a31-d871-4a2b-ba6d-2b02b3d4ac4f",
+      "parent_id": "3e07e03e-571f-47ed-ae1d-8ccb07bc6c64",
+      "level": "component",
+      "category": "Foundations & Geotechnical",
+      "label": "Pile Foundations",
+      "display_order": 81,
+      "is_active": true
+    },
+    {
+      "node_id": "2fa0ec4a-c3dc-4a61-bb4e-427a802aa78a",
+      "parent_id": "68958a31-d871-4a2b-ba6d-2b02b3d4ac4f",
+      "level": "sub_component",
+      "category": "Foundations & Geotechnical",
+      "label": "Pile Shaft, Toe/Bearing Layer",
+      "display_order": 91,
+      "is_active": true
+    },
+    {
+      "node_id": "175610e3-76bd-4fb7-b015-4d7187012860",
+      "parent_id": "2fa0ec4a-c3dc-4a61-bb4e-427a802aa78a",
+      "level": "focus_area",
+      "category": "Foundations & Geotechnical",
+      "label": "Inclined or broken piles, insufficient penetration to bearing layer",
+      "display_order": 92,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "PF - Pile Foundations"
+      ],
+      "deficiency_codes": [
+        "PF"
+      ]
+    },
+    {
+      "node_id": "d6d15348-fe9f-41ee-a735-12c936324d38",
+      "parent_id": "3e07e03e-571f-47ed-ae1d-8ccb07bc6c64",
+      "level": "component",
+      "category": "Foundations & Geotechnical",
+      "label": "Pile-to-Cap Connection",
+      "display_order": 82,
+      "is_active": true
+    },
+    {
+      "node_id": "978b1419-072b-4856-8af2-5a53188b4369",
+      "parent_id": "d6d15348-fe9f-41ee-a735-12c936324d38",
+      "level": "sub_component",
+      "category": "Foundations & Geotechnical",
+      "label": "Connection Detail",
+      "display_order": 92,
+      "is_active": true
+    },
+    {
+      "node_id": "fbc01eac-b2e3-4efe-bc1b-1c682f2f9945",
+      "parent_id": "978b1419-072b-4856-8af2-5a53188b4369",
+      "level": "focus_area",
+      "category": "Foundations & Geotechnical",
+      "label": "Cracking or separation at pile-to-cap connection",
+      "display_order": 93,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CFI - Connection & Joint Failures",
+        "PF - Pile Foundations"
+      ],
+      "deficiency_codes": [
+        "CFI",
+        "PF"
+      ]
+    },
+    {
+      "node_id": "cf6c3d12-3121-4438-9af3-111c78f15069",
+      "parent_id": null,
+      "level": "category",
+      "category": "Building Envelope",
+      "label": "Building Envelope",
+      "display_order": 4,
+      "is_active": true
+    },
+    {
+      "node_id": "ed1a16bd-21c8-409b-b43a-675803d0bb74",
+      "parent_id": "cf6c3d12-3121-4438-9af3-111c78f15069",
+      "level": "equipment_type",
+      "category": "Building Envelope",
+      "label": "Roofing Systems",
+      "display_order": 36,
+      "is_active": true
+    },
+    {
+      "node_id": "2739870b-28ba-480a-9419-f3186f85b595",
+      "parent_id": "ed1a16bd-21c8-409b-b43a-675803d0bb74",
+      "level": "component",
+      "category": "Building Envelope",
+      "label": "Membrane / Metal Roof",
+      "display_order": 83,
+      "is_active": true
+    },
+    {
+      "node_id": "940d6cb0-7ae0-4aca-ad27-3356b8f44bb0",
+      "parent_id": "2739870b-28ba-480a-9419-f3186f85b595",
+      "level": "sub_component",
+      "category": "Building Envelope",
+      "label": "Deck, Insulation, Flashing & Parapets",
+      "display_order": 93,
+      "is_active": true
+    },
+    {
+      "node_id": "6677c638-5e26-4796-8a6b-f136d0b6335d",
+      "parent_id": "940d6cb0-7ae0-4aca-ad27-3356b8f44bb0",
+      "level": "focus_area",
+      "category": "Building Envelope",
+      "label": "Water ingress, corrosion of steel deck, sagging/deformation",
+      "display_order": 94,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "EWF - Envelope Failure",
+        "CML - Corrosion & Material Loss",
+        "DFI - Deformation & Mechanical Damage"
+      ],
+      "deficiency_codes": [
+        "EWF",
+        "CML",
+        "DFI"
+      ]
+    },
+    {
+      "node_id": "bb7b877e-eb4b-4ce2-a665-c1dc9f9d47ab",
+      "parent_id": "ed1a16bd-21c8-409b-b43a-675803d0bb74",
+      "level": "component",
+      "category": "Building Envelope",
+      "label": "Roof Drainage & Penetrations",
+      "display_order": 84,
+      "is_active": true
+    },
+    {
+      "node_id": "0a2a773e-0066-49f3-ae9f-00deb85b405f",
+      "parent_id": "bb7b877e-eb4b-4ce2-a665-c1dc9f9d47ab",
+      "level": "sub_component",
+      "category": "Building Envelope",
+      "label": "Gutters, Drains, Skylights, Penetration Seals",
+      "display_order": 94,
+      "is_active": true
+    },
+    {
+      "node_id": "1d7b8518-fd6b-482c-b727-fe9e1219311b",
+      "parent_id": "0a2a773e-0066-49f3-ae9f-00deb85b405f",
+      "level": "focus_area",
+      "category": "Building Envelope",
+      "label": "Blocked/corroded drains, ponding, failed penetration seals",
+      "display_order": 95,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "GHK - General Housekeeping & Maintenance",
+        "EWF - Envelope Failure"
+      ],
+      "deficiency_codes": [
+        "GHK",
+        "EWF"
+      ]
+    },
+    {
+      "node_id": "cb9605b5-f8cf-49d2-b177-c0b88c9ab175",
+      "parent_id": "cf6c3d12-3121-4438-9af3-111c78f15069",
+      "level": "equipment_type",
+      "category": "Building Envelope",
+      "label": "Wall Cladding",
+      "display_order": 37,
+      "is_active": true
+    },
+    {
+      "node_id": "35a258e7-6d23-4460-92eb-b6f7d7cdfdc6",
+      "parent_id": "cb9605b5-f8cf-49d2-b177-c0b88c9ab175",
+      "level": "component",
+      "category": "Building Envelope",
+      "label": "Metal / Insulated Panel",
+      "display_order": 85,
+      "is_active": true
+    },
+    {
+      "node_id": "0fb13d8a-a689-4a21-9657-095fc5f874ea",
+      "parent_id": "35a258e7-6d23-4460-92eb-b6f7d7cdfdc6",
+      "level": "sub_component",
+      "category": "Building Envelope",
+      "label": "Panel, Sealants & Joints, Louvres/Vents",
+      "display_order": 95,
+      "is_active": true
+    },
+    {
+      "node_id": "b684c813-d5c6-48e5-aa6d-d3087d9ac2ab",
+      "parent_id": "0fb13d8a-a689-4a21-9657-095fc5f874ea",
+      "level": "focus_area",
+      "category": "Building Envelope",
+      "label": "Water ingress, panel delamination, corroded louvres, weather damage",
+      "display_order": 96,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "EWF - Envelope Failure",
+        "ENV - Environmental & External Damage",
+        "CML - Corrosion & Material Loss"
+      ],
+      "deficiency_codes": [
+        "EWF",
+        "ENV",
+        "CML"
+      ]
+    },
+    {
+      "node_id": "c5310153-76af-49db-ba1a-b08d7d865728",
+      "parent_id": "cf6c3d12-3121-4438-9af3-111c78f15069",
+      "level": "equipment_type",
+      "category": "Building Envelope",
+      "label": "Concrete Floors / Slabs",
+      "display_order": 38,
+      "is_active": true
+    },
+    {
+      "node_id": "6c5e7fa4-ee50-4534-9ab8-f5ec7e552c9f",
+      "parent_id": "c5310153-76af-49db-ba1a-b08d7d865728",
+      "level": "component",
+      "category": "Building Envelope",
+      "label": "Slab-on-Grade",
+      "display_order": 86,
+      "is_active": true
+    },
+    {
+      "node_id": "f91f55fb-7011-4556-926a-5cbaad6a10af",
+      "parent_id": "6c5e7fa4-ee50-4534-9ab8-f5ec7e552c9f",
+      "level": "sub_component",
+      "category": "Building Envelope",
+      "label": "Topping/Wearing Surface, Construction/Control Joints",
+      "display_order": 96,
+      "is_active": true
+    },
+    {
+      "node_id": "45f24694-5aeb-437a-8c69-513d659ee79b",
+      "parent_id": "f91f55fb-7011-4556-926a-5cbaad6a10af",
+      "level": "focus_area",
+      "category": "Building Envelope",
+      "label": "Cracking, spalling, chemical attack from spills of process chemicals",
+      "display_order": 97,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CND - Concrete Deterioration",
+        "CRK - Cracking Mechanisms"
+      ],
+      "deficiency_codes": [
+        "CND",
+        "CRK"
+      ]
+    },
+    {
+      "node_id": "efb349c0-ab8a-4d87-a2a3-be1787718743",
+      "parent_id": "cf6c3d12-3121-4438-9af3-111c78f15069",
+      "level": "equipment_type",
+      "category": "Building Envelope",
+      "label": "Structural Columns (building)",
+      "display_order": 39,
+      "is_active": true
+    },
+    {
+      "node_id": "c0f4b64e-3417-4ed7-bcf7-632d56299011",
+      "parent_id": "efb349c0-ab8a-4d87-a2a3-be1787718743",
+      "level": "component",
+      "category": "Building Envelope",
+      "label": "Steel / Concrete Column",
+      "display_order": 87,
+      "is_active": true
+    },
+    {
+      "node_id": "fbd15778-be0b-487b-b5ed-e7a4f210f9db",
+      "parent_id": "c0f4b64e-3417-4ed7-bcf7-632d56299011",
+      "level": "sub_component",
+      "category": "Building Envelope",
+      "label": "Base Plates & Anchor Bolts, Splices",
+      "display_order": 97,
+      "is_active": true
+    },
+    {
+      "node_id": "31b9a870-7a01-4114-9c6e-36d08f1b4a1a",
+      "parent_id": "fbd15778-be0b-487b-b5ed-e7a4f210f9db",
+      "level": "focus_area",
+      "category": "Building Envelope",
+      "label": "Corrosion of exposed steel, anchorage condition, misalignment",
+      "display_order": 98,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CML - Corrosion & Material Loss",
+        "CFI - Connection & Joint Failures",
+        "DFI - Deformation & Mechanical Damage"
+      ],
+      "deficiency_codes": [
+        "CML",
+        "CFI",
+        "DFI"
+      ]
+    },
+    {
+      "node_id": "eef407c9-14e6-482e-8c26-addc22152b77",
+      "parent_id": "cf6c3d12-3121-4438-9af3-111c78f15069",
+      "level": "equipment_type",
+      "category": "Building Envelope",
+      "label": "Beams / Framing",
+      "display_order": 40,
+      "is_active": true
+    },
+    {
+      "node_id": "41e45a65-8b31-4a6d-86fc-98be0a7cf679",
+      "parent_id": "eef407c9-14e6-482e-8c26-addc22152b77",
+      "level": "component",
+      "category": "Building Envelope",
+      "label": "Steel Framing",
+      "display_order": 88,
+      "is_active": true
+    },
+    {
+      "node_id": "db147357-05e3-43c0-a790-c18303f7f13f",
+      "parent_id": "41e45a65-8b31-4a6d-86fc-98be0a7cf679",
+      "level": "sub_component",
+      "category": "Building Envelope",
+      "label": "Beam-to-Column Connections, Bracing, Purlins/Girts",
+      "display_order": 98,
+      "is_active": true
+    },
+    {
+      "node_id": "e05378cd-1287-4424-9f6b-a4b3b4a3f20b",
+      "parent_id": "db147357-05e3-43c0-a790-c18303f7f13f",
+      "level": "focus_area",
+      "category": "Building Envelope",
+      "label": "Fatigue or weld cracking, deflection/overstress, corrosion of secondary framing",
+      "display_order": 99,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CRK - Cracking Mechanisms",
+        "DFI - Deformation & Mechanical Damage",
+        "CML - Corrosion & Material Loss"
+      ],
+      "deficiency_codes": [
+        "CRK",
+        "DFI",
+        "CML"
+      ]
+    },
+    {
+      "node_id": "2ef435b7-204c-4abd-9e79-2b21b186e400",
+      "parent_id": "cf6c3d12-3121-4438-9af3-111c78f15069",
+      "level": "equipment_type",
+      "category": "Building Envelope",
+      "label": "Walkways / Platforms",
+      "display_order": 41,
+      "is_active": true
+    },
+    {
+      "node_id": "12f4b9eb-75bd-450e-b0e0-a6b64fd6cdb7",
+      "parent_id": "2ef435b7-204c-4abd-9e79-2b21b186e400",
+      "level": "component",
+      "category": "Building Envelope",
+      "label": "Steel Grating / Checker Plate",
+      "display_order": 89,
+      "is_active": true
+    },
+    {
+      "node_id": "04fe2b98-8d3b-4d76-b260-bdfb706f2a25",
+      "parent_id": "12f4b9eb-75bd-450e-b0e0-a6b64fd6cdb7",
+      "level": "sub_component",
+      "category": "Building Envelope",
+      "label": "Decking, Support Framing, Toe/Kick Plates",
+      "display_order": 99,
+      "is_active": true
+    },
+    {
+      "node_id": "1aabbf90-19d7-45d2-9ead-c1146841d7ad",
+      "parent_id": "04fe2b98-8d3b-4d76-b260-bdfb706f2a25",
+      "level": "focus_area",
+      "category": "Building Envelope",
+      "label": "Corrosion, trip hazards, deflection of supporting steel",
+      "display_order": 100,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CML - Corrosion & Material Loss",
+        "GHK - General Housekeeping & Maintenance"
+      ],
+      "deficiency_codes": [
+        "CML",
+        "GHK"
+      ]
+    },
+    {
+      "node_id": "e0d86b2e-a559-4f63-891d-cf6e223c9180",
+      "parent_id": "cf6c3d12-3121-4438-9af3-111c78f15069",
+      "level": "equipment_type",
+      "category": "Building Envelope",
+      "label": "Stairways",
+      "display_order": 42,
+      "is_active": true
+    },
+    {
+      "node_id": "1242b6a8-19eb-4746-a164-c6d60902a962",
+      "parent_id": "e0d86b2e-a559-4f63-891d-cf6e223c9180",
+      "level": "component",
+      "category": "Building Envelope",
+      "label": "Steel Stairs",
+      "display_order": 90,
+      "is_active": true
+    },
+    {
+      "node_id": "ca2d2149-c1f4-4f3b-8717-63cd3559ed60",
+      "parent_id": "1242b6a8-19eb-4746-a164-c6d60902a962",
+      "level": "sub_component",
+      "category": "Building Envelope",
+      "label": "Treads & Risers, Stringers, Landings",
+      "display_order": 100,
+      "is_active": true
+    },
+    {
+      "node_id": "a37492fa-bea8-465e-ba91-96f6a854aaeb",
+      "parent_id": "ca2d2149-c1f4-4f3b-8717-63cd3559ed60",
+      "level": "focus_area",
+      "category": "Building Envelope",
+      "label": "Worn/loose treads, corrosion or cracking of stringers, deflection at landings",
+      "display_order": 101,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "GHK - General Housekeeping & Maintenance",
+        "CML - Corrosion & Material Loss"
+      ],
+      "deficiency_codes": [
+        "GHK",
+        "CML"
+      ]
+    },
+    {
+      "node_id": "07e86327-417b-45d5-a53a-aec8e99e8825",
+      "parent_id": "cf6c3d12-3121-4438-9af3-111c78f15069",
+      "level": "equipment_type",
+      "category": "Building Envelope",
+      "label": "Access Ladders & Cages",
+      "display_order": 43,
+      "is_active": true
+    },
+    {
+      "node_id": "f27f8167-0184-4bcf-bdd0-dcfbb89618b1",
+      "parent_id": "07e86327-417b-45d5-a53a-aec8e99e8825",
+      "level": "component",
+      "category": "Building Envelope",
+      "label": "Fixed Ladder",
+      "display_order": 91,
+      "is_active": true
+    },
+    {
+      "node_id": "4e93a51b-58c2-42ec-b7f4-69bfa73fdc80",
+      "parent_id": "f27f8167-0184-4bcf-bdd0-dcfbb89618b1",
+      "level": "sub_component",
+      "category": "Building Envelope",
+      "label": "Rungs & Rails, Safety Cage, Ladder Anchors",
+      "display_order": 101,
+      "is_active": true
+    },
+    {
+      "node_id": "520c6818-a852-49fd-98cb-b7f7eed98814",
+      "parent_id": "4e93a51b-58c2-42ec-b7f4-69bfa73fdc80",
+      "level": "focus_area",
+      "category": "Building Envelope",
+      "label": "Corroded/bent/missing rungs, loose cage fixings and anchors",
+      "display_order": 102,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CML - Corrosion & Material Loss",
+        "CFI - Connection & Joint Failures"
+      ],
+      "deficiency_codes": [
+        "CML",
+        "CFI"
+      ]
+    },
+    {
+      "node_id": "4994c001-29c4-4ff0-9fc3-eeb48e9d6116",
+      "parent_id": "cf6c3d12-3121-4438-9af3-111c78f15069",
+      "level": "equipment_type",
+      "category": "Building Envelope",
+      "label": "Handrails / Guardrails",
+      "display_order": 44,
+      "is_active": true
+    },
+    {
+      "node_id": "f60167e7-bfa8-44e3-aadc-466ba74e2db9",
+      "parent_id": "4994c001-29c4-4ff0-9fc3-eeb48e9d6116",
+      "level": "component",
+      "category": "Building Envelope",
+      "label": "Steel Rail System",
+      "display_order": 92,
+      "is_active": true
+    },
+    {
+      "node_id": "2a086dea-90c8-4986-89aa-cd775d53a543",
+      "parent_id": "f60167e7-bfa8-44e3-aadc-466ba74e2db9",
+      "level": "sub_component",
+      "category": "Building Envelope",
+      "label": "Top/Mid Rails, Posts & Bases, Fasteners & Welds",
+      "display_order": 102,
+      "is_active": true
+    },
+    {
+      "node_id": "4563bbce-cbfa-4c37-9978-6c6fa8562ad3",
+      "parent_id": "2a086dea-90c8-4986-89aa-cd775d53a543",
+      "level": "focus_area",
+      "category": "Building Envelope",
+      "label": "Bent, loose or missing rails, corroded posts, cracked welds",
+      "display_order": 103,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "DFI - Deformation & Mechanical Damage",
+        "CFI - Connection & Joint Failures"
+      ],
+      "deficiency_codes": [
+        "DFI",
+        "CFI"
+      ]
+    },
+    {
+      "node_id": "ad9aa22c-cf62-485a-ba0c-e7a2bb3d812f",
+      "parent_id": "cf6c3d12-3121-4438-9af3-111c78f15069",
+      "level": "equipment_type",
+      "category": "Building Envelope",
+      "label": "Grating Systems",
+      "display_order": 45,
+      "is_active": true
+    },
+    {
+      "node_id": "5faefc7a-04e6-4517-b5c2-bfb7599305af",
+      "parent_id": "ad9aa22c-cf62-485a-ba0c-e7a2bb3d812f",
+      "level": "component",
+      "category": "Building Envelope",
+      "label": "Floor Grating",
+      "display_order": 93,
+      "is_active": true
+    },
+    {
+      "node_id": "96c81acb-d690-46f1-8807-e60fa698ddf2",
+      "parent_id": "5faefc7a-04e6-4517-b5c2-bfb7599305af",
+      "level": "sub_component",
+      "category": "Building Envelope",
+      "label": "Grating Clips, Support Angles, Edge Banding",
+      "display_order": 103,
+      "is_active": true
+    },
+    {
+      "node_id": "1dd9266b-4f78-4f3e-8219-dc95aa1ac6d7",
+      "parent_id": "96c81acb-d690-46f1-8807-e60fa698ddf2",
+      "level": "focus_area",
+      "category": "Building Envelope",
+      "label": "Missing/loose clips, corroded support angles, damaged edge banding",
+      "display_order": 104,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "CFI - Connection & Joint Failures",
+        "CML - Corrosion & Material Loss"
+      ],
+      "deficiency_codes": [
+        "CFI",
+        "CML"
+      ]
+    },
+    {
+      "node_id": "4f8650d4-c552-493d-af3e-e27d6cd24037",
+      "parent_id": "cf6c3d12-3121-4438-9af3-111c78f15069",
+      "level": "equipment_type",
+      "category": "Building Envelope",
+      "label": "General / Envelope-Wide",
+      "display_order": 46,
+      "is_active": true
+    },
+    {
+      "node_id": "0583a4ca-ed1b-4953-9ac8-64ef7c9ccb25",
+      "parent_id": "4f8650d4-c552-493d-af3e-e27d6cd24037",
+      "level": "component",
+      "category": "Building Envelope",
+      "label": "All Building Elements",
+      "display_order": 94,
+      "is_active": true
+    },
+    {
+      "node_id": "9bfb3ee8-51d5-4a4b-a896-d8bb36a68f9f",
+      "parent_id": "0583a4ca-ed1b-4953-9ac8-64ef7c9ccb25",
+      "level": "sub_component",
+      "category": "Building Envelope",
+      "label": "N/A",
+      "display_order": 104,
+      "is_active": true
+    },
+    {
+      "node_id": "e6ae8840-5a96-4252-a23d-059949cec914",
+      "parent_id": "9bfb3ee8-51d5-4a4b-a896-d8bb36a68f9f",
+      "level": "focus_area",
+      "category": "Building Envelope",
+      "label": "Vehicle/equipment impact damage, environmental degradation, unauthorized modification, fire exposure",
+      "display_order": 105,
+      "is_active": true,
+      "deficiency_mechanisms": [
+        "ENV - Environmental & External Damage",
+        "MSI - Modification & Structural Integrity",
+        "THR - Fire & Thermal Damage"
+      ],
+      "deficiency_codes": [
+        "ENV",
+        "MSI",
+        "THR"
+      ]
+    }
+  ]
+}

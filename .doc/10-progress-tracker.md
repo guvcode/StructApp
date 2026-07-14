@@ -374,3 +374,9 @@
 | Feature ID | Component | Sprint | Status | Dependency |
 |---|---|---|---|---|
 | TAX-621 | TaxonomyLevelPage — replace single-parent filter with cascading ancestor dropdowns for all levels above the target; child selections reset when parent changes; all ancestors shown at once | 6 | 🟩 COMPLETED | TAX-620 |
+
+## 10.11 Sprint 7 — Canonical Taxonomy Rebuild (TAX)
+
+| Feature ID | Component | Sprint | Status | Dependency |
+|---|---|---|---|---|
+| TAX-701 | Canonical taxonomy rebuild — investigation, root cause analysis, canonical hierarchy identified (Category → Equipment Type → Component → Sub Component → Focus Area), migration to seed 353-node canonical taxonomy from spreadsheet, O(n) hierarchy engine, single-page tree view with PropertiesPanel, replace 5-page flat-list structure | 7 | 🟩 COMPLETED | TAX-621 |

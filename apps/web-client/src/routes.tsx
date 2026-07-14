@@ -37,12 +37,7 @@ import ReportCenterPage from './pages/reviewer/ReportCenterPage';
 import PicklistLandingPage from './pages/reviewer/PicklistLandingPage';
 import PicklistComponentTypesPage from './pages/reviewer/PicklistComponentTypesPage';
 import PicklistWorkTypesPage from './pages/reviewer/PicklistWorkTypesPage';
-import TaxonomyLevelLandingPage from './pages/reviewer/TaxonomyLevelLandingPage';
-import TaxonomyCategoriesPage from './pages/reviewer/taxonomy/TaxonomyCategoriesPage';
-import TaxonomyComponentsPage from './pages/reviewer/taxonomy/TaxonomyComponentsPage';
-import TaxonomySubComponentsPage from './pages/reviewer/taxonomy/TaxonomySubComponentsPage';
-import TaxonomyFocusAreasPage from './pages/reviewer/taxonomy/TaxonomyFocusAreasPage';
-import TaxonomyEquipmentTypesPage from './pages/reviewer/taxonomy/TaxonomyEquipmentTypesPage';
+import TaxonomyManagerPage from './pages/reviewer/TaxonomyManagerPage';
 import CalendarPage from './pages/reviewer/CalendarPage';
 import CalendarSchedulesPage from './pages/reviewer/CalendarSchedulesPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
@@ -110,12 +105,7 @@ export default function AppRoutes() {
             <Route index element={<PicklistLandingPage />} />
             <Route path="component-types" element={<PicklistComponentTypesPage />} />
             <Route path="work-types" element={<PicklistWorkTypesPage />} />
-            <Route path="taxonomy" element={<TaxonomyLevelLandingPage />} />
-            <Route path="taxonomy/categories" element={<TaxonomyCategoriesPage />} />
-            <Route path="taxonomy/equipment-types" element={<TaxonomyEquipmentTypesPage />} />
-            <Route path="taxonomy/components" element={<TaxonomyComponentsPage />} />
-            <Route path="taxonomy/sub-components" element={<TaxonomySubComponentsPage />} />
-            <Route path="taxonomy/focus-areas" element={<TaxonomyFocusAreasPage />} />
+            <Route path="taxonomy" element={<TaxonomyManagerPage />} />
           </Route>
           <Route path="calendar" element={<FeatureFlagGuard flagId="calendar" />}>
             <Route index element={<CalendarPage />} />
