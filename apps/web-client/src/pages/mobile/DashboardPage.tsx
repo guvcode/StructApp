@@ -14,7 +14,7 @@ import { InspectionStatus } from '../../types';
 export default function DashboardPage() {
   const navigate = useNavigate();
   const session = getSession();
-  const userName = session?.user?.name ?? session?.user?.email ?? 'Inspector';
+  const userName = session?.user?.display_name ?? session?.user?.email ?? 'Inspector';
   const userId = session?.user?.id;
   const activeClientId = getActiveClientId();
   const online = navigator.onLine;
