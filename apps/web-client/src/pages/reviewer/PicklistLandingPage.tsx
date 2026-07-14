@@ -7,13 +7,12 @@ import Skeleton from '../../components/Skeleton';
 
 export default function PicklistLandingPage() {
   const navigate = useNavigate();
-  const { data: ct = [] } = usePicklists('component-types');
   const { data: wt = [] } = usePicklists('work-types');
   const { data: taxonomyNodes = [] } = useQuery<Array<unknown>>({
     queryKey: ['taxonomy'],
     queryFn: () => apiClient<Array<unknown>>(ENDPOINTS.taxonomy.list),
   });
-  const loading = ct.length === 0 && wt.length === 0;
+  const loading = wt.length === 0;
 
   if (loading) {
     return (
@@ -30,20 +29,12 @@ export default function PicklistLandingPage() {
     <div className="p-6 animate-fadeIn">
       <button onClick={() => navigate(-1)} className="text-sm text-accent mb-4">&larr; Back</button>
       <h2 className="text-2xl font-bold text-text-primary mb-6">Register</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Link
-          to="/categories/component-types"
-          className="block p-6 bg-surface-primary rounded-lg border border-border hover:shadow-md transition-shadow"
-        >
-          <h3 className="text-lg font-semibold text-text-primary">Component Types</h3>
-          <p className="text-3xl font-bold text-accent mt-2">{ct.length}</p>
-          <p className="text-text-secondary text-sm mt-1">Manage component types</p>
-        </Link>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <Link
           to="/categories/work-types"
           className="block p-6 bg-surface-primary rounded-lg border border-border hover:shadow-md transition-shadow"
         >
-          <h3 className="text-lg font-semibold text-text-primary">Work Types</h3>
+          <h3 className="text-lg font-semibold text-text-primary">Work Types (Timesheet)</h3>
           <p className="text-3xl font-bold text-accent mt-2">{wt.length}</p>
           <p className="text-text-secondary text-sm mt-1">Manage work types</p>
         </Link>

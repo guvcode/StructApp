@@ -70,22 +70,12 @@ describe('Bundle 13 — Picklist Landing Page', () => {
     const PicklistLandingPage = (await import('../src/pages/reviewer/PicklistLandingPage')).default;
     render(<MemoryRouter><PicklistLandingPage /></MemoryRouter>);
     await waitFor(() => {
-      expect(screen.getAllByText(/component types/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/work types/i).length).toBeGreaterThan(0);
     });
-    expect(screen.getAllByText(/work types/i).length).toBeGreaterThan(0);
   });
 });
 
 describe('Bundle 13 — Picklist Manager Pages', () => {
-  it('Component Types page renders manager', async () => {
-    const PicklistComponentTypesPage = (await import('../src/pages/reviewer/PicklistComponentTypesPage')).default;
-    render(<MemoryRouter><PicklistComponentTypesPage /></MemoryRouter>);
-    await waitFor(() => {
-      expect(screen.getByText(/component type manager/i)).toBeInTheDocument();
-    });
-    expect(screen.getByText('Girder')).toBeInTheDocument();
-  });
-
   it('Work Types page renders manager', async () => {
     const PicklistWorkTypesPage = (await import('../src/pages/reviewer/PicklistWorkTypesPage')).default;
     render(<MemoryRouter><PicklistWorkTypesPage /></MemoryRouter>);

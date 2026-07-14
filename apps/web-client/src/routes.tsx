@@ -35,7 +35,6 @@ import StructureListPage from './pages/reviewer/StructureListPage';
 import NewInspectionPage from './pages/reviewer/NewInspectionPage';
 import ReportCenterPage from './pages/reviewer/ReportCenterPage';
 import PicklistLandingPage from './pages/reviewer/PicklistLandingPage';
-import PicklistComponentTypesPage from './pages/reviewer/PicklistComponentTypesPage';
 import PicklistWorkTypesPage from './pages/reviewer/PicklistWorkTypesPage';
 import TaxonomyManagerPage from './pages/reviewer/TaxonomyManagerPage';
 import CalendarPage from './pages/reviewer/CalendarPage';
@@ -103,7 +102,6 @@ export default function AppRoutes() {
           </Route>
 <Route path="categories" element={<FeatureFlagGuard flagId="picklists" />}>
             <Route index element={<PicklistLandingPage />} />
-            <Route path="component-types" element={<PicklistComponentTypesPage />} />
             <Route path="work-types" element={<PicklistWorkTypesPage />} />
             <Route path="taxonomy" element={<TaxonomyManagerPage />} />
           </Route>
