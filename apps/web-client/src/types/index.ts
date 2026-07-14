@@ -245,6 +245,12 @@ export interface Deficiency {
   severity: string;
   status: DeficiencyStatus;
   priority_tier: PriorityTier;
+  previous_deficiency_id?: string | null;
+  triage_state?: string;
+  source_inspection_id?: string;
+  source_inspection_date?: string;
+  site_name?: string;
+  structure_tag?: string;
   component_note?: string;
   location_desc?: string;
   photo_ids?: string[];

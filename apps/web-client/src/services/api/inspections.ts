@@ -101,3 +101,17 @@ export async function overridePriority(defId: string, priorityTier: string, just
     body: JSON.stringify({ priority_tier: priorityTier, justification }),
   });
 }
+
+export async function getInspectionHistory(id: string): Promise<Deficiency[]> {
+  return apiClient(ENDPOINTS.inspections.history(id));
+}
+
+export async function postTriage(
+  id: string,
+  decisions: Array<{ deficiency_id: string; decision: 'resolved' | 'still_outstanding' | 'worsened'; note?: string }>
+): Promise<{ updated_ids: string[]; created_deficiencies: Deficiency[] }> {
+  return apiClient(ENDPOINTS.inspections.triage(id), {
+    method: 'POST',
+    body: JSON.stringify({ decisions }),
+  });
+}

@@ -4,7 +4,7 @@ import { requireAuth, requireRole } from '../middleware/auth';
 import { requireAdmin } from '../middleware/requireAdmin';
 import { approveInspection, returnInspection, reopenInspection, submitInspection } from '../services/inspections-workflow';
 import { createInspection, rescheduleInspection, reassignInspection, updateInspectionMode } from '../services/inspections-admin';
-import { createDeficiency } from '../services/deficiencies';
+import { createDeficiency, listHistoricalDeficiencies } from '../services/deficiencies';
 import { inspectionReturnSchema, inspectionRescheduleSchema, inspectionReassignSchema, inspectionReopenSchema, inspectionSubmitSchema, inspectionCreateSchema, inspectionModeUpdateSchema } from '../contracts/inspections';
 import { pool } from '../lib/db';
 import { logger } from '../lib/logger';
@@ -71,6 +71,148 @@ router.get(
         return res.status(404).json({ success: false, error_code: 'NOT_FOUND', message: 'Inspection not found' });
       }
       res.json({ success: true, data: mapInspectionRow(result.rows[0]) });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+const triageDecisionSchema = z.object({
+  decisions: z.array(z.object({
+    deficiency_id: z.string().uuid(),
+    decision: z.enum(['resolved', 'still_outstanding', 'worsened']),
+    note: z.string().optional(),
+  })).min(1),
+});
+
+router.get(
+  '/:id/history',
+  requireAuth,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const user = (req as Request & { user: { client_id: string } }).user;
+      const inspectionId = req.params.id;
+      const deficiencies = await listHistoricalDeficiencies(inspectionId, user.client_id);
+      res.json({ success: true, data: deficiencies });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+router.post(
+  '/:id/triage',
+  requireAuth,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const user = (req as Request & { user: { sub: string; client_id: string } }).user;
+      const inspectionId = req.params.id;
+      const parsed = triageDecisionSchema.safeParse(req.body);
+
+      if (!parsed.success) {
+        return res.status(422).json({
+          success: false,
+          error_code: 'VALIDATION_ERROR',
+          message: 'Invalid triage decisions',
+          details: parsed.error.flatten(),
+        });
+      }
+
+      const { decisions } = parsed.data;
+      const createdDeficiencies: Record<string, unknown>[] = [];
+      const updatedIds: string[] = [];
+
+      const client = await pool.connect();
+      try {
+        await client.query('BEGIN');
+
+        for (const d of decisions) {
+          if (d.decision === 'resolved') {
+            await client.query(
+              `UPDATE deficiency_records SET triage_state = 'Resolved', updated_at = NOW() WHERE deficiency_id = $1`,
+              [d.deficiency_id]
+            );
+            updatedIds.push(d.deficiency_id);
+          } else {
+            const triageState = d.decision === 'still_outstanding' ? 'Still Outstanding' : 'Worsened';
+
+            await client.query(
+              `UPDATE deficiency_records SET triage_state = $1, updated_at = NOW() WHERE deficiency_id = $2`,
+              [triageState, d.deficiency_id]
+            );
+
+            const source = await client.query(
+              `SELECT * FROM deficiency_records WHERE deficiency_id = $1`,
+              [d.deficiency_id]
+            );
+
+            if (source.rowCount && source.rowCount > 0) {
+              const s = source.rows[0];
+              const newDef = await client.query(
+                `INSERT INTO deficiency_records (
+                  inspection_id, client_id, structure_id, created_by, description,
+                  category, equipment_type, component, sub_component, focus_area,
+                  deficiency_category, detailed_description, mechanisms,
+                  vibration_present, ndt_required, further_investigation_required,
+                  recommended_action, consequence_severity, likelihood,
+                  most_affected_consequence, priority_tier, risk_rank, risk_rating,
+                  calculated_priority, component_notes, location_desc,
+                  previous_deficiency_id
+                ) VALUES (
+                  $1, $2,
+                  (SELECT structure_id FROM inspections WHERE inspection_id = $1),
+                  $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16,
+                  $17, $18, $19, $20, $21, $22, COALESCE($20::VARCHAR, $23), $24, $25, $26
+                ) RETURNING *, deficiency_id AS id`,
+                [
+                  inspectionId,
+                  user.client_id,
+                  user.sub,
+                  s.description || '',
+                  s.category,
+                  s.equipment_type,
+                  s.component,
+                  s.sub_component,
+                  s.focus_area,
+                  s.deficiency_category,
+                  s.detailed_description,
+                  s.mechanisms,
+                  s.vibration_present,
+                  s.ndt_required,
+                  s.further_investigation_required,
+                  s.recommended_action,
+                  s.consequence_severity,
+                  s.likelihood,
+                  s.most_affected_consequence,
+                  s.priority_tier,
+                  s.risk_rank,
+                  s.risk_rating,
+                  s.calculated_priority,
+                  s.component_notes,
+                  s.location_desc,
+                  d.deficiency_id,
+                ]
+              );
+              createdDeficiencies.push(newDef.rows[0]);
+              updatedIds.push(d.deficiency_id);
+            }
+          }
+        }
+
+        await client.query('COMMIT');
+        res.json({
+          success: true,
+          data: {
+            updated_ids: updatedIds,
+            created_deficiencies: createdDeficiencies,
+          },
+        });
+      } catch (err) {
+        await client.query('ROLLBACK');
+        throw err;
+      } finally {
+        client.release();
+      }
     } catch (err) {
       next(err);
     }

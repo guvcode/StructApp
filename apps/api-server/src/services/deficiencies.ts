@@ -28,6 +28,8 @@ export interface DeficiencyRow {
   remediation_status: string | null;
   component_notes: string | null;
   location_desc: string | null;
+  previous_deficiency_id: string | null;
+  triage_state: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -45,6 +47,45 @@ export async function listDeficienciesByInspection(
     const result = await client.query(
       `SELECT *, deficiency_id AS id FROM deficiency_records WHERE inspection_id = $1 ORDER BY created_at ASC`,
       [inspectionId]
+    );
+    await client.query('COMMIT');
+    return result.rows;
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+export async function listHistoricalDeficiencies(
+  inspectionId: string,
+  clientId: string
+): Promise<DeficiencyRow[]> {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query("SELECT set_config('app.current_client_id', $1, true)", [clientId]);
+    await client.query("SELECT set_config('app.bypass_tenant_check', 'true', true)");
+
+    const result = await client.query(
+      `SELECT d.*, d.deficiency_id AS id,
+              i.inspection_id AS source_inspection_id,
+              i.created_at AS source_inspection_date,
+              st.name AS site_name,
+              str.asset_tag AS structure_tag
+       FROM deficiency_records d
+       JOIN inspections i ON d.inspection_id = i.inspection_id
+       LEFT JOIN structures str ON i.structure_id = str.structure_id
+       LEFT JOIN sites st ON str.site_id = st.site_id
+       WHERE i.structure_id = (
+         SELECT structure_id FROM inspections WHERE inspection_id = $1
+       )
+       AND i.inspection_id != $1
+       AND (d.triage_state IS NULL OR d.triage_state != 'Resolved')
+       AND d.client_id = $2
+       ORDER BY i.created_at DESC, d.created_at ASC`,
+      [inspectionId, clientId]
     );
     await client.query('COMMIT');
     return result.rows;
@@ -100,7 +141,7 @@ export async function createDeficiency(
         further_investigation_required, recommended_action,
         consequence_severity, likelihood, most_affected_consequence,
         priority_tier, risk_rank, risk_rating, calculated_priority,
-        component_notes, location_desc
+        component_notes, location_desc, previous_deficiency_id
       ) VALUES (
         $1, $2,
         (SELECT structure_id FROM inspections WHERE inspection_id = $1),
@@ -111,7 +152,7 @@ export async function createDeficiency(
         $17, $18, $19,
         $20, $21, $22,
         COALESCE($20::VARCHAR, $23),
-        $24, $25
+        $24, $25, $26
       ) RETURNING *, deficiency_id AS id`,
       [
         inspectionId,
@@ -139,6 +180,7 @@ export async function createDeficiency(
         data.calculated_priority || 'P3',
         data.component_notes || null,
         data.location_desc || null,
+        data.previous_deficiency_id || null,
       ]
     );
     await client.query('COMMIT');
@@ -176,6 +218,7 @@ export async function updateDeficiency(
       'recommended_action', 'consequence_severity', 'likelihood',
       'most_affected_consequence', 'priority_tier', 'risk_rank', 'risk_rating',
       'calculated_priority', 'component_notes', 'location_desc',
+      'previous_deficiency_id', 'triage_state',
     ];
     const sets: string[] = [];
     const vals: unknown[] = [];
