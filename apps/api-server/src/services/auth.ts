@@ -178,6 +178,14 @@ export async function switchClient(
         await client.query('ROLLBACK');
         throw new Error('NOT_A_MEMBER');
       }
+      const hasInspections = await client.query(
+        'SELECT 1 FROM inspections WHERE inspector_id = $1 AND client_id = $2 LIMIT 1',
+        [actorUserId, targetClientId],
+      );
+      if (hasInspections.rowCount === 0) {
+        await client.query('ROLLBACK');
+        throw new Error('NO_INSPECTION_ASSIGNMENTS');
+      }
     }
 
     const newToken = jwt.sign(

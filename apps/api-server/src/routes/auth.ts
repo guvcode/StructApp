@@ -190,6 +190,9 @@ router.post('/switch-client', requireAuth, async (req: Request, res: Response, n
     if (err instanceof Error && err.message === 'NOT_A_MEMBER') {
       return res.status(403).json({ success: false, error_code: 'NOT_A_MEMBER', message: 'Not authorized for this client' });
     }
+    if (err instanceof Error && err.message === 'NO_INSPECTION_ASSIGNMENTS') {
+      return res.status(403).json({ success: false, error_code: 'NO_INSPECTION_ASSIGNMENTS', message: 'No inspection assignments for this client' });
+    }
     next(err);
   }
 });

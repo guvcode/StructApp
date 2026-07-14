@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getSession, getLandingRoute, getUserRole } from '../../lib/authStore';
+import { switchClient } from '../../services/api/auth';
 import { apiClient } from '../../services/api/apiClient';
 import { ENDPOINTS } from '../../services/api/endpoints';
 import { cacheClientNames, getCachedClientNames } from '../../lib/clientNameCache';
@@ -84,9 +85,12 @@ export default function ClientPickerPage() {
 
   const handleSelect = async (clientId: string) => {
     setLoading(true);
-    const { setActiveClientId } = await import('../../lib/authStore');
-    setActiveClientId(clientId);
-    navigate(getLandingRoute(), { replace: true });
+    try {
+      await switchClient(clientId);
+      navigate(getLandingRoute(), { replace: true });
+    } catch {
+      setLoading(false);
+    }
   };
 
   return (
