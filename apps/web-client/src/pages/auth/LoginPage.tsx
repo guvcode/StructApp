@@ -18,7 +18,6 @@ function getFirstClientId(session: import('../../types').AuthSession): string | 
 async function redirectAfterLogin(session: import('../../types').AuthSession, navigate: ReturnType<typeof useNavigate>) {
   const hasPin = await hasLocalPin();
   if (!hasPin && navigator.onLine && session.user.role === UserRole.contractor) {
-    // Check if a PIN exists on the server (set from another device)
     const { checkServerPin } = await import('../../services/api/auth');
     const serverHasPin = await checkServerPin().catch(() => false);
     if (serverHasPin) {
@@ -35,7 +34,9 @@ async function redirectAfterLogin(session: import('../../types').AuthSession, na
   }
   const membershipCount = getClientMembershipCount(session);
   if (membershipCount <= 1) {
-    const clientId = getFirstClientId(session);
+    // Prefer session.active_client_id (matches JWT's client_id from login API)
+    // Fall back to first client_membership entry (from profile API)
+    const clientId = session.active_client_id || getFirstClientId(session);
     if (clientId) {
       const { setActiveClientId, getLandingRoute } = await import('../../lib/authStore');
       setActiveClientId(clientId);
