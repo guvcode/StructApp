@@ -18,9 +18,14 @@ function getFirstClientId(session: import('../../types').AuthSession): string | 
 async function redirectAfterLogin(session: import('../../types').AuthSession, navigate: ReturnType<typeof useNavigate>) {
   const hasPin = await hasLocalPin();
   if (!hasPin && navigator.onLine && session.user.role === UserRole.contractor) {
-    try {
-      sessionStorage.setItem('pin_setup_prompt', 'true');
-    } catch {
+    // Check if a PIN exists on the server (set from another device)
+    const { checkServerPin } = await import('../../services/api/auth');
+    const serverHasPin = await checkServerPin().catch(() => false);
+    if (!serverHasPin) {
+      try {
+        sessionStorage.setItem('pin_setup_prompt', 'true');
+      } catch {
+      }
     }
   }
   const membershipCount = getClientMembershipCount(session);
