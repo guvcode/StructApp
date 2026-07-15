@@ -10,7 +10,7 @@ import { logger } from '../lib/logger';
 import { loginSchema, inviteSchema, switchClientSchema, forgotPasswordSchema, resetPasswordSchema } from '../contracts/auth';
 import { login, refreshAccessToken, switchClient, forgotPassword, resetPassword } from '../services/auth';
 
-import { hashPin } from '../services/pin';
+import { hashPin, verifyPin } from '../services/pin';
 
 const router = Router();
 
@@ -257,6 +257,25 @@ router.delete('/pin', requireAuth, async (req: Request, res: Response, next: Nex
       [req.user!.sub],
     );
     res.json({ success: true });
+  } catch (err) { next(err); }
+});
+
+router.post('/pin/verify', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const schema = z.object({ pin: z.string().min(1) });
+    const { pin } = schema.parse(req.body);
+    const result = await pool.query(
+      'SELECT pin_hash FROM users WHERE user_id = $1',
+      [req.user!.sub],
+    );
+    if (result.rowCount === 0 || !result.rows[0]?.pin_hash) {
+      return res.status(404).json({ success: false, error_code: 'NO_PIN', message: 'No PIN set on server' });
+    }
+    const valid = await verifyPin(pin, result.rows[0].pin_hash);
+    if (!valid) {
+      return res.status(401).json({ success: false, error_code: 'INVALID_PIN', message: 'Incorrect PIN' });
+    }
+    res.json({ success: true, data: { valid: true } });
   } catch (err) { next(err); }
 });
 

@@ -21,7 +21,12 @@ async function redirectAfterLogin(session: import('../../types').AuthSession, na
     // Check if a PIN exists on the server (set from another device)
     const { checkServerPin } = await import('../../services/api/auth');
     const serverHasPin = await checkServerPin().catch(() => false);
-    if (!serverHasPin) {
+    if (serverHasPin) {
+      try {
+        sessionStorage.setItem('pin_import_prompt', 'true');
+      } catch {
+      }
+    } else {
       try {
         sessionStorage.setItem('pin_setup_prompt', 'true');
       } catch {

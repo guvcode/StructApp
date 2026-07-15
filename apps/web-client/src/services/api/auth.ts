@@ -104,6 +104,14 @@ export async function clearServerPin(): Promise<void> {
   await apiClient(ENDPOINTS.auth.pin, { method: 'DELETE' });
 }
 
+export async function verifyPinOnServer(pin: string): Promise<boolean> {
+  const result = await apiClient<{ valid: boolean }>(`${ENDPOINTS.auth.pin}/verify`, {
+    method: 'POST',
+    body: JSON.stringify({ pin }),
+  });
+  return result?.valid ?? false;
+}
+
 export async function switchClient(targetClientId: string): Promise<void> {
   const result = await apiClient<{ access_token: string }>(ENDPOINTS.auth.switchClient, {
     method: 'POST',

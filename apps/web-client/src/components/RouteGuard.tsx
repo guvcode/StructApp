@@ -41,6 +41,10 @@ export default function RouteGuard() {
       sessionStorage.removeItem('pin_setup_prompt');
       return <Navigate to="/m/setup-pin" replace />;
     }
+    if (sessionStorage.getItem('pin_import_prompt') === 'true' && pathname !== '/m/setup-pin' && pathname.startsWith('/m/')) {
+      sessionStorage.removeItem('pin_import_prompt');
+      return <Navigate to="/m/setup-pin?mode=import" replace />;
+    }
   } catch {
   }
 
