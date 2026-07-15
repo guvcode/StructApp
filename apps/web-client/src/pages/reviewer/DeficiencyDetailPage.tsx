@@ -33,6 +33,8 @@ export default function DeficiencyDetailPage() {
   const { data: deficiency, isLoading, refetch } = useDeficiencyById(id);
   const [showOverride, setShowOverride] = useState(false);
 
+  const displayTitle = deficiency?.title || deficiency?.category || deficiency?.detailed_description || deficiency?.description || 'Deficiency';
+
   const { data: inspection } = useInspection(deficiency?.inspection_id);
   const { data: allSites = [] } = useQuery({
     queryKey: ['sites'],
@@ -70,7 +72,7 @@ export default function DeficiencyDetailPage() {
           </svg>
         </button>
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold text-text-primary">{deficiency.title}</h1>
+          <h1 className="text-2xl font-bold text-text-primary">{displayTitle}</h1>
           <StatusBadge label={deficiency.priority_tier} map={PRIORITY_STYLES} size="md" className="font-bold" />
         </div>
       </div>

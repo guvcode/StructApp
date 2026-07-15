@@ -1,12 +1,15 @@
 import { useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import Card from '../../components/Card';
 import { savePinLocally } from '../../hooks/usePinAuth';
+import { verifyPinOnServer } from '../../services/api/auth';
 import { getLandingRoute } from '../../lib/authStore';
 
 export default function PinSetupPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isImport = searchParams.get('mode') === 'import';
   const [pin, setPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
   const [step, setStep] = useState<'enter' | 'confirm'>('enter');
@@ -37,39 +40,58 @@ export default function PinSetupPage() {
   }, [pin]);
 
   const handleSave = useCallback(async () => {
-    if (confirmPin !== pin) {
+    const enteredPin = isImport ? pin : (step === 'confirm' ? confirmPin : pin);
+    if (!isImport && confirmPin !== pin) {
       toast.error('PINs do not match');
       setConfirmPin('');
       return;
     }
     setSaving(true);
     try {
-      await savePinLocally(pin);
-      toast.success('PIN saved');
+      if (isImport) {
+        // Verify against the server-stored PIN hash
+        const valid = await verifyPinOnServer(enteredPin);
+        if (!valid) {
+          toast.error('Incorrect PIN — enter the PIN you set on your other device');
+          setPin('');
+          setSaving(false);
+          return;
+        }
+      }
+      await savePinLocally(enteredPin);
+      toast.success(isImport ? 'PIN synced from server' : 'PIN saved');
       navigate(getLandingRoute(), { replace: true });
-    } catch {
-      toast.error('Failed to save PIN');
+    } catch (err: any) {
+      if (err?.error_code === 'NO_PIN') {
+        toast.error('No PIN found on server. Set a new PIN instead.');
+        navigate('/m/setup-pin', { replace: true });
+      } else {
+        toast.error(err?.message || 'Failed to save PIN');
+      }
     } finally {
       setSaving(false);
     }
-  }, [pin, confirmPin, navigate]);
+  }, [pin, confirmPin, step, isImport, navigate]);
 
   const handleSkip = useCallback(() => {
     navigate(getLandingRoute(), { replace: true });
   }, [navigate]);
 
-  const displayPin = step === 'enter' ? pin : confirmPin;
+  const displayPin = isImport ? pin : (step === 'enter' ? pin : confirmPin);
+  const pinReady = isImport ? pin.length >= 4 : (step === 'enter' ? pin.length >= 4 : confirmPin.length >= 4);
 
   return (
     <Card className="w-full max-w-sm mx-auto">
       <div className="text-center mb-6">
         <h1 className="text-2xl font-bold text-text-primary mb-2">
-          {step === 'enter' ? 'Set Offline PIN' : 'Confirm PIN'}
+          {isImport ? 'Sync Offline PIN' : 'Set Offline PIN'}
         </h1>
         <p className="text-sm text-text-secondary">
-          {step === 'enter'
-            ? 'Enter a 4-6 digit PIN for offline access'
-            : 'Re-enter your PIN to confirm'}
+          {isImport
+            ? 'Enter the PIN you set on your other device to enable offline access on this device'
+            : step === 'enter'
+              ? 'Enter a 4-6 digit PIN for offline access'
+              : 'Re-enter your PIN to confirm'}
         </p>
       </div>
 
@@ -112,7 +134,23 @@ export default function PinSetupPage() {
       </div>
 
       <div className="space-y-2">
-        {step === 'enter' ? (
+        {isImport ? (
+          <>
+            <button
+              onClick={handleSave}
+              disabled={!pinReady || saving}
+              className="w-full py-3 px-4 bg-accent text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 transition-opacity"
+            >
+              {saving ? 'Verifying...' : 'Sync PIN'}
+            </button>
+            <button
+              onClick={handleSkip}
+              className="w-full py-2 text-sm text-text-secondary hover:text-text-primary transition-colors"
+            >
+              Skip — set up offline PIN later in Settings
+            </button>
+          </>
+        ) : step === 'enter' ? (
           <>
             <button
               onClick={handleNext}

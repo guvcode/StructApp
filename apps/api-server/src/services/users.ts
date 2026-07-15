@@ -33,7 +33,7 @@ export async function getUserById(userId: string): Promise<(UserRow & { client_m
   if (result.rowCount === 0 || !result.rows[0]) return null;
   const row = result.rows[0];
   const memberships = await pool.query(
-    'SELECT client_id FROM client_memberships WHERE user_id = $1',
+    'SELECT client_id FROM client_memberships WHERE user_id = $1 ORDER BY created_at ASC',
     [row.user_id],
   );
   return { ...row, client_memberships: memberships.rows };

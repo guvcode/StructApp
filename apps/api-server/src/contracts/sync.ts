@@ -37,8 +37,16 @@ consequence_severity: z.number().int().min(1).max(5).optional(),
 
 export type DeficiencySyncInput = z.infer<typeof deficiencySyncSchema>;
 
+export const submissionSyncSchema = z.object({
+  inspection_id: z.string().uuid(),
+  submitted_at: z.string().datetime(),
+});
+
+export type SubmissionSyncInput = z.infer<typeof submissionSyncSchema>;
+
 export const syncPushSchema = z.object({
   deficiencies: z.array(deficiencySyncSchema),
+  submissions: z.array(submissionSyncSchema).optional(),
 });
 
 export type SyncPushInput = z.infer<typeof syncPushSchema>;

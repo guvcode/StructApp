@@ -6,6 +6,7 @@ import { enqueueNotification } from './notificationQueue';
 
 export type SyncPushResult = {
   synced_deficiencies: Array<{ local_id: string; server_id: string }>;
+  synced_submissions: Array<{ inspection_id: string }>;
   errors: Array<{ local_id: string; message: string }>;
 };
 
@@ -36,6 +37,7 @@ export async function processSyncPush(
 
     const results: SyncPushResult = {
       synced_deficiencies: [],
+      synced_submissions: [],
       errors: [],
     };
 
@@ -154,6 +156,45 @@ export async function processSyncPush(
       return results;
     }
 
+    // Process submission intents after deficiencies
+    if (input.submissions && input.submissions.length > 0) {
+      for (const submission of input.submissions) {
+        const insCheck = await client.query(
+          `SELECT status FROM inspections WHERE inspection_id = $1 AND client_id = $2`,
+          [submission.inspection_id, clientId]
+        );
+        if (insCheck.rowCount === 0) {
+          results.errors.push({
+            local_id: submission.inspection_id,
+            message: 'Inspection not found or not accessible',
+          });
+          continue;
+        }
+
+        const currentStatus = insCheck.rows[0].status;
+        if (currentStatus !== 'Open' && currentStatus !== 'Returned') {
+          results.errors.push({
+            local_id: submission.inspection_id,
+            message: `Inspection is in '${currentStatus}' state — cannot submit`,
+          });
+          continue;
+        }
+
+        await client.query(
+          `UPDATE inspections SET status = 'Submitted', submitted_at = $1, updated_at = NOW() WHERE inspection_id = $2`,
+          [submission.submitted_at, submission.inspection_id]
+        );
+        results.synced_submissions.push({ inspection_id: submission.inspection_id });
+      }
+    }
+
+    if (results.errors.length > 0) {
+      await client.query('ROLLBACK');
+      results.synced_deficiencies = [];
+      results.synced_submissions = [];
+      return results;
+    }
+
     await client.query('COMMIT');
 
     // P1 notification - fire-and-forget after-commit hook
@@ -241,6 +282,7 @@ export async function processSyncPull(
     mechanisms: string | null; recommended_action: string | null;
     consequence_severity: number | null; likelihood: string | null;
     risk_rank: number | null; risk_rating: string | null;
+    triage_state: string | null;
     created_at: string; updated_at: string;
   }>;
 }> {
@@ -273,7 +315,7 @@ client.query(
                 d.calculated_priority, d.category, d.equipment_type, d.component, d.sub_component, d.focus_area,
                 d.deficiency_category, d.detailed_description, d.mechanisms,
                 d.recommended_action, d.consequence_severity, d.likelihood,
-                d.risk_rank, d.risk_rating, d.created_at, d.updated_at
+                d.risk_rank, d.risk_rating, d.triage_state, d.created_at, d.updated_at
          FROM deficiency_records d
          JOIN (
            SELECT inspection_id FROM inspections

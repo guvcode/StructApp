@@ -5,7 +5,8 @@ import { apiClient } from '../../services/api/apiClient';
 import { ENDPOINTS } from '../../services/api/endpoints';
 import { getDeficiencyById } from '../../services/api/inspections';
 import { calculateGlencoreRisk } from '../../utils/riskCalculator';
-import { db } from '../../lib/db';
+import { db, type DeficiencyRecord } from '../../lib/db';
+import { getActiveClientId } from '../../lib/authStore';
 import Skeleton from '../../components/Skeleton';
 import { useOfflinePhotos } from '../../hooks/useOfflinePhotos';
 import { InspectionStatus, PriorityTier } from '../../types';
@@ -42,8 +43,18 @@ export default function DeficiencyDetailPage() {
   const { data: existingDeficiency, isLoading: isLoadingExisting } = useQuery({
     queryKey: ['deficiencies', localId],
     queryFn: async () => {
+      // Check offline outbox first (locally-created pending sync)
+      const outboxRecords = await db.deficiencies
+        .where('deficiencyId')
+        .equals(localId!)
+        .toArray();
+      if (outboxRecords.length > 0) return outboxRecords[0];
+
+      // Check cached server deficiencies
       const offline = await db.offlineDeficiencies.get(localId!);
       if (offline) return offline;
+
+      // Fall back to network
       return getDeficiencyById(localId!);
     },
     enabled: !!localId && localId !== 'new',
@@ -223,19 +234,83 @@ export default function DeficiencyDetailPage() {
       };
       if (componentNote) data.component_note = componentNote;
       if (locationDesc) data.location_desc = locationDesc;
-      if (isNew && inspectionId) {
-        const created = await apiClient<{ deficiency_id: string }>(ENDPOINTS.deficiencies.create(inspectionId), { method: 'POST', body: JSON.stringify(data) });
-        return created;
-      } else if (localId) {
-        await apiClient(ENDPOINTS.deficiencies.update(localId), { method: 'PATCH', body: JSON.stringify(data) });
+
+      // Try API first — if online, this succeeds normally
+      if (navigator.onLine) {
+        try {
+          if (isNew && inspectionId) {
+            const created = await apiClient<{ deficiency_id: string }>(ENDPOINTS.deficiencies.create(inspectionId), { method: 'POST', body: JSON.stringify(data) });
+            return created;
+          } else if (localId) {
+            await apiClient(ENDPOINTS.deficiencies.update(localId), { method: 'PATCH', body: JSON.stringify(data) });
+            return { deficiency_id: localId } as { deficiency_id: string };
+          }
+          return { deficiency_id: '' } as { deficiency_id: string };
+        } catch {
+          // API call failed — fall through to offline storage below
+        }
+      }
+
+      // Offline: write to local Dexie outbox
+      const clientId = getActiveClientId() || 'unknown';
+      const structureId = (inspection as Record<string, unknown>)?.structure_id as string
+        || (inspection as Record<string, unknown>)?.structureId as string
+        || '';
+
+      const record = {
+        inspectionId,
+        structureId,
+        clientId,
+        description: (data.description as string) || '',
+        calculatedPriority: (data.priority_tier as 'P1' | 'P2' | 'P3' | 'P4' | 'P5') || 'P3',
+        triageState: 'New' as const,
+        ...(data.category ? { category: data.category as string } : {}),
+        ...(data.equipment_type ? { equipmentType: data.equipment_type as string } : {}),
+        ...(data.component ? { component: data.component as string } : {}),
+        ...(data.sub_component ? { subComponent: data.sub_component as string } : {}),
+        ...(data.focus_area ? { focusArea: data.focus_area as string } : {}),
+        ...(data.deficiency_category ? { deficiencyCategory: data.deficiency_category as string } : {}),
+        ...(data.detailed_description ? { detailedDescription: data.detailed_description as string } : {}),
+        ...(data.mechanisms ? { mechanisms: data.mechanisms as string } : {}),
+        ...(data.vibration_present !== undefined ? { vibrationPresent: data.vibration_present as boolean } : {}),
+        ...(data.ndt_required !== undefined ? { ndtRequired: data.ndt_required as boolean } : {}),
+        ...(data.further_investigation_required !== undefined ? { furtherInvestigationRequired: data.further_investigation_required as boolean } : {}),
+        ...(data.recommended_action ? { recommendedAction: data.recommended_action as string } : {}),
+        ...(data.consequence_severity !== undefined ? { consequenceSeverity: data.consequence_severity as number } : {}),
+        ...(data.likelihood ? { likelihood: data.likelihood as string } : {}),
+        ...(data.priority_tier ? { priorityRating: (data.priority_tier as 'P1' | 'P2' | 'P3' | 'P4' | 'P5') } : {}),
+        ...(data.component_note ? { componentNotes: data.component_note as string } : {}),
+        ...(data.location_desc ? { locationDesc: data.location_desc as string } : {}),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        syncState: 'Pending_Sync' as const,
+      } as DeficiencyRecord;
+
+      if (!isNew && localId) {
+        // Editing an existing local deficiency — update the record
+        await db.deficiencies.where('deficiencyId').equals(localId).modify(record);
         return { deficiency_id: localId } as { deficiency_id: string };
       }
-      return { deficiency_id: '' } as { deficiency_id: string };
+
+      // Insert new local deficiency
+      const insertedId = await db.deficiencies.add(record);
+      return { deficiency_id: `local_${insertedId}` } as { deficiency_id: string };
     },
     onSuccess: async (result) => {
       if (result?.deficiency_id) {
+        // Re-link any photos that were stored under the temp 'new' ID to the actual deficiency ID
+        const pendingPhotos = await db.offlinePhotos
+          .where('deficiencyLocalId')
+          .equals('new')
+          .toArray();
+        for (const photo of pendingPhotos) {
+          await db.offlinePhotos.put({ ...photo, deficiencyLocalId: result.deficiency_id });
+        }
+
         // Upload any pending photos captured while this deficiency was unsaved
-        await uploadPending(result.deficiency_id, inspectionId);
+        if (navigator.onLine) {
+          await uploadPending(result.deficiency_id, inspectionId);
+        }
         navigate(`/m/deficiencies/${result.deficiency_id}?inspection_id=${inspectionId}`, { replace: true });
       }
     },
