@@ -1,7 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useInspectionHistory, useTriageMutation, useInspection } from '../../hooks/useInspections';
 import Skeleton from '../../components/Skeleton';
+
+const TRIAGE_STATE_MAP: Record<string, 'resolved' | 'still_outstanding' | 'worsened'> = {
+  'Still Outstanding': 'still_outstanding',
+  'Worsened': 'worsened',
+  'Resolved': 'resolved',
+};
 
 export default function InspectionHistoryPage() {
   const { id } = useParams<{ id: string }>();
@@ -11,6 +17,22 @@ export default function InspectionHistoryPage() {
   const triageMutation = useTriageMutation();
   const [decisions, setDecisions] = useState<Record<string, 'resolved' | 'still_outstanding' | 'worsened'>>({});
   const [saved, setSaved] = useState(false);
+
+  // Pre-populate decisions from existing triage_state on load/revisit
+  useEffect(() => {
+    if (deficiencies.length === 0) return;
+    const initial: Record<string, 'resolved' | 'still_outstanding' | 'worsened'> = {};
+    for (const def of deficiencies) {
+      const raw = def as unknown as Record<string, unknown>;
+      const mapped = raw.triage_state
+        ? TRIAGE_STATE_MAP[raw.triage_state as string]
+        : undefined;
+      if (mapped) {
+        initial[def.id] = mapped;
+      }
+    }
+    setDecisions(initial);
+  }, [deficiencies]);
 
   const setDecision = (defId: string, value: string) => {
     if (value === 'resolved' || value === 'still_outstanding' || value === 'worsened') {
@@ -51,8 +73,8 @@ export default function InspectionHistoryPage() {
       <h2 className="text-lg font-bold text-text-primary">
         Historical Deficiency Triage
       </h2>
-      {inspection?.inspection_name && (
-        <p className="text-sm font-medium text-text-primary">Inspection: {inspection.inspection_name}</p>
+      {inspection?.site_name && (
+        <p className="text-sm font-medium text-text-primary">Inspection: {inspection.site_name}</p>
       )}
 
       {deficiencies.length > 0 && (
