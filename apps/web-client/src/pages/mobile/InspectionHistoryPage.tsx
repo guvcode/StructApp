@@ -1,14 +1,16 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useInspectionHistory, useTriageMutation } from '../../hooks/useInspections';
+import { useInspectionHistory, useTriageMutation, useInspection } from '../../hooks/useInspections';
 import Skeleton from '../../components/Skeleton';
 
 export default function InspectionHistoryPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: deficiencies = [], isLoading, isError } = useInspectionHistory(id);
+  const { data: inspection } = useInspection(id);
   const triageMutation = useTriageMutation();
   const [decisions, setDecisions] = useState<Record<string, 'resolved' | 'still_outstanding' | 'worsened'>>({});
+  const [saved, setSaved] = useState(false);
 
   const setDecision = (defId: string, value: string) => {
     if (value === 'resolved' || value === 'still_outstanding' || value === 'worsened') {
@@ -24,10 +26,13 @@ export default function InspectionHistoryPage() {
     }));
     if (decisionList.length === 0) return;
     await triageMutation.mutateAsync({ inspectionId: id, decisions: decisionList });
-    navigate(`/m/inspections/${id}`);
+    setSaved(true);
+    setTimeout(() => navigate(`/m/inspections/${id}`), 1500);
   };
 
   const selectedCount = Object.keys(decisions).length;
+  const totalCount = deficiencies.length;
+  const progressPct = totalCount > 0 ? Math.round((selectedCount / totalCount) * 100) : 0;
 
   if (isLoading) return (
     <div className="space-y-4">
@@ -46,11 +51,26 @@ export default function InspectionHistoryPage() {
       <h2 className="text-lg font-bold text-text-primary">
         Historical Deficiency Triage
       </h2>
+      {inspection?.inspection_name && (
+        <p className="text-sm font-medium text-text-primary">Inspection: {inspection.inspection_name}</p>
+      )}
 
       {deficiencies.length > 0 && (
         <p className="text-sm text-text-secondary">
           Site: {deficiencies[0]?.site_name ?? '—'} | Structure: {deficiencies[0]?.structure_tag ?? '—'}
         </p>
+      )}
+
+      {deficiencies.length > 0 && (
+        <div className="space-y-1">
+          <div className="flex justify-between text-xs text-text-secondary">
+            <span>Triage Progress</span>
+            <span>{selectedCount} of {totalCount} deficiencies decided</span>
+          </div>
+          <div className="w-full h-2 bg-border rounded-full overflow-hidden">
+            <div className="h-full bg-accent rounded-full transition-all duration-300" style={{ width: `${progressPct}%` }} />
+          </div>
+        </div>
       )}
 
       {deficiencies.length === 0 && (
@@ -64,6 +84,9 @@ export default function InspectionHistoryPage() {
           </p>
           {triageMutation.isError && (
             <p className="text-sm text-red-600">Failed to save triage decisions. Please try again.</p>
+          )}
+          {saved && (
+            <p className="text-sm text-green-600">Triage decisions saved successfully. Returning to inspection...</p>
           )}
           <div className="space-y-3">
             {deficiencies.map(def => (
@@ -92,10 +115,10 @@ export default function InspectionHistoryPage() {
           </div>
           <button
             onClick={handleSave}
-            disabled={selectedCount === 0 || triageMutation.isPending}
+            disabled={selectedCount === 0 || triageMutation.isPending || saved}
             className="w-full px-4 py-2 bg-accent text-white rounded-lg text-sm font-semibold disabled:opacity-50"
           >
-            {triageMutation.isPending ? 'Saving...' : `Save Triage Decisions (${selectedCount})`}
+            {triageMutation.isPending ? 'Saving...' : saved ? 'Saved' : `Save Triage Decisions (${selectedCount})`}
           </button>
         </>
       )}
