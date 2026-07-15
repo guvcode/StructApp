@@ -21,7 +21,7 @@ export async function login(email: string, password: string): Promise<AuthSessio
   }
 
   // Set session with token immediately so subsequent requests include Authorization
-  setSession({
+  const partialSession: AuthSession = {
     token: data.access_token,
     refresh_token: data.refresh_token,
     user: {
@@ -34,12 +34,24 @@ export async function login(email: string, password: string): Promise<AuthSessio
     },
     expires_at: new Date(Date.now() + 55 * 60 * 1000).toISOString(),
     active_client_id: data.client_id,
-  });
+  };
+  setSession(partialSession);
 
-  const userResponse = await apiClient<{
+  let userResponse: {
     id: string; email: string; display_name: string | null; role: string;
     is_active: boolean; client_memberships: Array<{ client_id: string }>;
-  }>(ENDPOINTS.users.byId(data.user_id));
+  };
+  try {
+    userResponse = await apiClient<{
+      id: string; email: string; display_name: string | null; role: string;
+      is_active: boolean; client_memberships: Array<{ client_id: string }>;
+    }>(ENDPOINTS.users.byId(data.user_id));
+  } catch (err) {
+    // Profile fetch failed — roll back the partial session so the user is not
+    // left in a degraded state (empty client_memberships, no display_name)
+    clearSession();
+    throw err;
+  }
 
   const user: User = {
     id: userResponse.id,
