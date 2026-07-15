@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useInspection, useDeficienciesForInspection } from '../../hooks/useInspections';
 import { useSubmitInspection } from '../../hooks/useInspections';
 import { useSyncState } from '../../hooks/useSync';
+import { db } from '../../lib/db';
 import type { PhotoRecord } from '../../types/index';
 import Skeleton from '../../components/Skeleton';
 
@@ -16,6 +17,7 @@ export default function InspectionSubmitPage() {
   const submitInspection = useSubmitInspection();
   const [noFindings, setNoFindings] = useState(false);
   const [error, setError] = useState('');
+  const [savedOffline, setSavedOffline] = useState(false);
 
   if (isLoading) return <div className="p-4"><Skeleton className="h-8 w-48 mb-4" /><Skeleton className="h-32 w-full rounded-lg" /></div>;
   if (!inspection) return <div className="p-4"><Skeleton className="h-8 w-48 mb-4" /><Skeleton className="h-32 w-full rounded-lg" /></div>;
@@ -33,16 +35,37 @@ export default function InspectionSubmitPage() {
     }
   });
 
-  const canSubmit = (hasDeficiencies || noFindings) && pendingCount === 0 && missingPhotoCriticalDefs.length === 0;
+  const hasOfflinePendingSync = pendingCount > 0;
+
+  // Check if there are locally-created deficiencies (outbox) or pending submissions
+  const canSubmit = (hasDeficiencies || noFindings) && !savedOffline && missingPhotoCriticalDefs.length === 0;
 
   const handleSubmit = async () => {
     if (!canSubmit || !id) return;
     setError('');
+
+    // Try online first
+    if (navigator.onLine && !hasOfflinePendingSync) {
+      try {
+        await submitInspection.mutateAsync(id);
+        navigate(`/m/inspections/${id}`);
+        return;
+      } catch {
+        setError('Failed to submit. Please try again.');
+        return;
+      }
+    }
+
+    // Offline or has pending sync items: queue the submission locally
     try {
-      await submitInspection.mutateAsync(id);
-      navigate(`/m/inspections/${id}`);
+      await db.offlineSubmissions.put({
+        inspectionId: id,
+        submittedAt: new Date().toISOString(),
+        syncState: 'Pending_Sync',
+      });
+      setSavedOffline(true);
     } catch {
-      setError('Failed to submit. Please try again.');
+      setError('Failed to save submission. Please try again.');
     }
   };
 
@@ -60,7 +83,7 @@ export default function InspectionSubmitPage() {
           </li>
           <li className="flex justify-between">
             <span className="text-text-primary">Pending sync items</span>
-            <span className={pendingCount === 0 ? 'text-green-600' : 'text-red-600'}>{pendingCount === 0 ? 'All synced' : `${pendingCount} pending`}</span>
+            <span className={hasOfflinePendingSync && !savedOffline ? 'text-amber-600' : 'text-green-600'}>{hasOfflinePendingSync ? `${pendingCount} pending` : 'All synced'}</span>
           </li>
           {missingPhotoCriticalDefs.length > 0 && (
             <li className="flex justify-between text-red-600">
@@ -84,6 +107,18 @@ export default function InspectionSubmitPage() {
         </div>
       )}
 
+      {hasOfflinePendingSync && !savedOffline && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
+          Unsaved deficiencies detected. Submit will be queued locally and synced when connectivity is available.
+        </div>
+      )}
+
+      {savedOffline && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-800">
+          Submission queued. It will be sent to the server when connectivity is restored.
+        </div>
+      )}
+
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800">
         Submitting will lock this inspection. Deficiencies will become read-only after approval.
       </div>
@@ -97,14 +132,16 @@ export default function InspectionSubmitPage() {
         disabled={!canSubmit || submitInspection.isPending}
         className="w-full px-4 py-2 bg-accent text-white rounded-lg disabled:opacity-50"
       >
-        {submitInspection.isPending ? 'Submitting...' : 'Submit Inspection'}
+        {submitInspection.isPending ? 'Submitting...' : savedOffline ? 'Queued for Sync' : hasOfflinePendingSync ? 'Queue Submission (Offline)' : 'Submit Inspection'}
       </button>
 
-      {!canSubmit && (
+      {!canSubmit && !savedOffline && (
         <p className="text-xs text-text-secondary text-center">
           {!hasDeficiencies && !noFindings
             ? 'Capture at least one deficiency or confirm no findings.'
-            : 'Sync all pending items before submitting.'}
+            : missingPhotoCriticalDefs.length > 0
+              ? 'Add photos to all P1/P2 deficiencies before submitting.'
+              : ''}
         </p>
       )}
     </div>

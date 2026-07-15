@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useInspectionHistory, useTriageMutation, useInspection } from '../../hooks/useInspections';
+import { db } from '../../lib/db';
+import { apiClient } from '../../services/api/apiClient';
+import { ENDPOINTS } from '../../services/api/endpoints';
 import Skeleton from '../../components/Skeleton';
 
 const TRIAGE_STATE_MAP: Record<string, 'resolved' | 'still_outstanding' | 'worsened'> = {
@@ -17,22 +21,53 @@ export default function InspectionHistoryPage() {
   const triageMutation = useTriageMutation();
   const [decisions, setDecisions] = useState<Record<string, 'resolved' | 'still_outstanding' | 'worsened'>>({});
   const [saved, setSaved] = useState(false);
+  const [offlineData, setOfflineData] = useState<Record<string, unknown>[] | null>(null);
+
+  // Fallback to offline data when network fails
+  useEffect(() => {
+    if (isError && id) {
+      (async () => {
+        try {
+          // Get the inspection's structure_id from offline cache
+          const offlineInsp = await db.offlineInspections.get(id);
+          if (!offlineInsp?.structureId) return;
+
+          // Query all offline deficiencies linked to any inspection on the same structure
+          const allInspections = await db.offlineInspections
+            .filter(i => i.structureId === offlineInsp.structureId && i.id !== id)
+            .toArray();
+          const inspectionIds = allInspections.map(i => i.id);
+          if (inspectionIds.length === 0) return;
+
+          const allDefs = await db.offlineDeficiencies
+            .filter(d => inspectionIds.includes(d.inspectionId) && d.triageState !== 'Resolved')
+            .toArray();
+
+          setOfflineData(allDefs as unknown as Record<string, unknown>[]);
+        } catch {
+          // Silently fail — show empty state
+        }
+      })();
+    }
+  }, [isError, id]);
+
+  const displayData = deficiencies.length > 0 ? deficiencies : (offlineData ?? []);
 
   // Pre-populate decisions from existing triage_state on load/revisit
   useEffect(() => {
-    if (deficiencies.length === 0) return;
+    if (displayData.length === 0) return;
     const initial: Record<string, 'resolved' | 'still_outstanding' | 'worsened'> = {};
-    for (const def of deficiencies) {
+    for (const def of displayData) {
       const raw = def as unknown as Record<string, unknown>;
-      const mapped = raw.triage_state
-        ? TRIAGE_STATE_MAP[raw.triage_state as string]
+      const mapped = raw.triage_state || raw.triageState
+        ? TRIAGE_STATE_MAP[(raw.triage_state || raw.triageState) as string]
         : undefined;
       if (mapped) {
-        initial[def.id] = mapped;
+        initial[(raw.id as string) || (raw.deficiencyId as string)] = mapped;
       }
     }
     setDecisions(initial);
-  }, [deficiencies]);
+  }, [displayData]);
 
   const setDecision = (defId: string, value: string) => {
     if (value === 'resolved' || value === 'still_outstanding' || value === 'worsened') {
@@ -53,19 +88,21 @@ export default function InspectionHistoryPage() {
   };
 
   const selectedCount = Object.keys(decisions).length;
-  const totalCount = deficiencies.length;
+  const totalCount = displayData.length;
   const progressPct = totalCount > 0 ? Math.round((selectedCount / totalCount) * 100) : 0;
 
-  if (isLoading) return (
+  if (isLoading && !offlineData) return (
     <div className="space-y-4">
       <Skeleton className="h-6 w-48 mx-auto mb-2" />
       <Skeleton className="h-64 w-full rounded-lg" />
     </div>
   );
 
-  if (isError) return (
+  if (isError && !offlineData) return (
     <div className="p-6 text-red-600 text-center">Failed to load inspection history.</div>
   );
+
+  const hasData = displayData.length > 0;
 
   return (
     <div className="space-y-4">
@@ -77,13 +114,13 @@ export default function InspectionHistoryPage() {
         <p className="text-sm font-medium text-text-primary">Inspection: {inspection.site_name}</p>
       )}
 
-      {deficiencies.length > 0 && (
+      {hasData && (
         <p className="text-sm text-text-secondary">
-          Site: {deficiencies[0]?.site_name ?? '—'} | Structure: {deficiencies[0]?.structure_tag ?? '—'}
+          Site: {(displayData[0] as Record<string, unknown>)?.site_name as string ?? '—'} | Structure: {(displayData[0] as Record<string, unknown>)?.structure_tag as string ?? '—'}
         </p>
       )}
 
-      {deficiencies.length > 0 && (
+      {hasData && (
         <div className="space-y-1">
           <div className="flex justify-between text-xs text-text-secondary">
             <span>Triage Progress</span>
@@ -95,14 +132,14 @@ export default function InspectionHistoryPage() {
         </div>
       )}
 
-      {deficiencies.length === 0 && (
+      {!hasData && !isLoading && (
         <p className="text-text-secondary text-sm text-center py-8">No unresolved history items for this structure.</p>
       )}
 
-      {deficiencies.length > 0 && (
+      {hasData && (
         <>
           <p className="text-sm text-text-primary font-semibold">
-            Unresolved Prior Findings ({deficiencies.length})
+            Unresolved Prior Findings ({displayData.length})
           </p>
           {triageMutation.isError && (
             <p className="text-sm text-red-600">Failed to save triage decisions. Please try again.</p>
@@ -110,30 +147,37 @@ export default function InspectionHistoryPage() {
           {saved && (
             <p className="text-sm text-green-600">Triage decisions saved successfully. Returning to inspection...</p>
           )}
+          {offlineData && (
+            <p className="text-xs text-amber-600">Offline data — some items may not reflect the latest server state.</p>
+          )}
           <div className="space-y-3">
-            {deficiencies.map(def => (
-              <div key={def.id} className="bg-surface-primary border border-border rounded-lg p-3">
-                <p className="text-sm font-semibold text-text-primary">{def.title}</p>
-                <p className="text-xs text-text-secondary">{def.description}</p>
-                <div className="flex gap-2 mt-1 mb-2">
-                  <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-700">{def.priority_tier}</span>
-                  <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-700">{def.severity}</span>
-                  <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-700">
-                    {def.source_inspection_date ? new Date(def.source_inspection_date).toLocaleDateString() : ''}
-                  </span>
+            {displayData.map((def, idx) => {
+              const raw = def as unknown as Record<string, unknown>;
+              const defId = (raw.id as string) || (raw.deficiencyId as string) || `tmp_${idx}`;
+              return (
+                <div key={defId} className="bg-surface-primary border border-border rounded-lg p-3">
+                  <p className="text-sm font-semibold text-text-primary">{(raw.title as string) || (raw.description as string) || ''}</p>
+                  <p className="text-xs text-text-secondary">{raw.description as string}</p>
+                  <div className="flex gap-2 mt-1 mb-2">
+                    <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-700">{raw.priority_tier as string || raw.calculatedPriority as string || ''}</span>
+                    <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-700">{raw.severity as string || ''}</span>
+                    <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-700">
+                      {raw.source_inspection_date ? new Date(raw.source_inspection_date as string).toLocaleDateString() : ''}
+                    </span>
+                  </div>
+                  <select
+                    value={decisions[defId] ?? ''}
+                    onChange={e => setDecision(defId, e.target.value)}
+                    className="w-full px-2 py-1 border border-border rounded text-sm text-text-primary bg-surface-primary"
+                  >
+                    <option value="">Select triage decision...</option>
+                    <option value="still_outstanding">Still Outstanding</option>
+                    <option value="worsened">Worsened</option>
+                    <option value="resolved">Resolved</option>
+                  </select>
                 </div>
-                <select
-                  value={decisions[def.id] ?? ''}
-                  onChange={e => setDecision(def.id, e.target.value)}
-                  className="w-full px-2 py-1 border border-border rounded text-sm text-text-primary bg-surface-primary"
-                >
-                  <option value="">Select triage decision...</option>
-                  <option value="still_outstanding">Still Outstanding</option>
-                  <option value="worsened">Worsened</option>
-                  <option value="resolved">Resolved</option>
-                </select>
-              </div>
-            ))}
+              );
+            })}
           </div>
           <button
             onClick={handleSave}

@@ -16,15 +16,19 @@ export function useConnectivity(): ConnectivityState {
 
   const updatePendingCount = useCallback(async () => {
     try {
-      const [pendingDeficiencies, pendingPinItems] = await Promise.all([
+      const [pendingDeficiencies, pendingPinItems, pendingSubmissions] = await Promise.all([
         db.deficiencies
           .where('syncState')
           .equals('Pending_Sync')
           .count(),
         db.pinOutbox
           .count(),
+        db.offlineSubmissions
+          .where('syncState')
+          .equals('Pending_Sync')
+          .count(),
       ]);
-      setPendingSyncCount(pendingDeficiencies + pendingPinItems);
+      setPendingSyncCount(pendingDeficiencies + pendingPinItems + pendingSubmissions);
     } catch {
       setPendingSyncCount(0);
     }

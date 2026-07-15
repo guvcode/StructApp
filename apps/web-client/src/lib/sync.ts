@@ -73,6 +73,11 @@ export async function syncWithAutoRefresh(
     }
   }
 
+  const [deficiencies, submissions] = await Promise.all([
+    getPendingDeficiencies(),
+    getPendingSubmissions(),
+  ]);
+
   const response = await fetch('/api/v1/sync/push-outbox', {
     method: 'POST',
     headers: {
@@ -80,7 +85,8 @@ export async function syncWithAutoRefresh(
       Authorization: `Bearer ${currentToken}`,
     },
     body: JSON.stringify({
-      deficiencies: await getPendingDeficiencies(),
+      deficiencies,
+      submissions: submissions.length > 0 ? submissions : undefined,
     }),
   });
 
@@ -94,7 +100,42 @@ export async function syncWithAutoRefresh(
   }
 
   const data = await response.json();
+
+  // On success, mark synced deficiencies as Synced
+  if (data.success && data.data?.synced_deficiencies) {
+    for (const synced of data.data.synced_deficiencies) {
+      const localId = parseInt(synced.local_id, 10);
+      if (!isNaN(localId)) {
+        await db.deficiencies.update(localId, {
+          syncState: 'Synced',
+          deficiencyId: synced.server_id,
+          updatedAt: new Date(),
+        });
+      }
+    }
+  }
+
+  // Remove synced submissions from the queue
+  if (data.success && data.data?.synced_submissions) {
+    for (const sub of data.data.synced_submissions) {
+      await db.offlineSubmissions.delete(sub.inspection_id);
+    }
+  }
+
   return { success: true, data };
+}
+
+export async function getPendingSubmissions(): Promise<Array<{ inspection_id: string; submitted_at: string }>> {
+  return db.offlineSubmissions
+    .where('syncState')
+    .equals('Pending_Sync')
+    .toArray()
+    .then(records =>
+      records.map(r => ({
+        inspection_id: r.inspectionId,
+        submitted_at: r.submittedAt,
+      }))
+    );
 }
 
 async function refreshAccessToken(refreshToken: string): Promise<SyncResult<{ access_token: string }>> {
@@ -136,7 +177,7 @@ export async function getPendingDeficiencies(): Promise<Array<PendingDeficiencyP
           inspection_id: r.inspectionId,
           structure_id: r.structureId,
           previous_deficiency_id: r.previousDeficiencyId ?? null,
-          component_type_id: r.componentTypeId || '',
+          component_type_id: r.componentTypeId || '00000000-0000-0000-0000-000000000000',
           description: r.description,
           gps_latitude: r.gpsLatitude ?? null,
           gps_longitude: r.gpsLongitude ?? null,

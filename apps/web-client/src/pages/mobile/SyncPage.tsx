@@ -64,6 +64,7 @@ export default function SyncPage() {
         recommended_action: string | null;
         consequence_severity: number | null; likelihood: string | null;
         risk_rank: number | null; risk_rating: string | null;
+        triage_state: string | null;
         created_at: string; updated_at: string;
       }>;
     }>(ENDPOINTS.sync.pull, { method: 'POST', body: '{}' }),
@@ -110,6 +111,7 @@ export default function SyncPage() {
             likelihood: d.likelihood ?? null,
             riskRank: d.risk_rank ?? null,
             riskRating: d.risk_rating ?? null,
+            triageState: d.triage_state ?? null,
             createdAt: d.created_at,
             updatedAt: d.updated_at,
           }))
