@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useBulkReassign } from '../hooks/useBulkReassign';
+import { useUsersByRole } from '../hooks/useUsers';
 import { InspectionStatus } from '../types';
+import { InspectorPicker } from './InspectorPicker';
 
 export interface InspectionForBulkReassign {
   inspection_id: string;
@@ -27,6 +29,9 @@ export function BulkReassignDialog({
   const [error, setError] = useState<string | null>(null);
   const [offendingIds, setOffendingIds] = useState<string[] | null>(null);
 
+  const { data: users = [] } = useUsersByRole('Contractor');
+  const sourceUser = users.find(u => u.id === sourceInspectorId);
+
   const openInspections = inspections.filter(
     (insp) => insp.status !== InspectionStatus.Approved
   );
@@ -46,7 +51,7 @@ export function BulkReassignDialog({
 
   const handleSubmit = () => {
     if (!targetInspectorId) {
-      setError('Target inspector ID is required');
+      setError('Target inspector is required');
       return;
     }
 
@@ -78,7 +83,7 @@ export function BulkReassignDialog({
     <div className="fixed inset-0 bg-overlay/50 flex items-center justify-center z-50">
       <div className="bg-surface rounded-xl p-6 w-full max-w-md">
         <h3 className="text-text-primary font-semibold mb-4">
-          Move all open work from inspector {sourceInspectorId.slice(0, 8)}…
+          Move all open work from {sourceUser?.display_name || sourceInspectorId.slice(0, 8)}…
         </h3>
 
         <div className="space-y-4">
@@ -86,24 +91,19 @@ export function BulkReassignDialog({
             <label className="block text-sm font-medium text-text-secondary mb-1">
               Source Inspector
             </label>
-            <input
-              type="text"
-              value={sourceInspectorId}
-              disabled
-              className="w-full rounded-md bg-surface-tertiary px-3 py-2 text-sm text-text-muted border border-border"
-            />
+            <div className="w-full rounded-md bg-surface-tertiary px-3 py-2 text-sm text-text-muted border border-border">
+              {sourceUser ? `${sourceUser.display_name} (${sourceUser.email})` : sourceInspectorId.slice(0, 8)}
+            </div>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-text-secondary mb-1">
-              Target Inspector ID
+              Target Inspector
             </label>
-            <input
-              type="text"
+            <InspectorPicker
               value={targetInspectorId}
-              onChange={(e) => setTargetInspectorId(e.target.value)}
-              placeholder="Enter target inspector ID"
-              className="w-full rounded-md bg-surface px-3 py-2 text-sm text-text-primary border border-border focus:outline-none focus:ring-2 focus:ring-accent"
+              onChange={setTargetInspectorId}
+              placeholder="Select target inspector..."
             />
           </div>
 
