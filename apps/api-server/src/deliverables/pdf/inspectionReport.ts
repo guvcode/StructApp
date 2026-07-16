@@ -3,7 +3,7 @@ import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { loadReportData, type ReportData } from '../reports/data';
-import { getReportPath } from './download';
+import { getReportPath } from '../reports/download';
 
 const REPORT_DIR = join(tmpdir(), 'structapp-reports');
 
