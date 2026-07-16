@@ -154,6 +154,10 @@ reportsRouter.post(
   requireRole('Admin', 'Reviewer'),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const uuidResult = z.string().uuid().safeParse(req.params.id);
+      if (!uuidResult.success) {
+        return res.status(400).json({ success: false, error_code: 'INVALID_ID', message: 'Invalid job ID format' });
+      }
       const user = (req as Request & { user: { client_id: string } }).user;
       const jobResult = await pool.query(
         'SELECT job_id, project_id, report_type FROM report_jobs WHERE job_id = $1 AND client_id = $2',

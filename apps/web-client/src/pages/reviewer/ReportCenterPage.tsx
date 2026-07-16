@@ -56,11 +56,26 @@ export default function ReportCenterPage() {
     }
   };
 
-  const handleDownload = (url: string) => {
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = url.split('/').pop() ?? 'report';
-    a.click();
+  const handleDownload = async (url: string) => {
+    const session = getSession();
+    if (!session?.token) { setError('Authentication required to download.'); return; }
+    try {
+      const response = await fetch(url, {
+        headers: { Authorization: `Bearer ${session.token}` },
+      });
+      if (!response.ok) throw new Error(`Download failed (${response.status})`);
+      const blob = await response.blob();
+      const disposition = response.headers.get('Content-Disposition');
+      const filename = disposition?.match(/filename="?(.+?)"?$/)?.[1] ?? 'report.pdf';
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      setError('Failed to download report.');
+    }
   };
 
   if (isLoading && jobs.length === 0) return (
