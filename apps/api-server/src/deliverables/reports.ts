@@ -54,7 +54,7 @@ export async function generateWordReport(
     insp.status,
     insp.inspector_name ?? '',
     insp.created_at ? insp.created_at.split('T')[0] : '',
-    insp.completed_at ? insp.completed_at.split('T')[0] : '',
+    insp.submitted_at ? insp.submitted_at.split('T')[0] : '',
   ]);
 
   const inspTable = new Table({
@@ -167,7 +167,7 @@ export async function generateExcelReport(
   data.inspections.forEach(insp => inspSheet.addRow({
     ...insp,
     created_at: insp.created_at?.split('T')[0] ?? '',
-    completed_at: insp.completed_at?.split('T')[0] ?? '',
+    completed_at: insp.submitted_at?.split('T')[0] ?? '',
   }));
 
   const buffer = await workbook.xlsx.writeBuffer();

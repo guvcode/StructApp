@@ -21,7 +21,6 @@ export interface ReportInspection {
   inspection_mode: string;
   scheduled_date: string;
   created_at: string;
-  completed_at: string;
   submitted_at: string;
   approved_at: string;
 }
@@ -72,7 +71,7 @@ export async function loadReportData(projectId: string, clientId: string): Promi
   const inspectionsResult = await pool.query(
     `SELECT i.inspection_id, i.structure_id, st.asset_tag, s.name AS site_name,
             u.display_name AS inspector_name, i.status, i.inspection_mode,
-            i.scheduled_date, i.created_at, i.completed_at, i.submitted_at, i.approved_at
+            i.scheduled_date, i.created_at, i.submitted_at, i.approved_at
      FROM inspections i
      JOIN structures st ON i.structure_id = st.structure_id
      JOIN sites s ON st.site_id = s.site_id
