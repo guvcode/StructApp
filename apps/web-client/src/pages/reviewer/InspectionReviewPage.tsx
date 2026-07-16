@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useInspection, useDeficienciesForInspection } from '../../hooks/useInspections';
 import { getUserRole } from '../../lib/authStore';
-import { InspectionStatus, UserRole } from '../../types/index';
+import { InspectionStatus, PriorityTier, UserRole } from '../../types/index';
 import { ReturnInspectionModal } from '../../components/ReturnInspectionModal';
 import { ApproveInspectionModal } from '../../components/ApproveInspectionModal';
 import { PriorityOverridePanel } from '../../components/PriorityOverridePanel';
@@ -113,7 +113,7 @@ export default function InspectionReviewPage() {
 
       {showReturn && id && <ReturnInspectionModal inspectionId={id} onClose={() => setShowReturn(false)} onReturn={() => { setShowReturn(false); refetch(); }} />}
       {showApprove && id && <ApproveInspectionModal inspectionId={id} onClose={() => setShowApprove(false)} onApprove={() => { setShowApprove(false); refetch(); }} />}
-      {showOverride && selectedDef && <PriorityOverridePanel deficiencyId={selectedDef} currentTier={selectedDeficiency?.priority_tier ?? 'P3'} onClose={() => setShowOverride(false)} onOverride={() => { setShowOverride(false); refetch(); }} />}
+      {showOverride && selectedDef && <PriorityOverridePanel deficiencyId={selectedDef} currentTier={selectedDeficiency?.priority_tier ?? PriorityTier.P3} onClose={() => setShowOverride(false)} onOverride={() => { setShowOverride(false); refetch(); }} />}
       {showReopen && id && <ReopenInspectionModal inspectionId={id} onClose={() => setShowReopen(false)} onReopen={() => { setShowReopen(false); refetch(); }} />}
     </div>
   );

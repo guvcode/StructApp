@@ -8,7 +8,7 @@ import { uploadPhotoToCloudinary } from '../../lib/photoUpload';
 import { getActiveClientId } from '../../lib/authStore';
 import { getDeficiencyPhotos } from '../../services/api/photos';
 import type { OfflinePhoto } from '../../lib/db';
-import { InspectionStatus } from '../../types';
+import { InspectionStatus, PriorityTier } from '../../types';
 
 export default function DeficiencyPhotosPage() {
   const { localId } = useParams<{ localId: string }>();
@@ -172,7 +172,7 @@ export default function DeficiencyPhotosPage() {
         <p className="text-sm text-text-secondary">{deficiency.title}</p>
       )}
 
-      {deficiency && (deficiency.priority_tier === 'P1' || deficiency.priority_tier === 'P2') && displayPhotos.length === 0 && (
+      {deficiency && (deficiency.priority_tier === PriorityTier.P1 || deficiency.priority_tier === PriorityTier.P2) && displayPhotos.length === 0 && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
           This {deficiency.priority_tier} finding requires at least one photo before submission.
         </div>

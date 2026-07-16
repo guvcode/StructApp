@@ -2,7 +2,7 @@ import { useState, useMemo, Fragment } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useRemediationDeficiencies, useHasRemediationEvidence } from '../../hooks/useRemediation';
 import { useQueryClient } from '@tanstack/react-query';
-import { RemediationStatus, isReviewerOrAdmin } from '../../types/index';
+import { PriorityTier, RemediationStatus, isReviewerOrAdmin } from '../../types/index';
 import { getUserRole } from '../../lib/authStore';
 import { useClientScope } from '../../hooks/useClientScope';
 import { useSearchSort } from '../../hooks/useSearchSort';
@@ -15,10 +15,10 @@ import { REMEDIATION_STATUS_STYLES } from '../../utils/statusMaps';
 import type { Deficiency } from '../../types';
 
 const STATUS_LABELS: Record<string, string> = {
-  Open: 'Open',
-  Remediation_Scheduled: 'Scheduled',
-  Remediated_Pending_Verification: 'Pending Verification',
-  Verified_Closed: 'Verified Closed',
+  [RemediationStatus.Open]: 'Open',
+  [RemediationStatus.RemediationScheduled]: 'Scheduled',
+  [RemediationStatus.PendingVerification]: 'Pending Verification',
+  [RemediationStatus.VerifiedClosed]: 'Verified Closed',
 };
 
 function groupByInspections(deficiencies: Deficiency[]): Map<string, { inspectionName: string; entries: Deficiency[] }> {
@@ -168,11 +168,11 @@ function RemediationRow({ deficiency, role, onVerify, onOpen }: { deficiency: im
                       </td>
       <td className="py-4">
         <span className={`px-2.5 py-1 rounded text-xs font-bold border ${
-          deficiency.priority_tier === 'P1' 
+          deficiency.priority_tier === PriorityTier.P1 
             ? 'bg-red-50 text-red-700 border-red-200' 
-            : deficiency.priority_tier === 'P2'
+            : deficiency.priority_tier === PriorityTier.P2
             ? 'bg-orange-50 text-orange-700 border-orange-200'
-            : deficiency.priority_tier === 'P3'
+            : deficiency.priority_tier === PriorityTier.P3
             ? 'bg-yellow-50 text-yellow-700 border-yellow-200'
             : 'bg-gray-50 text-gray-600 border-gray-200'
         }`}>

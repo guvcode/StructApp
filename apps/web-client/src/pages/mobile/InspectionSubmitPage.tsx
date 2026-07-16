@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useInspection, useDeficienciesForInspection } from '../../hooks/useInspections';
 import { useSubmitInspection } from '../../hooks/useInspections';
 import { useSyncState } from '../../hooks/useSync';
+import { PriorityTier } from '../../types';
 import type { PhotoRecord } from '../../types/index';
 import Skeleton from '../../components/Skeleton';
 
@@ -21,7 +22,7 @@ export default function InspectionSubmitPage() {
   if (!inspection) return <div className="p-4"><Skeleton className="h-8 w-48 mb-4" /><Skeleton className="h-32 w-full rounded-lg" /></div>;
 
   const hasDeficiencies = deficiencies.length > 0;
-  const criticalDefs = deficiencies.filter(d => d.priority_tier === 'P1' || d.priority_tier === 'P2');
+  const criticalDefs = deficiencies.filter(d => d.priority_tier === PriorityTier.P1 || d.priority_tier === PriorityTier.P2);
 
   const missingPhotoCriticalDefs = criticalDefs.filter(d => {
     try {

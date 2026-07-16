@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as api from '../services/api/inspections';
 import type { Inspection, Deficiency } from '../types';
+import { InspectionStatus } from '../types';
 
 export function useInspections(filters?: Partial<{ site_id: string; status: string }>) {
   return useQuery({
@@ -116,7 +117,7 @@ export function useApproveInspection() {
 export function useReopenInspection() {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, targetStatus, reason }: { id: string; targetStatus: 'Submitted' | 'Returned'; reason: string }) =>
+    mutationFn: ({ id, targetStatus, reason }: { id: string; targetStatus: typeof InspectionStatus.Submitted | typeof InspectionStatus.Returned; reason: string }) =>
       api.reopenInspection(id, targetStatus, reason),
     onSuccess: () => {
       client.invalidateQueries({ queryKey: ['inspections'] });

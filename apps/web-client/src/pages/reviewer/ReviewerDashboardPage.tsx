@@ -1,6 +1,6 @@
 import { useReviewerDashboardStats } from '../../hooks/useDashboard';
 import { getActiveClientId } from '../../lib/authStore';
-import { InspectionStatus } from '../../types/index';
+import { InspectionStatus, PriorityTier } from '../../types/index';
 import Card from '../../components/Card';
 import Skeleton, { StatCardSkeleton } from '../../components/Skeleton';
 import EmptyState from '../../components/EmptyState';
@@ -42,7 +42,7 @@ export default function ReviewerDashboardPage() {
   const draftCount = inspections.filter(i => i.status === InspectionStatus.Draft).length;
   const assignedCount = inspections.filter(i => i.status === InspectionStatus.Assigned).length;
   const totalCount = inspections.length;
-  const p1Count = deficiencies.filter(d => d.priority_tier === 'P1').length;
+  const p1Count = deficiencies.filter(d => d.priority_tier === PriorityTier.P1).length;
 
   const statuses = [
     { label: 'Submitted', count: submittedCount },
@@ -145,7 +145,7 @@ export default function ReviewerDashboardPage() {
 
       <Card padding="lg" className="shadow-card">
         <h2 className="text-xl font-semibold text-text-primary mb-6">P1 Priority Items</h2>
-        {deficiencies.filter(d => d.priority_tier === 'P1').length === 0 ? (
+        {deficiencies.filter(d => d.priority_tier === PriorityTier.P1).length === 0 ? (
           <EmptyState icon="check" title="No P1 deficiencies" description="All priority items have been addressed." />
         ) : (
           <div className="overflow-x-auto">
@@ -158,7 +158,7 @@ export default function ReviewerDashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {deficiencies.filter(d => d.priority_tier === 'P1').map(d => {
+                {deficiencies.filter(d => d.priority_tier === PriorityTier.P1).map(d => {
                   const insp = inspections.find(i => i.id === d.inspection_id);
                   return (
                     <tr key={d.id} className="border-b border-border hover:bg-surface-hover transition-colors">

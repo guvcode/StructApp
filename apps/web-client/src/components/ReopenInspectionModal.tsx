@@ -12,7 +12,7 @@ interface Props {
 const TARGET_STATUSES = [InspectionStatus.Submitted, InspectionStatus.Returned] as const;
 
 export function ReopenInspectionModal({ inspectionId, onClose, onReopen }: Props) {
-  const [targetStatus, setTargetStatus] = useState<'Submitted' | 'Returned'>('Submitted');
+  const [targetStatus, setTargetStatus] = useState<InspectionStatus>(InspectionStatus.Submitted);
   const [reason, setReason] = useState('');
   const [confirmed, setConfirmed] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -46,7 +46,7 @@ export function ReopenInspectionModal({ inspectionId, onClose, onReopen }: Props
         <label className="block text-sm font-semibold text-text-primary mb-2">Target Status</label>
         <select
           value={targetStatus}
-          onChange={e => setTargetStatus(e.target.value as 'Submitted' | 'Returned')}
+          onChange={e => setTargetStatus(e.target.value as InspectionStatus)}
           className="w-full px-4 py-2.5 border border-border rounded-lg text-text-primary bg-surface-primary focus:ring-2 focus:ring-accent focus:border-accent transition-colors mb-4"
         >
           {TARGET_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}

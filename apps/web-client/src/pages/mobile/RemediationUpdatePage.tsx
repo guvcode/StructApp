@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../services/api/apiClient';
 import { ENDPOINTS } from '../../services/api/endpoints';
 import type { PhotoRecord } from '../../types/index';
-import { RemediationStatus, UserRole, isReviewerOrAdmin } from '../../types/index';
+import { PriorityTier, RemediationStatus, UserRole, isReviewerOrAdmin } from '../../types/index';
 import Skeleton from '../../components/Skeleton';
 import { getUserRole } from '../../lib/authStore';
 
@@ -80,8 +80,8 @@ const isReviewerAdmin = isReviewerOrAdmin(role);
         <p className="text-sm text-text-secondary">{deficiency.description}</p>
         <div className="flex gap-2 mt-1">
           <span className={`px-2 py-0.5 rounded text-xs font-bold ${
-            deficiency.calculated_priority === 'P1' ? 'bg-red-100 text-red-700' :
-            deficiency.calculated_priority === 'P2' ? 'bg-orange-100 text-orange-700' :
+            deficiency.calculated_priority === PriorityTier.P1 ? 'bg-red-100 text-red-700' :
+            deficiency.calculated_priority === PriorityTier.P2 ? 'bg-orange-100 text-orange-700' :
             'bg-gray-100 text-gray-600'
           }`}>
             {deficiency.calculated_priority}

@@ -66,7 +66,7 @@ export default function DeficiencyDetailPage() {
     setRecommendedAction((d.recommendedAction as string) || (d.recommended_action as string) || '');
     setConsequenceSeverity((d.consequenceSeverity as number) || (d.consequence_severity as number) || 3);
     setLikelihood((d.likelihood as string) || 'C');
-    setPriorityRating((d.priorityTier as string) || (d.priority_tier as string) || 'P3');
+    setPriorityRating((d.priorityTier as string) || (d.priority_tier as string) || PriorityTier.P3);
     setComponentNote((d.componentNote as string) || (d.component_note as string) || '');
     setLocationDesc((d.locationDesc as string) || (d.location_desc as string) || '');
   }, [existingDeficiency]);
@@ -139,7 +139,7 @@ export default function DeficiencyDetailPage() {
   const [recommendedAction, setRecommendedAction] = useState('');
   const [consequenceSeverity, setConsequenceSeverity] = useState<number>(3);
   const [likelihood, setLikelihood] = useState<string>('C');
-  const [priorityRating, setPriorityRating] = useState<string>('P3');
+  const [priorityRating, setPriorityRating] = useState<string>(PriorityTier.P3);
   const [componentNote, setComponentNote] = useState('');
   const [locationDesc, setLocationDesc] = useState('');
 

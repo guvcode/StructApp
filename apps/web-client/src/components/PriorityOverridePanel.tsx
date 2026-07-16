@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../services/api/apiClient';
 import { ENDPOINTS } from '../services/api/endpoints';
+import { PriorityTier } from '../types';
 
-const TIERS = ['P1', 'P2', 'P3', 'P4', 'P5'];
+const TIERS = Object.values(PriorityTier);
 
 interface Props {
   deficiencyId: string;
@@ -13,7 +14,7 @@ interface Props {
 }
 
 export function PriorityOverridePanel({ deficiencyId, currentTier, onClose, onOverride }: Props) {
-  const [tier, setTier] = useState(currentTier ?? 'P3');
+  const [tier, setTier] = useState(currentTier ?? PriorityTier.P3);
   const [justification, setJustification] = useState('');
   const queryClient = useQueryClient();
 
@@ -23,7 +24,7 @@ export function PriorityOverridePanel({ deficiencyId, currentTier, onClose, onOv
     return () => window.removeEventListener('keydown', handler);
   }, [onClose]);
 
-  const canSave = tier !== (currentTier ?? 'P3') && justification.trim().length > 0;
+  const canSave = tier !== (currentTier ?? PriorityTier.P3) && justification.trim().length > 0;
 
   const mutation = useMutation({
     mutationFn: () => apiClient(ENDPOINTS.deficiencies.overridePriority(deficiencyId), {

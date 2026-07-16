@@ -9,16 +9,16 @@ import { TimesheetStatus } from '../../types';
 import type { TimesheetGridData, TimesheetGridCell } from '../../types/index';
 
 const STATUS_DOT_COLORS: Record<string, string> = {
-  Approved: 'bg-green-500',
-  Submitted: 'bg-blue-500',
-  Rejected: 'bg-red-500',
+  [TimesheetStatus.Approved]: 'bg-green-500',
+  [TimesheetStatus.Submitted]: 'bg-blue-500',
+  [TimesheetStatus.Rejected]: 'bg-red-500',
   Mixed: 'bg-yellow-400',
 };
 
 function getCellStatus(cell: TimesheetGridCell): string {
   const statuses = new Set(cell.entries.map(e => e.status));
-  if (statuses.has('Rejected')) return 'Rejected';
-  if (statuses.size === 1) return cell.entries[0]?.status ?? 'Draft';
+  if (statuses.has(TimesheetStatus.Rejected)) return TimesheetStatus.Rejected;
+  if (statuses.size === 1) return cell.entries[0]?.status ?? TimesheetStatus.Draft;
   return 'Mixed';
 }
 
