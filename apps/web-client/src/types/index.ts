@@ -124,6 +124,7 @@ export const ReportOutputType = {
   FinalPdf: 'final_pdf',
   Word: 'word',
   Excel: 'excel',
+  Csv: 'csv',
 } as const;
 export type ReportOutputType = (typeof ReportOutputType)[keyof typeof ReportOutputType];
 
@@ -264,7 +265,6 @@ export interface Deficiency {
   remediation_due_date?: string;
   verified_by?: string;
   verified_at?: string;
-  site_name?: string;
   assignee_name?: string;
 
   category?: string;

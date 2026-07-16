@@ -283,7 +283,7 @@
 | BL-003 | Calendar | Calendar and Schedule pages are placeholders — need real inspection scheduling UI | Medium | 2026-06-28 | 🟩 COMPLETED |
 | BL-004 | Timesheets | Timesheet detail view (read-only) missing — only approve/reject on queue, no way to view line items | Low | 2026-06-28 | 🟩 COMPLETED |
 | BL-005 | Global | `useEffect`-based data fetching used across all pages — consider migrating to a more declarative pattern (TanStack Query / custom hooks) | Low | 2026-06-28 | 🟩 COMPLETED |
-| BL-006 | Test | **b12-reports.test.tsx** — ReportCenterPage tests time out in CI; idle timer in mock report processing delays assertions | Low | 2026-07-03 | 🟩 IN PROGRESS (investigating CI timeout) |
+| BL-006 | Test | **b12-reports.test.tsx** — ReportCenterPage tests time out in CI; idle timer in mock report processing delays assertions | Low | 2026-07-03 | 🟩 COMPLETED |
 | BL-007 | Test | **b16-calendar.test.tsx** — "shows day detail modal on day click" fails; modal rendering timing or event propagation issue | Low | 2026-07-03 | 🟩 IN PROGRESS (debugging modal timing) |
 | BL-008 | Test | **b1-feature-flags.test.ts** — `isFeatureEnabled` returns `true` for P2 features, test expects `false` | Low | 2026-07-03 | 🟩 BLOCKED (feature flag config issue) |
 | BL-009 | Test | **b1-types.test.ts** — `RemediationStatus` enum missing `'NotStarted'` value expected by test | Low | 2026-07-03 | 🟩 COMPLETED (enum updated) |
