@@ -9,12 +9,14 @@ export interface ConnectivityState {
   triggerSync: () => Promise<void>;
 }
 
+const RECONNECT_DEBOUNCE_MS = 3000;
+
 export function useConnectivity(): ConnectivityState {
   const [isOnline, setIsOnline] = useState(() => navigator.onLine);
   const [isReconnecting, setIsReconnecting] = useState(false);
   const [pendingSyncCount, setPendingSyncCount] = useState(0);
 
-  const updatePendingCount = useCallback(async () => {
+  const getPendingCount = useCallback(async (): Promise<number> => {
     try {
       const [pendingDeficiencies, pendingPinItems, pendingSubmissions] = await Promise.all([
         db.deficiencies
@@ -28,14 +30,19 @@ export function useConnectivity(): ConnectivityState {
           .equals('Pending_Sync')
           .count(),
       ]);
-      setPendingSyncCount(pendingDeficiencies + pendingPinItems + pendingSubmissions);
+      return pendingDeficiencies + pendingPinItems + pendingSubmissions;
     } catch {
-      setPendingSyncCount(0);
+      return 0;
     }
   }, []);
 
+  const updatePendingCount = useCallback(async () => {
+    const count = await getPendingCount();
+    setPendingSyncCount(count);
+  }, [getPendingCount]);
+
   const handleSyncTrigger = useCallback(async () => {
-    if (!isOnline) return;
+    if (!navigator.onLine) return;
 
     const authState = await db.authState.get('current');
     if (!authState?.accessToken || !authState?.refreshToken) {
@@ -50,47 +57,63 @@ export function useConnectivity(): ConnectivityState {
     }
 
     updatePendingCount();
-  }, [isOnline, updatePendingCount]);
+  }, [updatePendingCount]);
 
   useEffect(() => {
+    const debounceRef = { current: undefined as ReturnType<typeof setTimeout> | undefined };
+
     const handleOnline = () => {
       setIsOnline(true);
       setIsReconnecting(false);
       updatePendingCount();
+
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+
+      debounceRef.current = setTimeout(async () => {
+        const count = await getPendingCount();
+        if (count > 0) {
+          setIsReconnecting(true);
+          await handleSyncTrigger();
+          setIsReconnecting(false);
+        }
+      }, RECONNECT_DEBOUNCE_MS);
     };
 
     const handleOffline = () => {
       setIsOnline(false);
       setIsReconnecting(false);
-    };
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible' && isOnline) {
-        updatePendingCount();
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+        debounceRef.current = undefined;
       }
     };
 
-    const handleSyncEvent = () => {
-      handleSyncTrigger();
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && navigator.onLine) {
+        updatePendingCount();
+      }
     };
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('structapp:sync-trigger', handleSyncEvent);
 
     updatePendingCount();
 
     return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('structapp:sync-trigger', handleSyncEvent);
     };
-  }, [isOnline, updatePendingCount, handleSyncTrigger]);
+  }, [getPendingCount, handleSyncTrigger, updatePendingCount]);
 
   const triggerSync = useCallback(async () => {
-    if (!isOnline) return;
+    if (!navigator.onLine) return;
 
     setIsReconnecting(true);
     try {
@@ -98,7 +121,7 @@ export function useConnectivity(): ConnectivityState {
     } finally {
       setIsReconnecting(false);
     }
-  }, [isOnline, handleSyncTrigger]);
+  }, [handleSyncTrigger]);
 
   return {
     isOnline,

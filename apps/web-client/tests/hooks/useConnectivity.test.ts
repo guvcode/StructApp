@@ -2,7 +2,9 @@ import { renderHook, act } from '@testing-library/react';
 import { vi } from 'vitest';
 import { useConnectivity } from '../../src/hooks/useConnectivity';
 
-// Mock Dexie to avoid database initialization in test environment
+let mockDeficienciesCount = 0;
+let mockSubmissionsCount = 0;
+
 vi.mock('../../src/lib/db', () => ({
   db: {
     authState: {
@@ -12,17 +14,23 @@ vi.mock('../../src/lib/db', () => ({
     deficiencies: {
       where: () => ({
         equals: () => ({
-          count: () => Promise.resolve(0),
+          count: () => Promise.resolve(mockDeficienciesCount),
         }),
       }),
     },
     pinOutbox: {
       count: () => Promise.resolve(0),
     },
+    offlineSubmissions: {
+      where: () => ({
+        equals: () => ({
+          count: () => Promise.resolve(mockSubmissionsCount),
+        }),
+      }),
+    },
   },
 }));
 
-// Mock sync to avoid actual API calls
 const mockSyncWithAutoRefresh = vi.hoisted(() => vi.fn().mockResolvedValue({ success: true, data: [] }));
 vi.mock('../../src/lib/sync', () => ({
   syncWithAutoRefresh: mockSyncWithAutoRefresh,
@@ -37,6 +45,8 @@ describe('useConnectivity hook', () => {
       writable: true,
       configurable: true,
     });
+    mockDeficienciesCount = 0;
+    mockSubmissionsCount = 0;
     mockSyncWithAutoRefresh.mockClear();
   });
 
@@ -69,5 +79,48 @@ describe('useConnectivity hook', () => {
     });
 
     expect(mockSyncWithAutoRefresh).toHaveBeenCalledWith('test-token', 'test-refresh');
+  });
+
+  test('online event triggers sync after debounce when pending items exist', async () => {
+    vi.useFakeTimers();
+    mockDeficienciesCount = 1;
+
+    Object.defineProperty(navigator, 'onLine', { value: false, writable: true, configurable: true });
+    renderHook(() => useConnectivity());
+
+    Object.defineProperty(navigator, 'onLine', { value: true, writable: true, configurable: true });
+    window.dispatchEvent(new Event('online'));
+
+    expect(mockSyncWithAutoRefresh).not.toHaveBeenCalled();
+
+    await act(async () => {
+      vi.advanceTimersByTime(3000);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(mockSyncWithAutoRefresh).toHaveBeenCalledWith('test-token', 'test-refresh');
+
+    vi.useRealTimers();
+  });
+
+  test('does not trigger sync on reconnection when no pending items', async () => {
+    vi.useFakeTimers();
+
+    Object.defineProperty(navigator, 'onLine', { value: false, writable: true, configurable: true });
+    renderHook(() => useConnectivity());
+
+    Object.defineProperty(navigator, 'onLine', { value: true, writable: true, configurable: true });
+    window.dispatchEvent(new Event('online'));
+
+    await act(async () => {
+      vi.advanceTimersByTime(3000);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(mockSyncWithAutoRefresh).not.toHaveBeenCalled();
+
+    vi.useRealTimers();
   });
 });
