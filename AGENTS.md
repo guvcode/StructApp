@@ -59,6 +59,7 @@ Update `.doc/10-progress-tracker.md` after each task:
 | Skipping review skill | Defects compound across features | Run review before committing |
 | Modifying or deleting existing code without regression check | Unknowingly breaks downstream callers, causing silent failures or runtime errors | Run `/checkregression` before every commit to scan all dependents |
 | No lint step | Type errors accumulate silently | Run `tsc --noEmit --skipLibCheck` before commit |
+| Hardcoded status string literals instead of canonical enums | Bypasses type checking, causes drift across codebase | Always use `InspectionStatus`, `TimesheetStatus`, `PriorityTier`, `RemediationStatus` enums from `types/index.ts` — never raw strings like `'P1'`, `'Submitted'`, `'Open'` |
 | Forgetting memory save | Context lost between sessions | `/remember save` is the final step, no exceptions |
 
 ## Lint Gate
