@@ -2,7 +2,7 @@ import PDFDocument from 'pdfkit';
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { loadReportData, type ReportData } from './data';
+import { loadReportData, type ReportData } from '../reports/data';
 import { getReportPath } from './download';
 
 const REPORT_DIR = join(tmpdir(), 'structapp-reports');
