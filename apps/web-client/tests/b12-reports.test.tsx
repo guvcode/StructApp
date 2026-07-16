@@ -99,15 +99,17 @@ describe('Bundle 12 — Mock Reports Service', () => {
   });
 
   it('mock download_url includes signed token', async () => {
+    vi.useFakeTimers();
     const mod = await import('../src/services/mockReports');
     const job = await mod.generateReport('draft_pdf' as any, 'p-bridge-1', 'Test User');
     expect(job.status).toBe('Queued');
-    await new Promise(r => setTimeout(r, 2200));
+    vi.advanceTimersByTime(2600);
     const updated = await mod.getReportJobById(job.id);
     if (updated?.status === 'Ready' && updated.download_url) {
       expect(updated.download_url).toContain('?token=mock-signed');
       expect(updated.download_url).toContain('expires=');
     }
+    vi.useRealTimers();
   });
 });
 

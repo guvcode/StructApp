@@ -16,6 +16,7 @@ const OUTPUT_TYPE_LABELS: Record<string, string> = {
   final_pdf: 'Final PDF',
   word: 'Word',
   excel: 'Excel',
+  csv: 'CSV',
 };
 
 export default function ReportCenterPage() {
