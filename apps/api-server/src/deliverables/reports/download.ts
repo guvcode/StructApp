@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { createReadStream, existsSync, unlinkSync } from 'fs';
+import { createReadStream, existsSync, statSync, unlinkSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { logger } from '../../lib/logger';
@@ -29,11 +29,12 @@ export function streamReport(req: Request, res: Response, jobId: string, ext: st
 
   res.setHeader('Content-Type', mime);
   res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+  res.setHeader('Content-Length', statSync(filePath).size);
 
   const stream = createReadStream(filePath);
   stream.pipe(res);
 
-  stream.on('end', () => {
+  res.on('finish', () => {
     try { unlinkSync(filePath); } catch (err) {
       logger.warn({ err, jobId }, 'Failed to clean up report temp file');
     }

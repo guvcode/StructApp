@@ -53,8 +53,8 @@ export async function generateWordReport(
     insp.site_name,
     insp.status,
     insp.inspector_name ?? '',
-    insp.created_at ? insp.created_at.split('T')[0] : '',
-    insp.submitted_at ? insp.submitted_at.split('T')[0] : '',
+    insp.created_at ? new Date(insp.created_at).toISOString().split('T')[0] : '',
+    insp.submitted_at ? new Date(insp.submitted_at).toISOString().split('T')[0] : '',
   ]);
 
   const inspTable = new Table({
@@ -166,8 +166,8 @@ export async function generateExcelReport(
   inspSheet.getRow(1).font = { bold: true };
   data.inspections.forEach(insp => inspSheet.addRow({
     ...insp,
-    created_at: insp.created_at?.split('T')[0] ?? '',
-    completed_at: insp.submitted_at?.split('T')[0] ?? '',
+    created_at: insp.created_at ? new Date(insp.created_at).toISOString().split('T')[0] : '',
+    completed_at: insp.submitted_at ? new Date(insp.submitted_at).toISOString().split('T')[0] : '',
   }));
 
   const buffer = await workbook.xlsx.writeBuffer();
