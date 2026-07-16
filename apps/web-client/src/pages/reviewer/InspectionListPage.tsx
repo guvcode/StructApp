@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useInspections } from '../../hooks/useInspections';
@@ -9,6 +9,7 @@ import { ENDPOINTS } from '../../services/api/endpoints';
 import { InspectionStatus } from '../../types/index';
 import { ReturnInspectionModal } from '../../components/ReturnInspectionModal';
 import { ApproveInspectionModal } from '../../components/ApproveInspectionModal';
+import { BulkReassignDialog, InspectionForBulkReassign } from '../../components/BulkReassignDialog';
 import { formatDate } from '../../utils/dates';
 import { useClientScope } from '../../hooks/useClientScope';
 import { useSearchSort } from '../../hooks/useSearchSort';
@@ -27,6 +28,11 @@ export default function InspectionListPage() {
   const statusFilter = searchParams.get('status') || 'all';
   const [returnTarget, setReturnTarget] = useState<string | null>(null);
   const [approveTarget, setApproveTarget] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkReassignTarget, setBulkReassignTarget] = useState<{
+    sourceInspectorId: string;
+    inspections: InspectionForBulkReassign[];
+  } | null>(null);
 
   useClientScope(() => client.invalidateQueries({ queryKey: ['inspections'] }));
 
@@ -56,6 +62,46 @@ export default function InspectionListPage() {
     : inspections.filter(i => i.status === statusFilter);
 
   const { search, setSearch, sortKey, sortDir, toggleSort, sortedFiltered } = useSearchSort(filtered, ['site_id', 'id', 'assignee_name'], 'created_at');
+
+  const toggleSelect = useCallback((id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const toggleSelectAll = useCallback(() => {
+    if (selectedIds.size === sortedFiltered.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(sortedFiltered.map(i => i.id)));
+    }
+  }, [sortedFiltered, selectedIds.size]);
+
+  const allSelected = sortedFiltered.length > 0 && selectedIds.size === sortedFiltered.length;
+
+  const selectedInspections = useMemo(() => {
+    const ids = selectedIds;
+    if (ids.size === 0) return [];
+    return inspections.filter(i => ids.has(i.id));
+  }, [inspections, selectedIds]);
+
+  const openBulkReassign = useCallback(() => {
+    const openOnes = selectedInspections.filter(i => i.status !== InspectionStatus.Approved);
+    if (openOnes.length === 0) return;
+
+    const sourceInspectorId = openOnes[0]!.assigned_to;
+    const mapped: InspectionForBulkReassign[] = openOnes.map(i => ({
+      inspection_id: i.id,
+      asset_tag: structureLookup.get(i.structure_id ?? '') ?? i.structure_id ?? i.id,
+      status: i.status,
+      structure_description: structureLookup.get(i.structure_id ?? '') ?? '',
+    }));
+
+    setBulkReassignTarget({ sourceInspectorId, inspections: mapped });
+  }, [selectedInspections, structureLookup]);
 
   if (isLoading) return (
     <div className="p-8 max-w-7xl mx-auto animate-fadeIn">
@@ -131,6 +177,15 @@ export default function InspectionListPage() {
               <table className="w-full text-sm" aria-label="Inspections table">
                 <thead>
                   <tr className="border-b border-border text-left">
+                    <th className="px-4 py-3 w-10">
+                      <input
+                        type="checkbox"
+                        checked={allSelected}
+                        onChange={toggleSelectAll}
+                        aria-label="Select all inspections"
+                        className="rounded border-border text-accent focus:ring-accent"
+                      />
+                    </th>
                     <th className="px-6 py-3 text-text-secondary font-semibold">Site</th>
                     <th className="py-3 text-text-secondary font-semibold">Structure</th>
                     <th className="py-3 text-text-secondary font-semibold">Assignee</th>
@@ -145,7 +200,16 @@ export default function InspectionListPage() {
                     const isSubmitted = insp.status === InspectionStatus.Submitted;
                     const isApproved = insp.status === InspectionStatus.Approved;
                     return (
-                      <tr key={insp.id} className="border-b border-border hover:bg-surface-hover transition-colors">
+                      <tr key={insp.id} className={`border-b border-border transition-colors ${selectedIds.has(insp.id) ? 'bg-accent/5' : 'hover:bg-surface-hover'}`}>
+                        <td className="px-4 py-4">
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.has(insp.id)}
+                            onChange={() => toggleSelect(insp.id)}
+                            aria-label={`Select inspection ${insp.id}`}
+                            className="rounded border-border text-accent focus:ring-accent"
+                          />
+                        </td>
                         <td className="px-6 py-4 text-text-primary font-medium">{getSiteName(insp)}</td>
                         <td className="py-4 text-text-primary">{structureLookup.get(insp.structure_id ?? '') ?? insp.structure_id ?? '—'}</td>
                         <td className="py-4 text-text-primary">{insp.assignee_name ? `${insp.assignee_name}${insp.assignee_email ? ` (${insp.assignee_email})` : ''}` : insp.assigned_to}</td>
@@ -204,8 +268,40 @@ export default function InspectionListPage() {
         )}
       </div>
 
+      {selectedIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-surface border border-border rounded-xl shadow-2xl px-5 py-3 flex items-center gap-4 z-40">
+          <span className="text-sm font-medium text-text-primary">
+            {selectedIds.size} selected
+          </span>
+          <button
+            onClick={openBulkReassign}
+            disabled={selectedInspections.filter(i => i.status !== InspectionStatus.Approved).length === 0}
+            className="rounded-md bg-accent px-4 py-1.5 text-sm font-medium text-accent-foreground hover:opacity-90 disabled:opacity-50"
+          >
+            Reassign
+          </button>
+          <button
+            onClick={() => setSelectedIds(new Set())}
+            className="rounded-md bg-surface-tertiary px-4 py-1.5 text-sm font-medium text-text-primary hover:opacity-90"
+          >
+            Clear
+          </button>
+        </div>
+      )}
+
       {returnTarget && <ReturnInspectionModal inspectionId={returnTarget} onClose={() => setReturnTarget(null)} onReturn={() => { setReturnTarget(null); client.invalidateQueries({ queryKey: ['inspections'] }); }} />}
       {approveTarget && <ApproveInspectionModal inspectionId={approveTarget} onClose={() => setApproveTarget(null)} onApprove={() => { setApproveTarget(null); client.invalidateQueries({ queryKey: ['inspections'] }); }} />}
+      {bulkReassignTarget && (
+        <BulkReassignDialog
+          sourceInspectorId={bulkReassignTarget.sourceInspectorId}
+          inspections={bulkReassignTarget.inspections}
+          onClose={() => setBulkReassignTarget(null)}
+          onSuccess={() => {
+            setBulkReassignTarget(null);
+            setSelectedIds(new Set());
+          }}
+        />
+      )}
     </div>
   );
 }
