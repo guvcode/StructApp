@@ -314,6 +314,7 @@
 | BL-034 | Feature | **Asset Library Taxonomy Template** — seed full WTP asset library (~105 taxonomy nodes) from XLSX for new clients; create `structure_taxonomy_templates` linking table; add `GET /api/v1/structure-taxonomy-templates` endpoint; update mobile DeficiencyDetailPage to pin template-relevant components at the top of each picker | High | 2026-07-11 | 🟩 COMPLETED |
 | ADM-421 | Email Queue UI — fix data fetch/response shape mismatch (pagination nested in `json.data`), make sidebar link always visible (phase P1 → P0), add frontend tests | Low | 2026-07-10 | 🟩 COMPLETED |
 | BL-036 | Nav | Register sidebar cleanup — remove Component Types nav item/page/route, rename Work Types → "Work Types (Timesheet)" | Low | 2026-07-14 | 🟩 COMPLETED |
+| BL-038 | Photo Metadata Visibility | Expose photo metadata (filename, capture time, camera, GPS) in PhotoGallery lightbox, ReconciliationQueuePage photo grid, and new Admin Photos page with dedicated route and backend query | Medium | 2026-07-22 | 🟩 COMPLETED |
 
 ## 10.13 Sprint 6 — Taxonomy & Cascading Deficiency Flow (TAX)
 
