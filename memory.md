@@ -1,33 +1,29 @@
-# Memory — Timesheet client_id mismatch fix (TIMESHEET-001)
+# Memory — BL-038 photo metadata visibility
 
-Last updated: 2026-07-14T08:16:00-06:00
+Last updated: 2026-07-22T11:28:00-06:00
 
 ## What was built
 
-- **`apps/api-server/src/routes/timesheets.ts`** — Added `client_id` (optional UUID) to `batchCreateSchema` Zod schema. Added validation in `POST /batch` handler: if `client_id` is provided in the request body, it must match the `client_id` resolved from the inspection/project chain. Returns 422 `CLIENT_MISMATCH` if they differ.
-- **`apps/web-client/src/pages/mobile/TimesheetDetailPage.tsx`** — Added `client_id: getActiveClientId()` to the batch create request body when `activeClientId` is available.
+- **Photo metadata types** — Added `original_filename`, `captured_at`, `camera_make`, `camera_model`, `raw_exif_payload`, `gps_latitude`, `gps_longitude` to `PhotoRecord` (frontend), `PendingPhoto` (frontend), `PendingPhotoInput` (backend Zod schema), and `PendingPhotoRow` (backend)
+- **PhotoGallery.tsx** — Added `PhotoMetadata` component with expandable details (filename, captured time, camera info, GPS coordinates) rendered in the lightbox when metadata exists
+- **ReconciliationQueuePage.tsx** — Replaced plain text photo list with 2-column grid of `Card` components showing thumbnails, original filename, camera, capture time, and GPS coordinates; uses `useMemo` for selected structure lookup
+- **Admin Photos page/adminPhotos service/adminPhotos route** — New admin `/admin/photos` route, page, and backend query with RequireAdminOrReviewer guard; sidebar icon and menu entry added
+- **Backend** — `getPendingPhotosForBundle` SELECT now returns metadata columns; `addPhotoToPendingDeficiency` INSERT now stores them
+
+## Tests
+
+- **B30** (`tests/b30-photo-metadata.test.tsx`) — 4 tests: PhotoGallery lightbox renders metadata, hides when absent, fallback parses `raw_exif_payload`, hides GPS block when no GPS
+- **B31** (`tests/b31-mobile-metadata.test.tsx`) — 3 tests: Mobile DeficiencyPhotosPage dropzone captures metadata, shows camera/GPS, shows captured timestamp
+- **B32** (`tests/b32-reconciliation-grid.test.tsx`) — 5 tests: ReconciliationQueuePage image grid renders cards, thumbnails, metadata, camera text, GPS text
+- All 12 tests pass (`npx vitest run`)
+- Backend `pendingStructures.test.ts` updated and all 17 tests pass
 
 ## Decisions made
 
-- The `trg_set_timesheet_client` DB trigger always overwrites `client_id` with the project's value, so the client-sent `client_id` is used for validation only, not storage
-- The approach: ensure `active_client_id` aligns with the inspection's client before creating entries — prevents cross-client entries from becoming invisible on the list page
-- Backward compatible: `client_id` is optional in the schema — existing callers without it continue to work
-
-## Problems solved
-
-- Root cause identified: user `gbengaomoni@gmail.com` has memberships in two clients (Eamec Canada, Glecore Canada). Login picks first membership (Eamec) as `active_client_id`. Entries created under Glecore inspections get stored with Glecore's `client_id` (via trigger), but list page filters by Eamec's `active_client_id` — entries invisible.
-- Database confirmed: 0 entries for today (2026-07-14), 2 entries exist from July 10, both under Glecore Canada.
+- Admin Photos page uses same `PhotoMetadata` component as contractor-facing gallery (DRY)
+- Backend stores metadata as nullable columns; frontend types make fields optional for backward compatibility
 
 ## Current state
 
-- Both changes committed to `task/TIMESHEET-001-fix-client-id-mismatch`
-- Server tests (14) and client tests (6) all pass
-- `tsc --noEmit --skipLibCheck` timed out (large project) — but changes are type-safe
-
-## Next session starts with
-
-- If the client switcher (`setActiveClientId` in `authStore.ts`) is not wired up, the `active_client_id` will remain at the first membership. The switcher needs to call `setActiveClientId()` when the user selects a different client.
-
-## Open questions
-
-- The client switcher (`switchClient` endpoint exists on server, `setActiveClientId` exists in authStore) — is it fully wired in the UI? If not, the user's `active_client_id` stays at the first membership, and creating entries for other clients will still hit the `CLIENT_MISMATCH` error.
+- Committed and pushed to `task/BL-038-photo-metadata-visibility`
+- Progress tracker updated
