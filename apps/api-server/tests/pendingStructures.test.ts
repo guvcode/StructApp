@@ -1,5 +1,7 @@
 import {
   submitPendingStructureBundle,
+  addDeficiencyToPendingStructure,
+  addPhotoToPendingDeficiency,
   getPendingStructuresForReview,
   getPendingStructureById,
   getPendingDeficienciesForBundle,
@@ -9,6 +11,7 @@ import {
   getContractorPendingStructures,
   type PendingStructureRow,
   type PendingDeficiencyRow,
+  type PendingPhotoRow,
 } from '../src/services/pendingStructures';
 
 jest.mock('../src/lib/db', () => ({
@@ -16,10 +19,6 @@ jest.mock('../src/lib/db', () => ({
     query: jest.fn(),
     connect: jest.fn(),
   },
-}));
-
-jest.mock('../src/services/cloudinary', () => ({
-  uploadToCloudinary: jest.fn(),
 }));
 
 jest.mock('../src/services/notificationQueue', () => ({
@@ -55,7 +54,7 @@ describe('pendingStructures service', () => {
   beforeEach(() => { resetMocks(); });
 
   describe('submitPendingStructureBundle', () => {
-    test('submits a valid bundle with deficiencies and photos', async () => {
+    test('submits a valid pending structure', async () => {
       const mockClient = makeMockClient();
 
       mockPool.query
@@ -66,10 +65,6 @@ describe('pendingStructures service', () => {
       mockClient.query
         .mockResolvedValueOnce({})
         .mockResolvedValueOnce({ rows: [{ pending_structure_id: PS_ID, local_id: 'local-1', status: 'pending' }] })
-        .mockResolvedValueOnce({})
-        .mockResolvedValueOnce({})
-        .mockResolvedValueOnce({})
-        .mockResolvedValueOnce({})
         .mockResolvedValueOnce({});
 
       const result = await submitPendingStructureBundle(USER_ID, {
@@ -78,27 +73,11 @@ describe('pendingStructures service', () => {
         client_id: CLIENT_ID,
         asset_tag: 'A-001',
         description: 'Discovered boiler',
-        deficiencies: [
-          {
-            local_id: 'def-1',
-            detailed_description: 'Corrosion on shell',
-            consequence_severity: 3,
-            likelihood: 'C',
-          },
-        ],
-        photos: [
-          {
-            filename: 'photo1.jpg',
-            data: 'data:image/jpeg;base64,/9j/',
-          },
-        ],
       });
 
       expect(result.pending_structure_id).toBe(PS_ID);
       expect(result.local_id).toBe('local-1');
       expect(result.status).toBe('pending');
-      expect(result.deficiencies_count).toBe(1);
-      expect(result.photos_count).toBe(1);
     });
 
     test('rejects when contractor is not a member of the client', async () => {
@@ -111,8 +90,6 @@ describe('pendingStructures service', () => {
           client_id: CLIENT_ID,
           asset_tag: 'A-001',
           description: 'Discovered boiler',
-          deficiencies: [],
-          photos: [],
         }),
       ).rejects.toThrow('NOT_A_MEMBER');
     });
@@ -129,10 +106,66 @@ describe('pendingStructures service', () => {
           client_id: CLIENT_ID,
           asset_tag: 'A-001',
           description: 'Discovered boiler',
-          deficiencies: [],
-          photos: [],
         }),
       ).rejects.toThrow('SITE_NOT_FOUND');
+    });
+  });
+
+  describe('addDeficiencyToPendingStructure', () => {
+    test('adds a deficiency to a pending structure', async () => {
+      mockPool.query
+        .mockResolvedValueOnce({ rowCount: 1, rows: [{ pending_structure_id: PS_ID }] })
+        .mockResolvedValueOnce({ rows: [{ pending_deficiency_id: DEF_ID, pending_structure_id: PS_ID, local_id: 'def-1', category: null, equipment_type: null, component: null, sub_component: null, focus_area: null, deficiency_category: null, detailed_description: 'Corrosion', consequence_severity: 3, likelihood: null, recommended_action: null, most_affected_consequence: null, gps_latitude: null, gps_longitude: null }] });
+
+      const result = await addDeficiencyToPendingStructure(PS_ID, USER_ID, {
+        local_id: 'def-1',
+        detailed_description: 'Corrosion',
+        consequence_severity: 3,
+      });
+
+      expect(result.pending_deficiency_id).toBe(DEF_ID);
+      expect(result.detailed_description).toBe('Corrosion');
+    });
+
+    test('throws when pending structure is not found', async () => {
+      mockPool.query.mockResolvedValueOnce({ rowCount: 0, rows: [] });
+
+      await expect(
+        addDeficiencyToPendingStructure(PS_ID, USER_ID, {
+          local_id: 'def-1',
+          detailed_description: 'Corrosion',
+        }),
+      ).rejects.toThrow('PENDING_STRUCTURE_NOT_FOUND');
+    });
+  });
+
+  describe('addPhotoToPendingDeficiency', () => {
+    test('adds a photo to a pending deficiency', async () => {
+      mockPool.query
+        .mockResolvedValueOnce({ rowCount: 1, rows: [{ pending_structure_id: PS_ID }] })
+        .mockResolvedValueOnce({ rowCount: 1, rows: [{ pending_deficiency_id: DEF_ID }] })
+        .mockResolvedValueOnce({ rows: [{ pending_photo_id: PHOTO_ID, pending_structure_id: PS_ID, pending_deficiency_id: DEF_ID, filename: 'photo.jpg', storage_url: null, caption: '', display_order: 0 }] });
+
+      const result = await addPhotoToPendingDeficiency(PS_ID, DEF_ID, USER_ID, {
+        filename: 'photo.jpg',
+        data: 'data:image/jpeg;base64,/9j/',
+      });
+
+      expect(result.pending_photo_id).toBe(PHOTO_ID);
+      expect(result.filename).toBe('photo.jpg');
+    });
+
+    test('throws when pending deficiency is not found', async () => {
+      mockPool.query
+        .mockResolvedValueOnce({ rowCount: 1, rows: [{ pending_structure_id: PS_ID }] })
+        .mockResolvedValueOnce({ rowCount: 0, rows: [] });
+
+      await expect(
+        addPhotoToPendingDeficiency(PS_ID, DEF_ID, USER_ID, {
+          filename: 'photo.jpg',
+          data: 'data:image/jpeg;base64,/9j/',
+        }),
+      ).rejects.toThrow('PENDING_DEFICIENCY_NOT_FOUND');
     });
   });
 
@@ -171,6 +204,57 @@ describe('pendingStructures service', () => {
       const result = await getPendingStructuresForReview();
       expect(result).toHaveLength(0);
       expect(mockPool.query.mock.calls[0][0]).not.toContain('WHERE client_id');
+    });
+  });
+
+  describe('getPendingDeficienciesForBundle', () => {
+    test('returns deficiencies for a bundle', async () => {
+      const mockDefs: PendingDeficiencyRow[] = [
+        {
+          pending_deficiency_id: DEF_ID,
+          pending_structure_id: PS_ID,
+          local_id: 'def-1',
+          category: 'Structural',
+          equipment_type: null,
+          component: 'Shell',
+          sub_component: null,
+          focus_area: null,
+          deficiency_category: null,
+          detailed_description: 'Corrosion',
+          consequence_severity: 3,
+          likelihood: 'C',
+          recommended_action: null,
+          most_affected_consequence: null,
+          gps_latitude: null,
+          gps_longitude: null,
+        },
+      ];
+      mockPool.query.mockResolvedValueOnce({ rows: mockDefs });
+
+      const result = await getPendingDeficienciesForBundle(PS_ID);
+      expect(result).toHaveLength(1);
+      expect(result[0]!.component).toBe('Shell');
+    });
+  });
+
+  describe('getPendingPhotosForBundle', () => {
+    test('returns photos for a bundle', async () => {
+      const mockPhotos: PendingPhotoRow[] = [
+        {
+          pending_photo_id: PHOTO_ID,
+          pending_structure_id: PS_ID,
+          pending_deficiency_id: DEF_ID,
+          filename: 'photo.jpg',
+          storage_url: 'https://cdn.example.com/photo.jpg',
+          caption: 'Damage',
+          display_order: 0,
+        },
+      ];
+      mockPool.query.mockResolvedValueOnce({ rows: mockPhotos });
+
+      const result = await getPendingPhotosForBundle(PS_ID);
+      expect(result).toHaveLength(1);
+      expect(result[0]!.filename).toBe('photo.jpg');
     });
   });
 

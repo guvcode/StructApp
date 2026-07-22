@@ -79,29 +79,43 @@ export async function submitPendingStructureBundle(input: {
   asset_tag: string;
   description: string;
   qr_code_value?: string | null;
-  deficiencies?: Array<{
-    category?: string | null;
-    equipment_type?: string | null;
-    component?: string | null;
-    sub_component?: string | null;
-    focus_area?: string | null;
-    deficiency_category?: string | null;
-    detailed_description?: string | null;
-    consequence_severity?: number | null;
-    likelihood?: string | null;
-    recommended_action?: string | null;
-    most_affected_consequence?: string | null;
-    gps_latitude?: number | null;
-    gps_longitude?: number | null;
-    photos?: Array<{
-      filename: string;
-      caption?: string;
-      display_order?: number;
-      storage_url?: string;
-    }>;
-  }>;
-}): Promise<{ pending_structure_id: string }> {
+  local_id?: string;
+}): Promise<{ pending_structure_id: string; local_id: string; status: string }> {
   return apiClient(ENDPOINTS.pendingStructures.submit, {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}
+
+export async function addDeficiency(pendingStructureId: string, input: {
+  local_id?: string;
+  category?: string | null;
+  equipment_type?: string | null;
+  component?: string | null;
+  sub_component?: string | null;
+  focus_area?: string | null;
+  deficiency_category?: string | null;
+  detailed_description?: string | null;
+  consequence_severity?: number | null;
+  likelihood?: string | null;
+  recommended_action?: string | null;
+  most_affected_consequence?: string | null;
+  gps_latitude?: number | null;
+  gps_longitude?: number | null;
+}): Promise<PendingDeficiency> {
+  return apiClient(ENDPOINTS.pendingStructures.addDeficiency(pendingStructureId), {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}
+
+export async function addDeficiencyPhoto(pendingStructureId: string, deficiencyId: string, input: {
+  filename: string;
+  data: string;
+  caption?: string;
+  display_order?: number;
+}): Promise<PendingPhoto> {
+  return apiClient(ENDPOINTS.pendingStructures.addDeficiencyPhoto(pendingStructureId, deficiencyId), {
     method: 'POST',
     body: JSON.stringify(input),
   });

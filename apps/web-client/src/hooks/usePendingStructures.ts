@@ -50,6 +50,28 @@ export function useSubmitPendingStructure() {
   });
 }
 
+export function useAddPendingDeficiency() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ pendingStructureId, input }: { pendingStructureId: string; input: Parameters<typeof api.addDeficiency>[1] }) =>
+      api.addDeficiency(pendingStructureId, input),
+    onSuccess: (_, variables) => {
+      client.invalidateQueries({ queryKey: ['pending-structures', variables.pendingStructureId, 'deficiencies'] });
+    },
+  });
+}
+
+export function useAddPendingDeficiencyPhoto() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ pendingStructureId, deficiencyId, input }: { pendingStructureId: string; deficiencyId: string; input: Parameters<typeof api.addDeficiencyPhoto>[2] }) =>
+      api.addDeficiencyPhoto(pendingStructureId, deficiencyId, input),
+    onSuccess: (_, variables) => {
+      client.invalidateQueries({ queryKey: ['pending-structures', variables.pendingStructureId, 'photos'] });
+    },
+  });
+}
+
 export function useApprovePendingStructure() {
   const client = useQueryClient();
   return useMutation({
