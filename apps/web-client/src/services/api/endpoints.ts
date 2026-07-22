@@ -166,6 +166,8 @@ export const ENDPOINTS = {
     byId: (id: string) => `${BASE_URL}/pending-structures/${id}`,
     deficiencies: (id: string) => `${BASE_URL}/pending-structures/${id}/deficiencies`,
     photos: (id: string) => `${BASE_URL}/pending-structures/${id}/photos`,
+    addDeficiency: (id: string) => `${BASE_URL}/pending-structures/${id}/deficiencies`,
+    addDeficiencyPhoto: (id: string, deficiencyId: string) => `${BASE_URL}/pending-structures/${id}/deficiencies/${deficiencyId}/photos`,
     approve: (id: string) => `${BASE_URL}/pending-structures/${id}/approve`,
     reject: (id: string) => `${BASE_URL}/pending-structures/${id}/reject`,
   },

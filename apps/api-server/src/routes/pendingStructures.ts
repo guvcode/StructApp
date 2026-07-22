@@ -1,7 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { requireAuth, requireRole } from '../middleware/auth';
 import * as pendingService from '../services/pendingStructures';
-import { submitPendingStructureSchema, pendingStructureApproveSchema } from '../contracts/pendingStructures';
+import { submitPendingStructureSchema, pendingStructureApproveSchema, pendingDeficiencySchema, pendingPhotoSchema } from '../contracts/pendingStructures';
 
 const router = Router();
 
@@ -100,6 +100,55 @@ router.get(
       const photos = await pendingService.getPendingPhotosForBundle(req.params.id);
       res.json({ success: true, data: photos });
     } catch (err) {
+      next(err);
+    }
+  },
+);
+
+router.post(
+  '/:id/deficiencies',
+  requireAuth,
+  async (req: Request & { user: { sub: string } },
+    res: Response, next: NextFunction) => {
+    try {
+      const input = pendingDeficiencySchema.parse(req.body);
+      const result = await pendingService.addDeficiencyToPendingStructure(req.params.id, req.user.sub, input);
+      res.status(201).json({ success: true, data: result });
+    } catch (err) {
+      if (err instanceof Error) {
+        if (err.message.startsWith('VALIDATION_ERROR')) {
+          return res.status(422).json({ success: false, error_code: 'VALIDATION_ERROR', message: err.message });
+        }
+        if (err.message === 'PENDING_STRUCTURE_NOT_FOUND') {
+          return res.status(404).json({ success: false, error_code: 'NOT_FOUND', message: 'Pending structure not found' });
+        }
+      }
+      next(err);
+    }
+  },
+);
+
+router.post(
+  '/:id/deficiencies/:deficiencyId/photos',
+  requireAuth,
+  async (req: Request & { user: { sub: string } },
+    res: Response, next: NextFunction) => {
+    try {
+      const input = pendingPhotoSchema.parse(req.body);
+      const result = await pendingService.addPhotoToPendingDeficiency(req.params.id, req.params.deficiencyId, req.user.sub, input);
+      res.status(201).json({ success: true, data: result });
+    } catch (err) {
+      if (err instanceof Error) {
+        if (err.message.startsWith('VALIDATION_ERROR')) {
+          return res.status(422).json({ success: false, error_code: 'VALIDATION_ERROR', message: err.message });
+        }
+        if (err.message === 'PENDING_STRUCTURE_NOT_FOUND') {
+          return res.status(404).json({ success: false, error_code: 'NOT_FOUND', message: 'Pending structure not found' });
+        }
+        if (err.message === 'PENDING_DEFICIENCY_NOT_FOUND') {
+          return res.status(404).json({ success: false, error_code: 'NOT_FOUND', message: 'Pending deficiency not found' });
+        }
+      }
       next(err);
     }
   },

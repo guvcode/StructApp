@@ -30,6 +30,12 @@ export type PendingStructureRow = {
   updated_at: string;
 };
 
+export type SubmitPendingStructureResult = {
+  pending_structure_id: string;
+  local_id: string;
+  status: string;
+};
+
 export type PendingDeficiencyRow = {
   pending_deficiency_id: string;
   pending_structure_id: string;
@@ -57,14 +63,6 @@ export type PendingPhotoRow = {
   storage_url: string | null;
   caption: string;
   display_order: number;
-};
-
-export type SubmitPendingStructureResult = {
-  pending_structure_id: string;
-  local_id: string;
-  status: string;
-  deficiencies_count: number;
-  photos_count: number;
 };
 
 export async function submitPendingStructureBundle(
@@ -106,56 +104,9 @@ export async function submitPendingStructureBundle(
     );
     const pendingStructureId = bundleResult.rows[0].pending_structure_id;
 
-    let deficienciesInserted = 0;
-    for (const def of data.deficiencies ?? []) {
-      const parsedDef = pendingDeficiencySchema.safeParse(def);
-      if (!parsedDef.success) continue;
-
-      const d = parsedDef.data;
-      await client.query(
-        `INSERT INTO pending_structure_deficiencies
-          (pending_structure_id, local_id, category, equipment_type, component, sub_component, focus_area,
-           deficiency_category, detailed_description, consequence_severity, likelihood,
-           recommended_action, most_affected_consequence, gps_latitude, gps_longitude)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
-        [
-          pendingStructureId,
-          d.local_id,
-          d.category || null,
-          d.equipment_type || null,
-          d.component || null,
-          d.sub_component || null,
-          d.focus_area || null,
-          d.deficiency_category || null,
-          d.detailed_description || null,
-          d.consequence_severity ?? null,
-          d.likelihood || null,
-          d.recommended_action || null,
-          d.most_affected_consequence || null,
-          d.gps_latitude ?? null,
-          d.gps_longitude ?? null,
-        ],
-      );
-      deficienciesInserted++;
-    }
-
-    let photosInserted = 0;
-    for (const photo of data.photos ?? []) {
-      const parsedPhoto = pendingPhotoSchema.safeParse(photo);
-      if (!parsedPhoto.success) continue;
-
-      const p = parsedPhoto.data;
-      await client.query(
-        `INSERT INTO pending_structure_photos (pending_structure_id, filename, data, caption, display_order)
-         VALUES ($1, $2, $3, $4, $5)`,
-        [pendingStructureId, p.filename, p.data, p.caption || '', p.display_order ?? 0],
-      );
-      photosInserted++;
-    }
-
     await client.query('COMMIT');
 
-    logger.info({ msg: 'pending_structure_submitted', pendingStructureId, contractorId, clientId: data.client_id, assetTag: data.asset_tag, deficiencies: deficienciesInserted, photos: photosInserted });
+    logger.info({ msg: 'pending_structure_submitted', pendingStructureId, contractorId, clientId: data.client_id, assetTag: data.asset_tag });
 
     const reviewerRows = await pool.query(
       `SELECT u.email FROM users u
@@ -180,8 +131,6 @@ export async function submitPendingStructureBundle(
       pending_structure_id: pendingStructureId,
       local_id: bundleResult.rows[0].local_id,
       status: bundleResult.rows[0].status,
-      deficiencies_count: deficienciesInserted,
-      photos_count: photosInserted,
     };
   } catch (err) {
     await client.query('ROLLBACK');
@@ -189,6 +138,94 @@ export async function submitPendingStructureBundle(
   } finally {
     client.release();
   }
+}
+
+export async function addDeficiencyToPendingStructure(
+  pendingStructureId: string,
+  contractorId: string,
+  input: PendingDeficiencyInput,
+): Promise<PendingDeficiencyRow> {
+  const parsed = pendingDeficiencySchema.safeParse(input);
+  if (!parsed.success) {
+    throw new Error(`VALIDATION_ERROR: ${parsed.error.message}`);
+  }
+
+  const d = parsed.data;
+
+  const bundleResult = await pool.query(
+    'SELECT pending_structure_id FROM pending_structures WHERE pending_structure_id = $1 AND contractor_id = $2',
+    [pendingStructureId, contractorId],
+  );
+  if (bundleResult.rowCount === 0) {
+    throw new Error('PENDING_STRUCTURE_NOT_FOUND');
+  }
+
+  const result = await pool.query(
+    `INSERT INTO pending_structure_deficiencies
+      (pending_structure_id, local_id, category, equipment_type, component, sub_component, focus_area,
+       deficiency_category, detailed_description, consequence_severity, likelihood,
+       recommended_action, most_affected_consequence, gps_latitude, gps_longitude)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+     RETURNING *`,
+    [
+      pendingStructureId,
+      d.local_id,
+      d.category || null,
+      d.equipment_type || null,
+      d.component || null,
+      d.sub_component || null,
+      d.focus_area || null,
+      d.deficiency_category || null,
+      d.detailed_description || null,
+      d.consequence_severity ?? null,
+      d.likelihood || null,
+      d.recommended_action || null,
+      d.most_affected_consequence || null,
+      d.gps_latitude ?? null,
+      d.gps_longitude ?? null,
+    ],
+  );
+
+  return result.rows[0];
+}
+
+export async function addPhotoToPendingDeficiency(
+  pendingStructureId: string,
+  pendingDeficiencyId: string,
+  contractorId: string,
+  input: PendingPhotoInput,
+): Promise<PendingPhotoRow> {
+  const parsed = pendingPhotoSchema.safeParse(input);
+  if (!parsed.success) {
+    throw new Error(`VALIDATION_ERROR: ${parsed.error.message}`);
+  }
+
+  const p = parsed.data;
+
+  const bundleResult = await pool.query(
+    'SELECT pending_structure_id FROM pending_structures WHERE pending_structure_id = $1 AND contractor_id = $2',
+    [pendingStructureId, contractorId],
+  );
+  if (bundleResult.rowCount === 0) {
+    throw new Error('PENDING_STRUCTURE_NOT_FOUND');
+  }
+
+  const defResult = await pool.query(
+    'SELECT pending_deficiency_id FROM pending_structure_deficiencies WHERE pending_deficiency_id = $1 AND pending_structure_id = $2',
+    [pendingDeficiencyId, pendingStructureId],
+  );
+  if (defResult.rowCount === 0) {
+    throw new Error('PENDING_DEFICIENCY_NOT_FOUND');
+  }
+
+  const result = await pool.query(
+    `INSERT INTO pending_structure_photos (pending_structure_id, pending_deficiency_id, filename, data, caption, display_order)
+     VALUES ($1, $2, $3, $4, $5, $6)
+     RETURNING *`,
+    [pendingStructureId, pendingDeficiencyId, p.filename, p.data, p.caption || '', p.display_order ?? 0],
+  );
+
+  return result.rows[0];
 }
 
 export async function getPendingStructuresForReview(
