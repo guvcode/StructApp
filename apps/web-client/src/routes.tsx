@@ -56,6 +56,7 @@ import PinSetupPage from './pages/auth/PinSetupPage';
 import ForbiddenPage from './pages/ForbiddenPage';
 import NotFoundPage from './pages/NotFoundPage';
 import EmailQueuePage from './pages/admin/EmailQueuePage';
+import AdminPhotosPage from './pages/admin/AdminPhotosPage';
 
 export default function AppRoutes() {
   return (
@@ -120,6 +121,7 @@ export default function AppRoutes() {
             <Route path="schedules" element={<CalendarSchedulesPage />} />
           </Route>
           <Route path="admin/dashboard" element={<AdminDashboardPage />} />
+          <Route path="admin/photos" element={<AdminPhotosPage />} />
           <Route path="admin/clients" element={<ClientListPage />} />
           <Route path="admin/clients/new" element={<NewClientPage />} />
           <Route path="admin/users" element={<UserListPage />} />

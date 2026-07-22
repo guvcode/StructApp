@@ -132,6 +132,9 @@ export const ENDPOINTS = {
   structureTaxonomyTemplates: {
     byStructureType: (structureTypeId: string) => `${BASE_URL}/structure-taxonomy-templates?structure_type_id=${structureTypeId}`,
   },
+  admin: {
+    photos: `${BASE_URL}/admin/photos`,
+  },
   auditLogs: {
     list: `${BASE_URL}/audit-logs`,
   },

@@ -34,6 +34,7 @@ import { structureTemplatesRouter } from './routes/structureTemplates';
 import { pendingStructuresRouter } from './routes/pendingStructures';
 import { usersRouter as usersRouter2 } from './routes/users';
 import { clientsRouter as clientsRouter2 } from './routes/clients';
+import { adminPhotosRouter } from './routes/adminPhotos';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -55,7 +56,8 @@ app.use('/api/v1/inspections', requireAuth, requireRole('Admin', 'Reviewer', 'Co
 app.use('/api/v1/sync', requireAuth, requireRole('Admin', 'Contractor'), syncRouter);
 app.use('/api/v1/deficiencies', requireAuth, requireRole('Admin', 'Reviewer', 'Contractor'), deficienciesRouter);
 app.use('/api/v1/photos', requireAuth, requireRole('Contractor'), photosRouter);
-app.use('/api/v1/audit-logs', requireAuth, requireRole('Admin'), auditLogsRouter);
+app.use('/api/v1/admin/photos', requireAuth, requireRole('Admin', 'Reviewer'), adminPhotosRouter);
+app.use('/api/v1/admin/audit-logs', requireAuth, requireRole('Admin'), auditLogsRouter);
 app.use('/api/v1/job-errors', requireAuth, requireRole('Admin'), jobErrorsRouter);
 app.use('/api/v1/client-errors', requireAuth, requireRole('Admin'), clientErrorsRouter);
 app.use('/api/v1/timesheets', requireAuth, requireRole('Admin', 'Reviewer', 'Contractor'), timesheetsRouter);

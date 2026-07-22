@@ -294,6 +294,13 @@ export interface PhotoRecord {
   purpose: 'evidence' | 'remediation_evidence';
   created_at: string;
   sync_state: SyncState;
+  original_filename?: string;
+  captured_at?: string;
+  camera_make?: string;
+  camera_model?: string;
+  raw_exif_payload?: string;
+  gps_latitude?: number;
+  gps_longitude?: number;
 }
 
 export interface SyncQueueItem {
