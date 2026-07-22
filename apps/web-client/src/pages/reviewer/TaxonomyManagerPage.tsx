@@ -76,6 +76,28 @@ export default function TaxonomyManagerPage() {
     },
   });
 
+  const updateCategoryMutation = useMutation({
+    mutationFn: ({ nodeId, category }: { nodeId: string; category: string }) =>
+      apiClient(ENDPOINTS.taxonomy.update(nodeId), {
+        method: 'PATCH',
+        body: JSON.stringify({ category }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['taxonomy'] });
+    },
+  });
+
+  const updateDisplayOrderMutation = useMutation({
+    mutationFn: ({ nodeId, displayOrder }: { nodeId: string; displayOrder: number }) =>
+      apiClient(ENDPOINTS.taxonomy.update(nodeId), {
+        method: 'PATCH',
+        body: JSON.stringify({ display_order: displayOrder }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['taxonomy'] });
+    },
+  });
+
   const toggleActiveMutation = useMutation({
     mutationFn: ({ nodeId, isActive }: { nodeId: string; isActive: boolean }) =>
       apiClient(ENDPOINTS.taxonomy.update(nodeId), {
@@ -113,6 +135,14 @@ export default function TaxonomyManagerPage() {
   const handleRename = useCallback((nodeId: string, label: string) => {
     renameMutation.mutate({ nodeId, label });
   }, [renameMutation]);
+
+  const handleUpdateCategory = useCallback((nodeId: string, category: string) => {
+    updateCategoryMutation.mutate({ nodeId, category });
+  }, [updateCategoryMutation]);
+
+  const handleUpdateDisplayOrder = useCallback((nodeId: string, displayOrder: number) => {
+    updateDisplayOrderMutation.mutate({ nodeId, displayOrder });
+  }, [updateDisplayOrderMutation]);
 
   const handleDeactivate = useCallback((nodeId: string) => {
     toggleActiveMutation.mutate({ nodeId, isActive: true });
@@ -201,6 +231,8 @@ export default function TaxonomyManagerPage() {
             node={selectedNode}
             path={selectedPath}
             onRename={handleRename}
+            onUpdateCategory={handleUpdateCategory}
+            onUpdateDisplayOrder={handleUpdateDisplayOrder}
             onDeactivate={handleDeactivate}
             onReactivate={handleReactivate}
             onAddChild={handleAddChild}

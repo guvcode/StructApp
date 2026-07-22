@@ -78,6 +78,7 @@ export async function updateTaxonomyNode(
   updates: {
     parent_id?: string | null;
     label?: string;
+    category?: string;
     display_order?: number;
     is_active?: boolean;
   }
@@ -99,6 +100,10 @@ export async function updateTaxonomyNode(
     if (updates.label !== undefined) {
       fields.push(`label = $${idx++}`);
       values.push(updates.label);
+    }
+    if (updates.category !== undefined) {
+      fields.push(`category = $${idx++}`);
+      values.push(updates.category);
     }
     if (updates.display_order !== undefined) {
       fields.push(`display_order = $${idx++}`);
