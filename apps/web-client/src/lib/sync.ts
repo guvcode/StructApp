@@ -73,10 +73,21 @@ export async function syncWithAutoRefresh(
     }
   }
 
-  const [deficiencies, submissions] = await Promise.all([
+  const [deficiencies, submissions, pendingStructureDeficiencies, pendingStructurePhotos] = await Promise.all([
     getPendingDeficiencies(),
     getPendingSubmissions(),
+    getPendingPendingStructureDeficiencies(),
+    getPendingPendingStructurePhotos(),
   ]);
+
+  const pendingStructuresPayload = pendingStructureDeficiencies.length > 0 ? [{
+    client_local_id: crypto.randomUUID(),
+    site_id: '00000000-0000-0000-0000-000000000000',
+    asset_tag: 'sync-import',
+    description: 'synced pending deficiencies',
+    deficiencies: pendingStructureDeficiencies,
+    photos: pendingStructurePhotos.length > 0 ? pendingStructurePhotos : undefined,
+  }] : [];
 
   const response = await fetch('/api/v1/sync/push-outbox', {
     method: 'POST',
@@ -87,6 +98,7 @@ export async function syncWithAutoRefresh(
     body: JSON.stringify({
       deficiencies,
       submissions: submissions.length > 0 ? submissions : undefined,
+      pending_structures: pendingStructuresPayload.length > 0 ? pendingStructuresPayload : undefined,
     }),
   });
 
@@ -204,5 +216,46 @@ export async function getPendingDeficiencies(): Promise<Array<PendingDeficiencyP
         if (r.priorityRating) payload.priority_rating = r.priorityRating;
         return payload;
       }),
+    );
+}
+
+export async function getPendingPendingStructureDeficiencies(): Promise<Array<Record<string, unknown>>> {
+  return db.offlinePendingStructureDeficiencies
+    .where('syncState')
+    .equals('Pending_Sync')
+    .toArray()
+    .then((records) =>
+      records.map((r) => ({
+        client_local_id: r.localId?.toString() || crypto.randomUUID(),
+        category: r.category ?? null,
+        equipment_type: r.equipmentType ?? null,
+        component: r.component ?? null,
+        sub_component: r.subComponent ?? null,
+        focus_area: r.focusArea ?? null,
+        deficiency_category: r.deficiencyCategory ?? null,
+        detailed_description: r.detailedDescription ?? null,
+        consequence_severity: r.consequenceSeverity ?? null,
+        likelihood: r.likelihood ?? null,
+        recommended_action: r.recommendedAction ?? null,
+        most_affected_consequence: r.mostAffectedConsequence ?? null,
+        gps_latitude: r.gpsLatitude ?? null,
+        gps_longitude: r.gpsLongitude ?? null,
+      }))
+    );
+}
+
+export async function getPendingPendingStructurePhotos(): Promise<Array<Record<string, unknown>>> {
+  return db.offlinePendingStructurePhotos
+    .where('syncState')
+    .equals('Pending_Sync')
+    .toArray()
+    .then((records) =>
+      records.map((r) => ({
+        client_local_id: r.localId?.toString() || crypto.randomUUID(),
+        filename: r.filename,
+        caption: r.caption,
+        display_order: r.displayOrder,
+        storage_url: r.storageUrl ?? undefined,
+      }))
     );
 }

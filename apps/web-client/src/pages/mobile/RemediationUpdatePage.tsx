@@ -72,8 +72,8 @@ const isReviewerAdmin = isReviewerOrAdmin(role);
 
   return (
     <div className="p-4 max-w-lg mx-auto space-y-4">
-      <button onClick={() => navigate(-1)} className="text-sm text-accent mb-2">&larr; Back</button>
-      <h1 className="text-xl font-bold text-text-primary">Remediation Update</h1>
+      <button onClick={() => navigate(`/m/deficiencies/${id}`)} className="text-sm text-accent mb-2">&larr; Back</button>
+      <h2 className="text-lg font-bold text-text-primary">Remediation Update</h2>
 
       <div className="bg-surface-primary border border-border rounded-lg p-3 space-y-1">
         <p className="font-semibold text-text-primary">{deficiency.component}</p>

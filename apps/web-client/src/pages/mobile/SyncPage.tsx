@@ -5,8 +5,11 @@ import { useSyncState } from '../../hooks/useSync';
 import { getPendingItems, getAllQueueItems, clearQueue } from '../../services/mockSync';
 import { apiClient } from '../../services/api/apiClient';
 import { ENDPOINTS } from '../../services/api/endpoints';
+import { getActiveClientId } from '../../lib/authStore';
 import type { SyncQueueItem } from '../../types/index';
 import Skeleton from '../../components/Skeleton';
+
+const activeClientId = getActiveClientId() || '';
 
 export default function SyncPage() {
   const navigate = useNavigate();
@@ -67,6 +70,28 @@ export default function SyncPage() {
         triage_state: string | null;
         created_at: string; updated_at: string;
       }>;
+      pending_structures: Array<{
+        pending_structure_id: string; local_id: string; site_id: string;
+        contractor_id: string; asset_tag: string; description: string;
+        qr_code_value: string | null; status: string; rejection_reason: string | null;
+        reviewed_by: string | null; reviewed_at: string | null;
+        created_at: string; updated_at: string;
+      }>;
+      pending_structure_deficiencies: Array<{
+        pending_deficiency_id: string; pending_structure_id: string; local_id: string;
+        category: string | null; equipment_type: string | null; component: string | null;
+        sub_component: string | null; focus_area: string | null;
+        deficiency_category: string | null; detailed_description: string | null;
+        consequence_severity: number | null; likelihood: string | null;
+        recommended_action: string | null; most_affected_consequence: string | null;
+        gps_latitude: number | null; gps_longitude: number | null;
+        created_at: string; updated_at: string;
+      }>;
+      pending_structure_photos: Array<{
+        pending_photo_id: string; pending_structure_id: string; pending_deficiency_id: string | null;
+        filename: string; storage_url: string | null; caption: string; display_order: number;
+        created_at: string;
+      }>;
     }>(ENDPOINTS.sync.pull, { method: 'POST', body: '{}' }),
     onSuccess: async (data) => {
       const { db } = await import('../../lib/db');
@@ -117,6 +142,44 @@ export default function SyncPage() {
           }))
         );
       }
+      if (data.pending_structure_deficiencies?.length) {
+        await db.offlinePendingStructureDeficiencies.bulkPut(
+          data.pending_structure_deficiencies.map((d: any) => ({
+            pendingDeficiencyId: d.pending_deficiency_id,
+            pendingStructureLocalId: parseInt(d.pending_structure_id, 10),
+             clientLocalId: activeClientId,
+             category: d.category ?? null,
+             equipmentType: d.equipment_type ?? null,
+             component: d.component ?? null,
+             subComponent: d.sub_component ?? null,
+             focusArea: d.focus_area ?? null,
+             deficiencyCategory: d.deficiency_category ?? null,
+             detailedDescription: d.detailed_description ?? null,
+             consequenceSeverity: d.consequence_severity ?? null,
+             likelihood: d.likelihood ?? null,
+             recommendedAction: d.recommended_action ?? null,
+             mostAffectedConsequence: d.most_affected_consequence ?? null,
+             gpsLatitude: d.gps_latitude ?? null,
+             gpsLongitude: d.gps_longitude ?? null,
+             syncState: 'Synced',
+           }))
+        );
+      }
+      if (data.pending_structure_photos?.length) {
+        await db.offlinePendingStructurePhotos.bulkPut(
+          data.pending_structure_photos.map((p: any) => ({
+            pendingPhotoId: p.pending_photo_id,
+            pendingStructureLocalId: parseInt(p.pending_structure_id, 10),
+            ...(p.pending_deficiency_id ? { pendingDeficiencyLocalId: parseInt(p.pending_deficiency_id, 10) } : {}),
+            clientLocalId: activeClientId,
+            filename: p.filename,
+            caption: p.caption ?? '',
+            displayOrder: p.display_order ?? 0,
+            storageUrl: p.storage_url ?? null,
+            syncState: 'Synced',
+          }))
+        );
+      }
       if (data.taxonomy?.length) {
         const taxonomyData = data.taxonomy as Array<{ node_id: string; parent_id: string | null; level: string; category: string; label: string; display_order: number; is_active: boolean }>;
         await db.offlineTaxonomy.bulkPut(
@@ -131,7 +194,7 @@ export default function SyncPage() {
           }))
         );
       }
-      setMessage(`Pulled ${data.inspections?.length ?? 0} inspections, ${data.deficiencies?.length ?? 0} deficiencies.`);
+      setMessage(`Pulled ${data.inspections?.length ?? 0} inspections, ${data.deficiencies?.length ?? 0} deficiencies, ${data.pending_structure_deficiencies?.length ?? 0} pending deficiencies.`);
       clearQueue();
       load();
     },

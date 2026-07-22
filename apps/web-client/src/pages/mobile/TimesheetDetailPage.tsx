@@ -161,7 +161,7 @@ export default function TimesheetDetailPage() {
   return (
     <div className="p-4 max-w-lg mx-auto space-y-4">
       <button onClick={() => navigate('/m/timesheets')} className="text-sm text-accent">&larr; Back</button>
-      <h1 className="text-xl font-bold text-text-primary">{isNew ? 'New' : 'Edit'} Timesheet Entry</h1>
+      <h2 className="text-lg font-bold text-text-primary">{isNew ? 'New' : 'Edit'} Timesheet Entry</h2>
 
       <div>
         <label className="block text-sm font-medium text-text-primary mb-1">Date</label>

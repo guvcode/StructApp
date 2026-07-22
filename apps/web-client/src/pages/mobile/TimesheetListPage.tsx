@@ -50,7 +50,7 @@ export default function TimesheetListPage() {
     <div className="p-4 max-w-lg mx-auto">
       <button onClick={() => navigate('/m/dashboard')} className="text-sm text-accent mb-2">&larr; Back</button>
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-xl font-bold text-text-primary">Timesheets</h1>
+        <h2 className="text-lg font-bold text-text-primary">Timesheets</h2>
         <button
           onClick={() => navigate('/m/timesheets/new')}
           className="px-3 py-1.5 bg-accent text-white text-sm rounded-lg"

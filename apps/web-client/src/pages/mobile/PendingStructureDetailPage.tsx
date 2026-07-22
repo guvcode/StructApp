@@ -47,6 +47,14 @@ export default function PendingStructureDetailPage() {
           </div>
         )}
       </div>
+      {(pending.status === 'pending' || pending.status === 'rejected') && (
+        <button
+          onClick={() => navigate(`/m/pending-structures/${pending.pending_structure_id}/deficiencies/new`)}
+          className="w-full px-4 py-2 bg-accent text-white rounded-lg text-sm"
+        >
+          Add Deficiency
+        </button>
+      )}
     </div>
   );
 }

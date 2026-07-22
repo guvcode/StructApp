@@ -288,7 +288,7 @@ export default function DeficiencyPhotosPage() {
           }}
           className="w-full px-4 py-3 bg-accent text-white rounded-lg text-sm font-medium"
         >
-          Back to Details
+          Done
         </button>
       )}
     </div>

@@ -23,6 +23,7 @@ import SettingsPage from './pages/mobile/SettingsPage';
 import PendingStructuresListPage from './pages/mobile/PendingStructuresListPage';
 import PendingStructureCapturePage from './pages/mobile/PendingStructureCapturePage';
 import PendingStructureDetailPage from './pages/mobile/PendingStructureDetailPage';
+import PendingDeficiencyDetailPage from './pages/mobile/PendingDeficiencyDetailPage';
 import ReconciliationQueuePage from './pages/reviewer/ReconciliationQueuePage';
 import ReviewerDashboardPage from './pages/reviewer/ReviewerDashboardPage';
 import InspectionListPage from './pages/reviewer/InspectionListPage';
@@ -84,6 +85,7 @@ export default function AppRoutes() {
           <Route path="m/settings" element={<SettingsPage />} />
           <Route path="m/pending-structures" element={<PendingStructuresListPage />} />
           <Route path="m/pending-structures/:id" element={<PendingStructureDetailPage />} />
+          <Route path="m/pending-structures/:id/deficiencies/:localId" element={<PendingDeficiencyDetailPage />} />
           <Route path="m/pending-structures/new" element={<PendingStructureCapturePage />} />
         </Route>
         <Route element={<DesktopShell />}>
