@@ -22,6 +22,10 @@ jest.mock('../src/services/cloudinary', () => ({
   uploadToCloudinary: jest.fn(),
 }));
 
+jest.mock('../src/services/notificationQueue', () => ({
+  enqueueNotification: jest.fn(),
+}));
+
 const mockPool = require('../src/lib/db').pool;
 
 function makeMockClient() {
@@ -56,7 +60,8 @@ describe('pendingStructures service', () => {
 
       mockPool.query
         .mockResolvedValueOnce({ rowCount: 1, rows: [{ client_id: CLIENT_ID }] })
-        .mockResolvedValueOnce({ rowCount: 1, rows: [{ site_id: SITE_ID }] });
+        .mockResolvedValueOnce({ rowCount: 1, rows: [{ site_id: SITE_ID }] })
+        .mockResolvedValueOnce({ rows: [] });
       mockPool.connect.mockResolvedValueOnce(mockClient);
       mockClient.query
         .mockResolvedValueOnce({})
@@ -213,6 +218,7 @@ describe('pendingStructures service', () => {
       });
 
       mockPool.connect.mockResolvedValueOnce(mockClient);
+      mockPool.query.mockResolvedValueOnce({ rows: [{ email: 'contractor@test.com' }] });
 
       const result = await approvePendingStructureBundle(PS_ID, REVIEWER_ID, {
         name: 'Override Name',
@@ -241,7 +247,9 @@ describe('pendingStructures service', () => {
 
   describe('rejectPendingStructureBundle', () => {
     test('rejects bundle with reason', async () => {
-      mockPool.query.mockResolvedValueOnce({ rowCount: 1 });
+      mockPool.query
+        .mockResolvedValueOnce({ rowCount: 1, rows: [{ contractor_id: USER_ID, asset_tag: 'A-001' }] })
+        .mockResolvedValueOnce({ rows: [{ email: 'contractor@test.com' }] });
 
       await expect(
         rejectPendingStructureBundle(PS_ID, REVIEWER_ID, 'Duplicate of existing structure'),

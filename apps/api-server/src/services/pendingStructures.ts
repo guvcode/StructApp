@@ -157,6 +157,25 @@ export async function submitPendingStructureBundle(
 
     logger.info({ msg: 'pending_structure_submitted', pendingStructureId, contractorId, clientId: data.client_id, assetTag: data.asset_tag, deficiencies: deficienciesInserted, photos: photosInserted });
 
+    const reviewerRows = await pool.query(
+      `SELECT u.email FROM users u
+       JOIN client_memberships cm ON u.user_id = cm.user_id
+       WHERE cm.client_id = $1 AND u.role IN ('Admin', 'Reviewer')`,
+      [data.client_id],
+    );
+    const reviewerEmails = reviewerRows.rows.map((r: { email: string }) => r.email);
+    if (reviewerEmails.length > 0) {
+      try {
+        await enqueueNotification('pending_structure_submitted', {
+          reviewer_emails: reviewerEmails,
+          asset_tag: data.asset_tag,
+          pending_structure_id: pendingStructureId,
+        });
+      } catch (err) {
+        logger.warn({ err }, 'Failed to enqueue pending_structure_submitted notification');
+      }
+    }
+
     return {
       pending_structure_id: pendingStructureId,
       local_id: bundleResult.rows[0].local_id,
@@ -366,6 +385,20 @@ export async function approvePendingStructureBundle(
 
     logger.info({ msg: 'pending_structure_approved', pendingStructureId, structureId, inspectionId, reviewerId });
 
+    const contractorEmailResult = await pool.query('SELECT email FROM users WHERE user_id = $1', [bundle.contractor_id]);
+    const contractorEmail = contractorEmailResult.rows[0]?.email;
+    if (contractorEmail) {
+      try {
+        await enqueueNotification('pending_structure_approved', {
+          contractor_email: contractorEmail,
+          asset_tag: bundle.asset_tag,
+          structure_id: structureId,
+        });
+      } catch (err) {
+        logger.warn({ err }, 'Failed to enqueue pending_structure_approved notification');
+      }
+    }
+
     return { structure_id: structureId, inspection_id: inspectionId };
   } catch (err) {
     await client.query('ROLLBACK');
@@ -390,6 +423,22 @@ export async function rejectPendingStructureBundle(
 
   if (result.rowCount === 0) {
     throw new Error('PENDING_STRUCTURE_NOT_FOUND');
+  }
+
+  const bundle = result.rows[0];
+
+  const contractorEmailResult = await pool.query('SELECT email FROM users WHERE user_id = $1', [bundle.contractor_id]);
+  const contractorEmail = contractorEmailResult.rows[0]?.email;
+  if (contractorEmail) {
+    try {
+      await enqueueNotification('pending_structure_rejected', {
+        contractor_email: contractorEmail,
+        asset_tag: bundle.asset_tag,
+        rejection_reason: rejectionReason,
+      });
+    } catch (err) {
+      logger.warn({ err }, 'Failed to enqueue pending_structure_rejected notification');
+    }
   }
 
   logger.info({ msg: 'pending_structure_rejected', pendingStructureId, reviewerId });
