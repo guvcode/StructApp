@@ -53,7 +53,7 @@ syncRouter.post(
         });
       }
 
-      const result = await processSyncPush(user.client_id, parsed.data);
+      const result = await processSyncPush(user.client_id, user.sub, parsed.data);
 
       if (result.errors.length > 0) {
         return res.status(422).json({

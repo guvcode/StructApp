@@ -7,6 +7,7 @@ import { enqueueNotification } from './notificationQueue';
 export type SyncPushResult = {
   synced_deficiencies: Array<{ local_id: string; server_id: string }>;
   synced_submissions: Array<{ inspection_id: string }>;
+  synced_pending_structures: Array<{ local_id: string; server_id: string; deficiency_local_ids: Array<string> }>;
   errors: Array<{ local_id: string; message: string }>;
 };
 
@@ -25,6 +26,7 @@ export async function notifyP1AfterCommit(
 
 export async function processSyncPush(
   clientId: string,
+  userId: string,
   input: SyncPushInput
 ): Promise<SyncPushResult> {
   const client = await pool.connect();
@@ -38,6 +40,7 @@ export async function processSyncPush(
     const results: SyncPushResult = {
       synced_deficiencies: [],
       synced_submissions: [],
+      synced_pending_structures: [],
       errors: [],
     };
 
@@ -156,6 +159,105 @@ export async function processSyncPush(
       return results;
     }
 
+    if (input.pending_structures && input.pending_structures.length > 0) {
+      for (const bundle of input.pending_structures) {
+        const siteCheck = await client.query(
+          'SELECT site_id FROM sites WHERE site_id = $1 AND client_id = $2',
+          [bundle.site_id, clientId]
+        );
+        if (siteCheck.rowCount === 0) {
+          results.errors.push({
+            local_id: bundle.client_local_id,
+            message: 'SITE_NOT_FOUND',
+          });
+          continue;
+        }
+
+        const contractorId = userId;
+        const pendingResult = await client.query(
+          `INSERT INTO pending_structures
+            (local_id, site_id, client_id, contractor_id, asset_tag, description, qr_code_value)
+           VALUES ($1, $2, $3, $4, $5, $6, $7)
+           RETURNING pending_structure_id`,
+          [
+            bundle.client_local_id,
+            bundle.site_id,
+            clientId,
+            contractorId,
+            bundle.asset_tag,
+            bundle.description,
+            bundle.qr_code_value ?? null,
+          ]
+        );
+
+        const pendingStructureId = pendingResult.rows[0].pending_structure_id;
+        const syncedDeficiencyLocalIds: string[] = [];
+
+        if (bundle.deficiencies && bundle.deficiencies.length > 0) {
+          for (const deficiency of bundle.deficiencies) {
+            const defResult = await client.query(
+              `INSERT INTO pending_structure_deficiencies
+                (pending_structure_id, local_id, category, equipment_type, component, sub_component,
+                 focus_area, deficiency_category, detailed_description, consequence_severity, likelihood,
+                 recommended_action, most_affected_consequence, gps_latitude, gps_longitude)
+               VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+               RETURNING pending_deficiency_id`,
+              [
+                pendingStructureId,
+                deficiency.client_local_id,
+                deficiency.category ?? null,
+                deficiency.equipment_type ?? null,
+                deficiency.component ?? null,
+                deficiency.sub_component ?? null,
+                deficiency.focus_area ?? null,
+                deficiency.deficiency_category ?? null,
+                deficiency.detailed_description ?? null,
+                deficiency.consequence_severity ?? null,
+                deficiency.likelihood ?? null,
+                deficiency.recommended_action ?? null,
+                deficiency.most_affected_consequence ?? null,
+                deficiency.gps_latitude ?? null,
+                deficiency.gps_longitude ?? null,
+              ]
+            );
+            const pendingDeficiencyId = defResult.rows[0].pending_deficiency_id;
+            syncedDeficiencyLocalIds.push(deficiency.client_local_id);
+
+            if (deficiency.photos && deficiency.photos.length > 0) {
+              for (const photo of deficiency.photos) {
+                await client.query(
+                  `INSERT INTO pending_structure_photos
+                    (pending_structure_id, pending_deficiency_id, filename, caption, display_order, storage_url)
+                   VALUES ($1, $2, $3, $4, $5, $6)`,
+                  [
+                    pendingStructureId,
+                    pendingDeficiencyId,
+                    photo.filename,
+                    photo.caption ?? '',
+                    photo.display_order ?? 0,
+                    photo.storage_url ?? null,
+                  ]
+                );
+              }
+            }
+          }
+        }
+
+        results.synced_pending_structures.push({
+          local_id: bundle.client_local_id,
+          server_id: pendingStructureId,
+          deficiency_local_ids: syncedDeficiencyLocalIds,
+        });
+      }
+    }
+
+    if (results.errors.length > 0) {
+      await client.query('ROLLBACK');
+      results.synced_deficiencies = [];
+      results.synced_pending_structures = [];
+      return results;
+    }
+
     // Process submission intents after deficiencies
     if (input.submissions && input.submissions.length > 0) {
       for (const submission of input.submissions) {
@@ -191,6 +293,7 @@ export async function processSyncPush(
     if (results.errors.length > 0) {
       await client.query('ROLLBACK');
       results.synced_deficiencies = [];
+      results.synced_pending_structures = [];
       results.synced_submissions = [];
       return results;
     }
@@ -212,7 +315,7 @@ export async function getSyncState(
   clientId: string,
   userId: string
 ): Promise<{ lastSync: string | null; pendingCount: number; status: string }> {
-  const [lastSyncResult, pendingResult] = await Promise.all([
+  const [lastSyncResult, deficiencyCountResult, pendingStructureCountResult] = await Promise.all([
     pool.query(
       `SELECT created_at FROM sync_log
        WHERE client_id = $1 AND user_id = $2
@@ -225,9 +328,17 @@ export async function getSyncState(
        WHERE client_id = $1 AND triage_state = 'New'`,
       [clientId],
     ),
+    pool.query(
+      `SELECT COUNT(*)::int AS count
+       FROM pending_structures
+       WHERE client_id = $1 AND status = 'pending'`,
+      [clientId],
+    ),
   ]);
 
-  const count = pendingResult.rows[0]?.count ?? 0;
+  const deficiencyCount = deficiencyCountResult.rows[0]?.count ?? 0;
+  const pendingStructureCount = pendingStructureCountResult.rows[0]?.count ?? 0;
+  const count = deficiencyCount + pendingStructureCount;
 
   return {
     lastSync: lastSyncResult.rows[0]?.created_at
@@ -273,72 +384,90 @@ export async function processSyncPull(
     submitted_at: string | null; updated_at: string; returned_reason: string | null;
     approved_by: string | null; approved_at: string | null;
   }>;
-  deficiencies: Array<{
-    deficiency_id: string; inspection_id: string; client_id: string;
-    description: string; calculated_priority: string; category: string | null;
-    equipment_type: string | null; component: string | null;
-    sub_component: string | null; focus_area: string | null;
-    deficiency_category: string | null; detailed_description: string | null;
-    mechanisms: string | null; recommended_action: string | null;
-    consequence_severity: number | null; likelihood: string | null;
-    risk_rank: number | null; risk_rating: string | null;
-    triage_state: string | null;
-    created_at: string; updated_at: string;
-  }>;
-}> {
-  const client = await pool.connect();
-  try {
-    await client.query('BEGIN');
-    await client.query("SELECT set_config('app.current_client_id', $1, true)", [clientId]);
-    await client.query("SELECT set_config('app.bypass_tenant_check', 'true', true)");
+   deficiencies: Array<{
+     deficiency_id: string; inspection_id: string; client_id: string;
+     description: string; calculated_priority: string; category: string | null;
+     equipment_type: string | null; component: string | null;
+     sub_component: string | null; focus_area: string | null;
+     deficiency_category: string | null; detailed_description: string | null;
+     mechanisms: string | null; recommended_action: string | null;
+     consequence_severity: number | null; likelihood: string | null;
+     risk_rank: number | null; risk_rating: string | null;
+     triage_state: string | null;
+     created_at: string; updated_at: string;
+   }>;
+   pending_structures: Array<{
+     pending_structure_id: string; local_id: string; site_id: string;
+     contractor_id: string; asset_tag: string; description: string;
+     qr_code_value: string | null; status: string; rejection_reason: string | null;
+     reviewed_by: string | null; reviewed_at: string | null;
+     created_at: string; updated_at: string;
+   }>;
+ }> {
+   const client = await pool.connect();
+   try {
+     await client.query('BEGIN');
+     await client.query("SELECT set_config('app.current_client_id', $1, true)", [clientId]);
+     await client.query("SELECT set_config('app.bypass_tenant_check', 'true', true)");
 
-    const [structuresResult, sitesResult, projectsResult, componentTypesResult, workTypesResult, taxonomyResult, inspectionsResult, deficienciesResult] = await Promise.all([
-      client.query('SELECT structure_id, asset_tag, description, qr_code_value FROM structures WHERE client_id = $1', [clientId]),
-      client.query('SELECT site_id, name, project_id FROM sites WHERE client_id = $1', [clientId]),
-      client.query('SELECT project_id, title, type FROM projects WHERE client_id = $1', [clientId]),
-      client.query('SELECT component_type_id, name FROM component_types WHERE client_id = $1 AND is_active = TRUE', [clientId]),
-      client.query('SELECT work_type_id, name FROM work_types WHERE client_id = $1 AND is_active = TRUE', [clientId]),
-      client.query('SELECT node_id, parent_id, level, category, label, display_order, is_active FROM deficiency_taxonomy WHERE client_id = $1 AND is_active = TRUE ORDER BY display_order, label', [clientId]),
-client.query(
-        `SELECT i.inspection_id, i.structure_id, st.site_id, i.client_id, i.inspector_id,
-                i.assigned_by, i.status, i.scheduled_date, i.created_at, i.submitted_at,
-                i.updated_at, i.returned_reason, i.approved_by, i.approved_at
-         FROM inspections i
-         JOIN structures st ON i.structure_id = st.structure_id
-         WHERE i.client_id = $1
-         ORDER BY i.created_at DESC
-         LIMIT 20`,
-        [clientId]
-      ),
-      client.query(
-        `SELECT d.deficiency_id, d.inspection_id, d.client_id, d.description,
-                d.calculated_priority, d.category, d.equipment_type, d.component, d.sub_component, d.focus_area,
-                d.deficiency_category, d.detailed_description, d.mechanisms,
-                d.recommended_action, d.consequence_severity, d.likelihood,
-                d.risk_rank, d.risk_rating, d.triage_state, d.created_at, d.updated_at
-         FROM deficiency_records d
-         JOIN (
-           SELECT inspection_id FROM inspections
-           WHERE client_id = $1
-           ORDER BY created_at DESC
-           LIMIT 20
-         ) i ON d.inspection_id = i.inspection_id
-         WHERE d.client_id = $1`,
-        [clientId]
-      ),
-    ]);
+     const [structuresResult, sitesResult, projectsResult, componentTypesResult, workTypesResult, taxonomyResult, inspectionsResult, deficienciesResult, pendingStructuresResult] = await Promise.all([
+       client.query('SELECT structure_id, asset_tag, description, qr_code_value FROM structures WHERE client_id = $1', [clientId]),
+       client.query('SELECT site_id, name, project_id FROM sites WHERE client_id = $1', [clientId]),
+       client.query('SELECT project_id, title, type FROM projects WHERE client_id = $1', [clientId]),
+       client.query('SELECT component_type_id, name FROM component_types WHERE client_id = $1 AND is_active = TRUE', [clientId]),
+       client.query('SELECT work_type_id, name FROM work_types WHERE client_id = $1 AND is_active = TRUE', [clientId]),
+       client.query('SELECT node_id, parent_id, level, category, label, display_order, is_active FROM deficiency_taxonomy WHERE client_id = $1 AND is_active = TRUE ORDER BY display_order, label', [clientId]),
+       client.query(
+         `SELECT i.inspection_id, i.structure_id, st.site_id, i.client_id, i.inspector_id,
+                 i.assigned_by, i.status, i.scheduled_date, i.created_at, i.submitted_at,
+                 i.updated_at, i.returned_reason, i.approved_by, i.approved_at
+          FROM inspections i
+          JOIN structures st ON i.structure_id = st.structure_id
+          WHERE i.client_id = $1
+          ORDER BY i.created_at DESC
+          LIMIT 20`,
+         [clientId]
+       ),
+       client.query(
+         `SELECT d.deficiency_id, d.inspection_id, d.client_id, d.description,
+                 d.calculated_priority, d.category, d.equipment_type, d.component, d.sub_component, d.focus_area,
+                 d.deficiency_category, d.detailed_description, d.mechanisms,
+                 d.recommended_action, d.consequence_severity, d.likelihood,
+                 d.risk_rank, d.risk_rating, d.triage_state, d.created_at, d.updated_at
+          FROM deficiency_records d
+          JOIN (
+            SELECT inspection_id FROM inspections
+            WHERE client_id = $1
+            ORDER BY created_at DESC
+            LIMIT 20
+          ) i ON d.inspection_id = i.inspection_id
+          WHERE d.client_id = $1`,
+         [clientId]
+       ),
+       client.query(
+         `SELECT pending_structure_id, local_id, site_id, contractor_id, asset_tag, description,
+                 qr_code_value, status, rejection_reason, reviewed_by, reviewed_at,
+                 created_at, updated_at
+          FROM pending_structures
+          WHERE client_id = $1
+          ORDER BY created_at DESC
+          LIMIT 50`,
+         [clientId]
+       ),
+     ]);
 
-    await client.query('COMMIT');
-    return {
-      structures: structuresResult.rows,
-      sites: sitesResult.rows,
-      projects: projectsResult.rows,
-      component_types: componentTypesResult.rows,
-      work_types: workTypesResult.rows,
-      taxonomy: taxonomyResult.rows,
-      inspections: inspectionsResult.rows,
-      deficiencies: deficienciesResult.rows,
-    };
+     await client.query('COMMIT');
+     return {
+       structures: structuresResult.rows,
+       sites: sitesResult.rows,
+       projects: projectsResult.rows,
+       component_types: componentTypesResult.rows,
+       work_types: workTypesResult.rows,
+       taxonomy: taxonomyResult.rows,
+       inspections: inspectionsResult.rows,
+       deficiencies: deficienciesResult.rows,
+       pending_structures: pendingStructuresResult.rows,
+     };
   } finally {
     client.release();
   }

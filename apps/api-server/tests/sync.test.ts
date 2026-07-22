@@ -67,7 +67,7 @@ describe('processSyncPush', () => {
         rows: [{ deficiency_id: 'def-001', calculated_priority: 'P3' }],
       }); // INSERT deficiency
 
-    const result = await processSyncPush('client-123', defaultInput);
+    const result = await processSyncPush('client-123', 'user-123', defaultInput);
 
     expect(result.errors).toHaveLength(0);
     expect(result.synced_deficiencies).toHaveLength(1);
@@ -90,7 +90,7 @@ describe('processSyncPush', () => {
         rows: [{ deficiency_id: 'def-002', calculated_priority: 'P3' }],
       }); // INSERT deficiency
 
-    const result = await processSyncPush('client-123', defaultInput);
+    const result = await processSyncPush('client-123', 'user-123', defaultInput);
 
     expect(result.errors).toHaveLength(0);
     expect(result.synced_deficiencies).toHaveLength(1);
@@ -109,7 +109,7 @@ describe('processSyncPush', () => {
         rowCount: 0,
       }); // SELECT inspection_mode — not found
 
-    const result = await processSyncPush('client-123', defaultInput);
+    const result = await processSyncPush('client-123', 'user-123', defaultInput);
 
     expect(result.errors).toHaveLength(1);
     expect(result.errors[0]!.message).toContain('Inspection not found');
@@ -148,7 +148,7 @@ describe('processSyncPush', () => {
         rows: [{ deficiency_id: 'def-003', calculated_priority: 'P3' }],
       });
 
-    const result = await processSyncPush('client-123', inputWithGps);
+    const result = await processSyncPush('client-123', 'user-123', inputWithGps);
 
     expect(result.errors).toHaveLength(0);
     expect(result.synced_deficiencies).toHaveLength(1);

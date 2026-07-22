@@ -159,4 +159,14 @@ export const ENDPOINTS = {
     scheduleById: (id: string) => `${BASE_URL}/schedules/${id}`,
     togglePause: (id: string) => `${BASE_URL}/schedules/${id}/toggle-pause`,
   },
+  pendingStructures: {
+    mine: `${BASE_URL}/pending-structures/mine`,
+    listForReview: `${BASE_URL}/pending-structures`,
+    submit: `${BASE_URL}/pending-structures`,
+    byId: (id: string) => `${BASE_URL}/pending-structures/${id}`,
+    deficiencies: (id: string) => `${BASE_URL}/pending-structures/${id}/deficiencies`,
+    photos: (id: string) => `${BASE_URL}/pending-structures/${id}/photos`,
+    approve: (id: string) => `${BASE_URL}/pending-structures/${id}/approve`,
+    reject: (id: string) => `${BASE_URL}/pending-structures/${id}/reject`,
+  },
 };

@@ -20,6 +20,9 @@ import RemediationUpdatePage from './pages/mobile/RemediationUpdatePage';
 import TimesheetListPage from './pages/mobile/TimesheetListPage';
 import TimesheetDetailPage from './pages/mobile/TimesheetDetailPage';
 import SettingsPage from './pages/mobile/SettingsPage';
+import PendingStructuresListPage from './pages/mobile/PendingStructuresListPage';
+import PendingStructureCapturePage from './pages/mobile/PendingStructureCapturePage';
+import ReconciliationQueuePage from './pages/reviewer/ReconciliationQueuePage';
 import ReviewerDashboardPage from './pages/reviewer/ReviewerDashboardPage';
 import InspectionListPage from './pages/reviewer/InspectionListPage';
 import ReviewerInspectionDetail from './pages/reviewer/InspectionDetailPage';
@@ -78,6 +81,8 @@ export default function AppRoutes() {
           <Route path="m/timesheets/new" element={<TimesheetDetailPage />} />
           <Route path="m/timesheets/:id" element={<TimesheetDetailPage />} />
           <Route path="m/settings" element={<SettingsPage />} />
+          <Route path="m/pending-structures" element={<PendingStructuresListPage />} />
+          <Route path="m/pending-structures/new" element={<PendingStructureCapturePage />} />
         </Route>
         <Route element={<DesktopShell />}>
           <Route path="reviewer/dashboard" element={<ReviewerDashboardPage />} />
@@ -88,6 +93,7 @@ export default function AppRoutes() {
           <Route path="remediation" element={<FeatureFlagGuard flagId="remediation" />}>
             <Route index element={<RemediationQueuePage />} />
           </Route>
+          <Route path="pending-structures" element={<ReconciliationQueuePage />} />
           <Route path="timesheets/review" element={<FeatureFlagGuard flagId="timesheets" />}>
             <Route index element={<TimesheetReviewPage />} />
             <Route path="detail" element={<TimesheetReviewDetailPage />} />

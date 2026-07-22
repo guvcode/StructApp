@@ -93,6 +93,12 @@ export default function InspectionDetailPage() {
             >
               Submit Inspection
             </button>
+            <button
+              onClick={() => navigate(`/m/pending-structures/new`)}
+              className="flex-1 px-3 py-2 bg-accent text-white rounded-lg text-sm"
+            >
+              Discover
+            </button>
           </>
         ) : inspection.status === InspectionStatus.Submitted || inspection.status === InspectionStatus.Approved ? (
           <div className="w-full px-3 py-2 bg-surface-secondary border border-border rounded-lg text-sm text-text-secondary text-center">
