@@ -12,6 +12,7 @@ import {
   pendingDeficiencySchema,
   pendingPhotoSchema,
 } from '../contracts/pendingStructures';
+import crypto from 'crypto';
 
 export type PendingStructureRow = {
   pending_structure_id: string;
@@ -68,6 +69,7 @@ export type PendingPhotoRow = {
 export async function submitPendingStructureBundle(
   contractorId: string,
   input: SubmitPendingStructureInput,
+  clientId: string,
 ): Promise<SubmitPendingStructureResult> {
   const parsed = submitPendingStructureSchema.safeParse(input);
   if (!parsed.success) {
@@ -75,10 +77,11 @@ export async function submitPendingStructureBundle(
   }
 
   const data = parsed.data;
+  const localId = data.local_id || crypto.randomUUID();
 
   const membershipResult = await pool.query(
     'SELECT 1 FROM client_memberships WHERE user_id = $1 AND client_id = $2',
-    [contractorId, data.client_id],
+    [contractorId, clientId],
   );
   if (membershipResult.rowCount === 0) {
     throw new Error('NOT_A_MEMBER');
@@ -86,7 +89,7 @@ export async function submitPendingStructureBundle(
 
   const siteResult = await pool.query(
     'SELECT site_id FROM sites WHERE site_id = $1 AND client_id = $2',
-    [data.site_id, data.client_id],
+    [data.site_id, clientId],
   );
   if (siteResult.rowCount === 0) {
     throw new Error('SITE_NOT_FOUND');
@@ -100,19 +103,19 @@ export async function submitPendingStructureBundle(
       `INSERT INTO pending_structures (local_id, site_id, client_id, contractor_id, asset_tag, description, qr_code_value)
        VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING pending_structure_id, local_id, status`,
-      [data.local_id, data.site_id, data.client_id, contractorId, data.asset_tag, data.description, data.qr_code_value || null],
+      [localId, data.site_id, clientId, contractorId, data.asset_tag, data.description, data.qr_code_value || null],
     );
     const pendingStructureId = bundleResult.rows[0].pending_structure_id;
 
     await client.query('COMMIT');
 
-    logger.info({ msg: 'pending_structure_submitted', pendingStructureId, contractorId, clientId: data.client_id, assetTag: data.asset_tag });
+    logger.info({ msg: 'pending_structure_submitted', pendingStructureId, contractorId, clientId, assetTag: data.asset_tag });
 
     const reviewerRows = await pool.query(
       `SELECT u.email FROM users u
        JOIN client_memberships cm ON u.user_id = cm.user_id
        WHERE cm.client_id = $1 AND u.role IN ('Admin', 'Reviewer')`,
-      [data.client_id],
+      [clientId],
     );
     const reviewerEmails = reviewerRows.rows.map((r: { email: string }) => r.email);
     if (reviewerEmails.length > 0) {

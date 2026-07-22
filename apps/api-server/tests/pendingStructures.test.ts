@@ -70,13 +70,36 @@ describe('pendingStructures service', () => {
       const result = await submitPendingStructureBundle(USER_ID, {
         local_id: 'local-1',
         site_id: SITE_ID,
-        client_id: CLIENT_ID,
         asset_tag: 'A-001',
         description: 'Discovered boiler',
-      });
+      }, CLIENT_ID);
 
       expect(result.pending_structure_id).toBe(PS_ID);
       expect(result.local_id).toBe('local-1');
+      expect(result.status).toBe('pending');
+    });
+
+    test('generates local_id when missing', async () => {
+      const mockClient = makeMockClient();
+
+      mockPool.query
+        .mockResolvedValueOnce({ rowCount: 1, rows: [{ client_id: CLIENT_ID }] })
+        .mockResolvedValueOnce({ rowCount: 1, rows: [{ site_id: SITE_ID }] })
+        .mockResolvedValueOnce({ rows: [] });
+      mockPool.connect.mockResolvedValueOnce(mockClient);
+      mockClient.query
+        .mockResolvedValueOnce({})
+        .mockResolvedValueOnce({ rows: [{ pending_structure_id: PS_ID, local_id: 'generated-local-id', status: 'pending' }] })
+        .mockResolvedValueOnce({});
+
+      const result = await submitPendingStructureBundle(USER_ID, {
+        site_id: SITE_ID,
+        asset_tag: 'A-001',
+        description: 'Discovered boiler',
+      }, CLIENT_ID);
+
+      expect(result.pending_structure_id).toBe(PS_ID);
+      expect(result.local_id).toBe('generated-local-id');
       expect(result.status).toBe('pending');
     });
 
@@ -87,10 +110,9 @@ describe('pendingStructures service', () => {
         submitPendingStructureBundle(USER_ID, {
           local_id: 'local-1',
           site_id: SITE_ID,
-          client_id: CLIENT_ID,
           asset_tag: 'A-001',
           description: 'Discovered boiler',
-        }),
+        }, CLIENT_ID),
       ).rejects.toThrow('NOT_A_MEMBER');
     });
 
@@ -103,10 +125,9 @@ describe('pendingStructures service', () => {
         submitPendingStructureBundle(USER_ID, {
           local_id: 'local-1',
           site_id: SITE_ID,
-          client_id: CLIENT_ID,
           asset_tag: 'A-001',
           description: 'Discovered boiler',
-        }),
+        }, CLIENT_ID),
       ).rejects.toThrow('SITE_NOT_FOUND');
     });
   });
