@@ -210,11 +210,17 @@ export default function PendingDeficiencyDetailPage() {
 
   return (
     <div className="space-y-4">
-      <button onClick={() => navigate(`/m/pending-structures/${pendingStructureId}`)} className="text-sm text-accent">&larr; Back</button>
-      <h2 className="text-lg font-bold text-text-primary">{isNew ? 'New Deficiency' : 'Edit Deficiency'}</h2>
-      <div className="bg-surface-secondary rounded-lg p-3 border border-border text-sm text-left">
-        <p className="text-text-primary font-medium">{pending.asset_tag}</p>
-        <p className="text-xs text-text-secondary">{pending.description}</p>
+      <div className="status-card rounded-xl p-4 mb-4 relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-4 h-full bg-amber" />
+        <div className="flex items-center gap-4 pl-2">
+          <div className="w-10 h-10 rounded-lg bg-amber/20 border border-amber/40 flex items-center justify-center flex-shrink-0">
+            <svg className="w-5 h-5 text-amber" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v16h16V4H4zm2 2h12v12H6V6zm2 2v2h2V8H8zm0 4v2h2v-2H8zm4-4v6h2V8h-2zm0 8v2h2v-2h-2zm4-8v2h2V8h-2zm0 4v4h2v-4h-2z"/></svg>
+          </div>
+          <div>
+            <p className="text-2xl font-bold text-white">{pending?.status || 'Pending'}</p>
+            <p className="text-xs text-amber-light mt-0.5">{pending?.asset_tag || 'Pending structure'}</p>
+          </div>
+        </div>
       </div>
 
       <div>
@@ -341,7 +347,7 @@ export default function PendingDeficiencyDetailPage() {
       <button
         onClick={() => addPendingDeficiency.mutate()}
         disabled={saving || !category}
-        className="w-full px-4 py-2 bg-accent text-white rounded-lg disabled:opacity-50"
+        className="w-full px-4 py-2 bg-signal text-white rounded-lg disabled:opacity-50"
       >
         {saving ? 'Saving...' : 'Save Deficiency'}
       </button>

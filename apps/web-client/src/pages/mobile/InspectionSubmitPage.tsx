@@ -74,28 +74,31 @@ export default function InspectionSubmitPage() {
       <button onClick={() => navigate(`/m/inspections/${id}`)} className="text-sm text-accent">&larr; Back to Inspection</button>
       <h2 className="text-lg font-bold text-text-primary">Submit Inspection</h2>
 
-      <div className="bg-surface-primary rounded-lg p-3 border border-border">
-        <p className="text-sm font-semibold text-text-primary">Pre-Submit Checklist</p>
-        <ul className="mt-2 space-y-1 text-sm">
-          <li className="flex justify-between">
-            <span className="text-text-primary">Deficiencies captured</span>
-            <span className={hasDeficiencies ? 'text-green-600' : 'text-red-600'}>{hasDeficiencies ? `${deficiencies.length} recorded` : 'None'}</span>
-          </li>
-          <li className="flex justify-between">
-            <span className="text-text-primary">Pending sync items</span>
-            <span className={hasOfflinePendingSync && !savedOffline ? 'text-amber-600' : 'text-green-600'}>{hasOfflinePendingSync ? `${pendingCount} pending` : 'All synced'}</span>
-          </li>
-          {missingPhotoCriticalDefs.length > 0 && (
-            <li className="flex justify-between text-red-600">
-              <span>P1/P2 photo evidence</span>
-              <span>{missingPhotoCriticalDefs.length} missing</span>
+      <div className="status-card rounded-xl p-4 relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-4 h-full bg-signal" />
+        <div className="pl-2">
+          <p className="text-sm font-semibold text-white mb-2">Pre-Submit Checklist</p>
+          <ul className="mt-2 space-y-1 text-sm">
+            <li className="flex justify-between">
+              <span className="text-signal-light">Deficiencies captured</span>
+              <span className={hasDeficiencies ? 'text-green-400' : 'text-red-400'}>{hasDeficiencies ? `${deficiencies.length} recorded` : 'None'}</span>
             </li>
-          )}
-        </ul>
+            <li className="flex justify-between">
+              <span className="text-signal-light">Pending sync items</span>
+              <span className={hasOfflinePendingSync && !savedOffline ? 'text-amber-400' : 'text-green-400'}>{hasOfflinePendingSync ? `${pendingCount} pending` : 'All synced'}</span>
+            </li>
+            {missingPhotoCriticalDefs.length > 0 && (
+              <li className="flex justify-between text-red-400">
+                <span>P1/P2 photo evidence</span>
+                <span>{missingPhotoCriticalDefs.length} missing</span>
+              </li>
+            )}
+          </ul>
+        </div>
       </div>
 
       {!hasDeficiencies && (
-        <label className="flex items-center gap-2 bg-surface-primary border border-border rounded-lg p-3">
+        <label className="flex items-center gap-2 bg-surface-primary border border-border rounded-xl p-3">
           <input type="checkbox" checked={noFindings} onChange={e => setNoFindings(e.target.checked)} className="w-4 h-4" />
           <span className="text-sm text-text-primary">No deficiencies found — confirm this inspection is clear</span>
         </label>
@@ -130,7 +133,7 @@ export default function InspectionSubmitPage() {
       <button
         onClick={handleSubmit}
         disabled={!canSubmit || submitInspection.isPending}
-        className="w-full px-4 py-2 bg-accent text-white rounded-lg disabled:opacity-50"
+        className="w-full px-4 py-2 bg-signal text-white rounded-lg disabled:opacity-50"
       >
         {submitInspection.isPending ? 'Submitting...' : savedOffline ? 'Queued for Sync' : hasOfflinePendingSync ? 'Queue Submission (Offline)' : 'Submit Inspection'}
       </button>

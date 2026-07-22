@@ -75,7 +75,7 @@ export default function PendingStructureCapturePage() {
         </div>
       </div>
 
-      <button type="submit" disabled={submit.isPending} className="w-full px-4 py-2.5 bg-accent text-white rounded-lg text-sm font-medium disabled:opacity-50">
+      <button type="submit" disabled={submit.isPending} className="w-full px-4 py-2.5 bg-signal text-white rounded-lg text-sm font-medium disabled:opacity-50">
         {submit.isPending ? 'Submitting...' : 'Submit for Review'}
       </button>
     </form>

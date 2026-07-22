@@ -34,7 +34,7 @@ export default function StructureSearchPage() {
         onChange={e => setQuery(e.target.value)}
         className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary placeholder-text-secondary"
       />
-      <div className="border border-dashed border-border rounded-lg p-4 text-center text-text-secondary text-sm">
+      <div className="bg-surface-primary border border-border rounded-xl p-4 text-center text-sm text-text-secondary">
         QR fallback: type an asset identifier above
       </div>
       {searched && results.length === 0 && (
@@ -43,7 +43,7 @@ export default function StructureSearchPage() {
       {results.length > 0 && (
         <ul className="space-y-2">
           {results.map(s => (
-            <li key={s.id} className="bg-surface-primary p-3 rounded-lg border border-border">
+            <li key={s.id} className="bg-surface-primary border border-border rounded-xl p-3 border-l-4 border-l-signal">
               <p className="text-sm font-semibold text-text-primary">{s.name}</p>
               <p className="text-xs text-text-secondary">{s.type} — {s.identifier}</p>
             </li>

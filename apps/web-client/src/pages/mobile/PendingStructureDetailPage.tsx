@@ -21,36 +21,39 @@ export default function PendingStructureDetailPage() {
     <div className="space-y-4">
       <button onClick={() => navigate('/m/pending-structures')} className="text-sm text-accent">&larr; Back</button>
       <h2 className="text-lg font-bold text-text-primary">Pending Structure</h2>
-      <div className="bg-surface-primary rounded-lg p-3 border border-border space-y-2">
-        <div>
-          <p className="text-xs text-text-secondary">Asset Tag</p>
-          <p className="text-sm font-semibold text-text-primary">{pending.asset_tag}</p>
-        </div>
-        <div>
-          <p className="text-xs text-text-secondary">Description</p>
-          <p className="text-sm text-text-primary">{pending.description}</p>
-        </div>
-        <div>
-          <p className="text-xs text-text-secondary">Status</p>
-          <p className="text-sm text-text-primary capitalize">{pending.status}</p>
-        </div>
-        {pending.qr_code_value && (
+      <div className="status-card rounded-xl p-4 relative overflow-hidden">
+        <div className={`absolute top-0 left-0 w-1 h-full ${pending.status === 'approved' ? 'bg-green-500' : pending.status === 'rejected' ? 'bg-red-500' : pending.status === 'submitted' ? 'bg-blue-500' : 'bg-amber-500'}`} />
+        <div className="pl-3 space-y-2">
           <div>
-            <p className="text-xs text-text-secondary">QR Code Value</p>
-            <p className="text-sm text-text-primary">{pending.qr_code_value}</p>
+            <p className="text-xs text-text-secondary">Asset Tag</p>
+            <p className="text-sm font-semibold text-text-primary">{pending.asset_tag}</p>
           </div>
-        )}
-        {pending.rejection_reason && (
           <div>
-            <p className="text-xs text-text-secondary">Rejection Reason</p>
-            <p className="text-sm text-text-primary">{pending.rejection_reason}</p>
+            <p className="text-xs text-text-secondary">Description</p>
+            <p className="text-sm text-text-primary">{pending.description}</p>
           </div>
-        )}
+          <div>
+            <p className="text-xs text-text-secondary">Status</p>
+            <p className="text-sm text-text-primary capitalize">{pending.status}</p>
+          </div>
+          {pending.qr_code_value && (
+            <div>
+              <p className="text-xs text-text-secondary">QR Code Value</p>
+              <p className="text-sm text-text-primary">{pending.qr_code_value}</p>
+            </div>
+          )}
+          {pending.rejection_reason && (
+            <div>
+              <p className="text-xs text-text-secondary">Rejection Reason</p>
+              <p className="text-sm text-text-primary">{pending.rejection_reason}</p>
+            </div>
+          )}
+        </div>
       </div>
       {(pending.status === 'pending' || pending.status === 'rejected') && (
         <button
           onClick={() => navigate(`/m/pending-structures/${pending.pending_structure_id}/deficiencies/new`)}
-          className="w-full px-4 py-2 bg-accent text-white rounded-lg text-sm"
+          className="w-full px-4 py-2 bg-signal text-white rounded-lg text-sm"
         >
           Add Deficiency
         </button>

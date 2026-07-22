@@ -53,7 +53,7 @@ export default function TimesheetListPage() {
         <h2 className="text-lg font-bold text-text-primary">Timesheets</h2>
         <button
           onClick={() => navigate('/m/timesheets/new')}
-          className="px-3 py-1.5 bg-accent text-white text-sm rounded-lg"
+          className="px-3 py-1.5 bg-signal text-white text-sm rounded-lg"
           aria-label="New timesheet entry"
         >
           + New Entry
@@ -67,11 +67,11 @@ export default function TimesheetListPage() {
             onClick={() => setStatusFilter(f)}
             className={`px-3 py-1 text-xs rounded-full whitespace-nowrap transition-colors ${
               statusFilter === f
-                ? 'bg-accent text-white'
+                ? 'bg-signal text-white'
                 : 'bg-surface-secondary text-text-secondary hover:bg-surface-hover'
             }`}
           >
-            {f === 'All' ? 'All' : f}
+            {f === 'All' ? 'ALL' : f.toUpperCase()}
           </button>
         ))}
       </div>
@@ -84,16 +84,18 @@ export default function TimesheetListPage() {
         <div className="space-y-4">
           {Array.from(inspectionGroups.entries()).map(([key, group]) => (
             <div key={key}>
-              <h2 className="text-sm font-semibold text-text-primary mb-2 flex items-center gap-1.5">
+              <h2 className="text-sm font-semibold text-text-primary mb-2 flex items-center gap-1.5 uppercase tracking-wide">
                 <svg className="w-3.5 h-3.5 text-accent shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
                 {group.inspectionName}
-                <span className="text-xs font-normal text-text-muted">({group.entries.length})</span>
+                <span className="text-xs font-normal text-text-muted font-mono">({group.entries.length})</span>
               </h2>
               <div className="space-y-2">
-                {group.entries.map(ts => (
-                  <div key={ts.id} className="bg-surface-primary border border-border rounded-lg p-3">
+                {group.entries.map(ts => {
+                  const stripeColor = ts.status === TimesheetStatus.Approved ? 'border-l-green-500' : ts.status === TimesheetStatus.Rejected ? 'border-l-red-500' : ts.status === TimesheetStatus.Submitted ? 'border-l-blue-500' : 'border-l-gray-400';
+                  return (
+                  <div key={ts.id} className={`bg-surface-primary border border-border rounded-xl p-3 border-l-4 ${stripeColor}`}>
                     {ts.status === TimesheetStatus.Rejected && ts.rejection_reason && (
                       <div className="bg-red-50 border border-red-200 rounded p-2 mb-2 text-xs text-red-700">
                         Rejected: {ts.rejection_reason}
@@ -112,7 +114,7 @@ export default function TimesheetListPage() {
                       {ts.status === TimesheetStatus.Draft && (
                         <>
                           <button onClick={() => navigate(`/m/timesheets/${ts.id}`)} className="px-2 py-1 text-xs border border-border rounded text-text-primary" aria-label={`Edit ${ts.work_type}`}>Edit</button>
-                          <button onClick={() => submitTimesheet.mutate(ts.id)} className="px-2 py-1 text-xs border border-accent text-accent rounded" aria-label={`Submit ${ts.work_type}`}>Submit</button>
+                          <button onClick={() => submitTimesheet.mutate(ts.id)} className="px-2 py-1 text-xs border border-signal text-signal rounded" aria-label={`Submit ${ts.work_type}`}>Submit</button>
                           <button onClick={() => deleteTimesheet.mutate(ts.id)} className="px-2 py-1 text-xs border border-red-300 text-red-600 rounded" aria-label={`Delete ${ts.work_type}`}>Delete</button>
                         </>
                       )}
@@ -124,7 +126,8 @@ export default function TimesheetListPage() {
                       )}
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           ))}

@@ -1,0 +1,33 @@
+:root {
+  --ink: #16212E;
+  --paper: #F3F4F1;
+  --surface: #FFFFFF;
+  --steel: #5B6B78;
+  --steel-light: #8C99A4;
+  --line: #E2E5E1;
+  --signal: #E2622A;
+  --signal-dark: #C44F1D;
+  --amber: #B9791E;
+  --amber-bg: #FBF0DC;
+  --green: #3E7A57;
+  --green-bg: #E4F0E8;
+  --red-tag: #B23A2E;
+  --red-bg: #FAE4E1;
+  --blue-tag: #33566E;
+  --blue-bg: #E7EDF2;
+}
+
+@font-face {
+  font-family: 'Barlow Condensed';
+  src: url('fonts/BarlowCondensed-VariableFont-wght.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('fonts/Inter-VariableFont-wght.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  src: url('fonts/IPMPlexMono-VariableFont_wght.woff2') format('woff2');
+}
