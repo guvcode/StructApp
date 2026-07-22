@@ -1,9 +1,8 @@
 import { z } from 'zod';
 
 export const submitPendingStructureSchema = z.object({
-  local_id: z.string().min(1),
+  local_id: z.string().min(1).optional(),
   site_id: z.string().uuid(),
-  client_id: z.string().uuid(),
   asset_tag: z.string().min(1).max(100),
   description: z.string().min(1),
   qr_code_value: z.string().max(150).optional().nullable(),

@@ -15,7 +15,7 @@ router.post(
         return res.status(403).json({ success: false, error_code: 'FORBIDDEN', message: 'Only Contractors can submit pending structures' });
       }
       const input = submitPendingStructureSchema.parse(req.body);
-      const result = await pendingService.submitPendingStructureBundle(req.user.sub, input);
+      const result = await pendingService.submitPendingStructureBundle(req.user.sub, input, req.user.client_id);
       res.status(201).json({ success: true, data: result });
     } catch (err) {
       if (err instanceof Error) {

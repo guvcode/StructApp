@@ -34,6 +34,7 @@ export default function PendingStructureCapturePage() {
         site_id: siteId,
         asset_tag: assetTag.trim(),
         description: description.trim(),
+        local_id: crypto.randomUUID(),
         ...(qrCodeValue.trim() ? { qr_code_value: qrCodeValue.trim() } : {}),
       });
       navigate('/m/pending-structures');
