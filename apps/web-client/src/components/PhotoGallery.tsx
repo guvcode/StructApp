@@ -6,6 +6,73 @@ interface PhotoGalleryProps {
   title?: string;
 }
 
+function parseGpsFromRaw(raw?: string): { lat?: number; lng?: number } {
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw);
+    return {
+      lat: parsed.GPSLatitude,
+      lng: parsed.GPSLongitude,
+    };
+  } catch {
+    return {};
+  }
+}
+
+function PhotoMetadata({ photo }: { photo: PhotoRecord }) {
+  const [open, setOpen] = useState(false);
+  const gps = parseGpsFromRaw(photo.raw_exif_payload);
+  const hasGps = photo.gps_latitude != null || gps.lat != null;
+
+  return (
+    <div className="border-t border-white/10 pt-2 mt-2">
+      <button
+        onClick={() => setOpen(!open)}
+        className="text-xs text-gray-300 hover:text-white flex items-center gap-1 transition-colors"
+        aria-expanded={open}
+      >
+        <svg
+          className={`w-3 h-3 transition-transform ${open ? 'rotate-90' : ''}`}
+          fill="none" stroke="currentColor" viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+        Photo Details
+      </button>
+      {open && (
+        <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+          {photo.original_filename && (
+            <div>
+              <span className="text-gray-400">Filename</span>
+              <p className="text-gray-200 truncate">{photo.original_filename}</p>
+            </div>
+          )}
+          {photo.captured_at && (
+            <div>
+              <span className="text-gray-400">Captured</span>
+              <p className="text-gray-200">{new Date(photo.captured_at).toLocaleString()}</p>
+            </div>
+          )}
+          {photo.camera_make && photo.camera_model && (
+            <div>
+              <span className="text-gray-400">Camera</span>
+              <p className="text-gray-200">{photo.camera_make} {photo.camera_model}</p>
+            </div>
+          )}
+          {hasGps && (
+            <div>
+              <span className="text-gray-400">GPS</span>
+              <p className="text-gray-200">
+                {(photo.gps_latitude ?? gps.lat)?.toFixed(4)}, {(photo.gps_longitude ?? gps.lng)?.toFixed(4)}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function PhotoGallery({ photos, title }: PhotoGalleryProps) {
   const [lightbox, setLightbox] = useState<PhotoRecord | null>(null);
   if (photos.length === 0) return null;
@@ -68,6 +135,9 @@ export default function PhotoGallery({ photos, title }: PhotoGalleryProps) {
               <span className="mx-2">·</span>
               {new Date(lightbox.created_at).toLocaleDateString()}
             </p>
+            {(lightbox.original_filename || lightbox.camera_make || lightbox.camera_model || lightbox.gps_latitude != null) && (
+              <PhotoMetadata photo={lightbox} />
+            )}
             <button
               onClick={() => setLightbox(null)}
               className="absolute top-4 right-4 text-white/80 hover:text-white text-xl"

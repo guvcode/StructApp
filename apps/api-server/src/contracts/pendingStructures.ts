@@ -34,6 +34,11 @@ export const pendingPhotoSchema = z.object({
   data: z.string().min(1),
   caption: z.string().optional(),
   display_order: z.number().int().min(0).optional(),
+  original_filename: z.string().optional(),
+  captured_at: z.string().optional(),
+  camera_make: z.string().optional(),
+  camera_model: z.string().optional(),
+  raw_exif_payload: z.string().optional(),
 });
 
 export type PendingPhotoInput = z.infer<typeof pendingPhotoSchema>;

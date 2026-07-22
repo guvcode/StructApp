@@ -48,6 +48,13 @@ export type PendingPhoto = {
   caption: string;
   display_order: number;
   created_at: string;
+  original_filename?: string;
+  captured_at?: string;
+  camera_make?: string;
+  camera_model?: string;
+  raw_exif_payload?: string;
+  gps_latitude?: number;
+  gps_longitude?: number;
 };
 
 export async function getContractorPendingStructures(): Promise<PendingStructure[]> {

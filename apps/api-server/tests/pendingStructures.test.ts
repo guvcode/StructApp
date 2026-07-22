@@ -269,6 +269,11 @@ describe('pendingStructures service', () => {
           storage_url: 'https://cdn.example.com/photo.jpg',
           caption: 'Damage',
           display_order: 0,
+          original_filename: 'damage.jpg',
+          captured_at: '2026-01-01T00:00:00Z',
+          camera_make: 'Canon',
+          camera_model: 'EOS',
+          raw_exif_payload: '{}',
         },
       ];
       mockPool.query.mockResolvedValueOnce({ rows: mockPhotos });

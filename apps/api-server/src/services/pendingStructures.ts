@@ -64,6 +64,11 @@ export type PendingPhotoRow = {
   storage_url: string | null;
   caption: string;
   display_order: number;
+  original_filename: string | null;
+  captured_at: string | null;
+  camera_make: string | null;
+  camera_model: string | null;
+  raw_exif_payload: string | null;
 };
 
 export async function submitPendingStructureBundle(
@@ -222,10 +227,10 @@ export async function addPhotoToPendingDeficiency(
   }
 
   const result = await pool.query(
-    `INSERT INTO pending_structure_photos (pending_structure_id, pending_deficiency_id, filename, data, caption, display_order)
-     VALUES ($1, $2, $3, $4, $5, $6)
+    `INSERT INTO pending_structure_photos (pending_structure_id, pending_deficiency_id, filename, data, caption, display_order, original_filename, captured_at, camera_make, camera_model, raw_exif_payload)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
      RETURNING *`,
-    [pendingStructureId, pendingDeficiencyId, p.filename, p.data, p.caption || '', p.display_order ?? 0],
+    [pendingStructureId, pendingDeficiencyId, p.filename, p.data, p.caption || '', p.display_order ?? 0, p.original_filename || null, p.captured_at || null, p.camera_make || null, p.camera_model || null, p.raw_exif_payload || null],
   );
 
   return result.rows[0];
@@ -281,7 +286,8 @@ export async function getPendingPhotosForBundle(
   pendingStructureId: string,
 ): Promise<PendingPhotoRow[]> {
   const result = await pool.query(
-    `SELECT pending_photo_id, pending_structure_id, pending_deficiency_id, filename, storage_url, caption, display_order
+    `SELECT pending_photo_id, pending_structure_id, pending_deficiency_id, filename, storage_url, caption, display_order,
+            original_filename, captured_at, camera_make, camera_model, raw_exif_payload, created_at
      FROM pending_structure_photos
      WHERE pending_structure_id = $1
      ORDER BY display_order ASC, created_at ASC`,
