@@ -67,10 +67,23 @@
    --radius-lg: 12px;
    --radius-xl: 16px;
 
-   /* Refined surface colors */
-   --color-surface-elevated: #ffffff;
-   --color-surface-hover: #fafbfc;
-}
+    /* Refined surface colors */
+    --color-surface-elevated: #ffffff;
+    --color-surface-hover: #fafbfc;
+
+    /* Mobile / legacy tokens (from theme.css) */
+    --color-signal: #E2622A;
+    --color-signal-dark: #C44F1D;
+    --color-signal-light: #f08a66;
+    --color-paper: #F3F4F1;
+    --color-ink: #16212E;
+    --color-steel: #5B6B78;
+    --color-steel-light: #8C99A4;
+    --color-line: #E2E5E1;
+    --color-amber: #B9791E;
+    --color-amber-light: #d4a24e;
+    --color-blue-tag: #33566E;
+  }
 
 @keyframes fadeIn {
   from { opacity: 0; }
