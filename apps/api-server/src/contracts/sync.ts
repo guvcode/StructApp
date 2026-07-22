@@ -47,6 +47,42 @@ export type SubmissionSyncInput = z.infer<typeof submissionSyncSchema>;
 export const syncPushSchema = z.object({
   deficiencies: z.array(deficiencySyncSchema),
   submissions: z.array(submissionSyncSchema).optional(),
+  pending_structures: z.array(
+    z.object({
+      client_local_id: z.string().min(1),
+      site_id: z.string().uuid(),
+      asset_tag: z.string().max(100),
+      description: z.string().min(1),
+      qr_code_value: z.string().max(150).nullable().optional(),
+      deficiencies: z.array(
+        z.object({
+          client_local_id: z.string().min(1),
+          category: z.string().max(100).nullable().optional(),
+          equipment_type: z.string().max(255).nullable().optional(),
+          component: z.string().max(255).nullable().optional(),
+          sub_component: z.string().max(255).nullable().optional(),
+          focus_area: z.string().max(255).nullable().optional(),
+          deficiency_category: z.string().max(255).nullable().optional(),
+          detailed_description: z.string().nullable().optional(),
+          consequence_severity: z.number().int().min(1).max(5).nullable().optional(),
+          likelihood: z.enum(['A', 'B', 'C', 'D', 'E']).nullable().optional(),
+          recommended_action: z.string().nullable().optional(),
+          most_affected_consequence: z.string().max(100).nullable().optional(),
+          gps_latitude: z.number().min(-90).max(90).nullable().optional(),
+          gps_longitude: z.number().min(-180).max(180).nullable().optional(),
+          photos: z.array(
+            z.object({
+              client_local_id: z.string().min(1),
+              filename: z.string().min(1),
+              caption: z.string().max(500).optional().default(''),
+              display_order: z.number().int().optional(),
+              storage_url: z.string().url().optional(),
+            })
+          ).optional(),
+        })
+      ).optional(),
+    })
+  ).optional(),
 });
 
 export type SyncPushInput = z.infer<typeof syncPushSchema>;

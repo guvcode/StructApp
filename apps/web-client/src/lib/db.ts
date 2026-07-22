@@ -140,6 +140,54 @@ export type OfflineSubmission = {
   syncState: 'Pending_Sync' | 'Synced';
 };
 
+export type OfflinePendingStructure = {
+  localId?: number;
+  pendingStructureId?: string;
+  clientLocalId: string;
+  siteId: string;
+  clientId: string;
+  assetTag: string;
+  description: string;
+  qrCodeValue: string | null;
+  syncState: 'Draft' | 'Pending_Sync' | 'Synced';
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type OfflinePendingDeficiency = {
+  localId?: number;
+  pendingDeficiencyId?: string;
+  pendingStructureLocalId: number;
+  clientLocalId: string;
+  category: string | null;
+  equipmentType: string | null;
+  component: string | null;
+  subComponent: string | null;
+  focusArea: string | null;
+  deficiencyCategory: string | null;
+  detailedDescription: string | null;
+  consequenceSeverity: number | null;
+  likelihood: string | null;
+  recommendedAction: string | null;
+  mostAffectedConsequence: string | null;
+  gpsLatitude: number | null;
+  gpsLongitude: number | null;
+  syncState: 'Draft' | 'Pending_Sync' | 'Synced';
+};
+
+export type OfflinePendingPhoto = {
+  localId?: number;
+  pendingPhotoId?: string;
+  pendingStructureLocalId: number;
+  pendingDeficiencyLocalId?: number;
+  clientLocalId: string;
+  filename: string;
+  caption: string;
+  displayOrder: number;
+  storageUrl: string | null;
+  syncState: 'Draft' | 'Pending_Sync' | 'Synced';
+};
+
 export class StructAppLocalDB extends Dexie {
   authState!: Table<AuthState, 'current'>;
   deficiencies!: Table<DeficiencyRecord, number>;
@@ -150,6 +198,9 @@ export class StructAppLocalDB extends Dexie {
   offlineClients!: Table<OfflineClient, string>;
   offlinePhotos!: Table<OfflinePhoto, string>;
   offlineSubmissions!: Table<OfflineSubmission, string>;
+  offlinePendingStructures!: Table<OfflinePendingStructure, number>;
+  offlinePendingStructureDeficiencies!: Table<OfflinePendingDeficiency, number>;
+  offlinePendingStructurePhotos!: Table<OfflinePendingPhoto, number>;
 
   constructor() {
     super('StructAppLocalDB');
@@ -201,6 +252,20 @@ export class StructAppLocalDB extends Dexie {
       offlineClients: 'client_id',
       offlinePhotos: 'photoId, deficiencyLocalId, syncState',
       offlineSubmissions: 'inspectionId, syncState',
+    });
+    this.version(8).stores({
+      authState: 'id, accessToken, refreshToken, clientId, userId, role',
+      deficiencies: '++localId, inspectionId, syncState, deficiencyId',
+      pinOutbox: '++localId, structureId, pinMode, createdAt',
+      offlineInspections: 'id, clientId, inspectorId, status, createdAt',
+      offlineDeficiencies: 'deficiencyId, inspectionId, clientId',
+      offlineTaxonomy: 'nodeId, level, category',
+      offlineClients: 'client_id',
+      offlinePhotos: 'photoId, deficiencyLocalId, syncState',
+      offlineSubmissions: 'inspectionId, syncState',
+      offlinePendingStructures: '++localId, clientId, syncState, pendingStructureId',
+      offlinePendingStructureDeficiencies: '++localId, pendingStructureLocalId, syncState',
+      offlinePendingStructurePhotos: '++localId, pendingStructureLocalId, syncState',
     });
   }
 }

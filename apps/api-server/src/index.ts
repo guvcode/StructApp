@@ -31,6 +31,7 @@ import { reportsRouter } from './routes/reports';
 import { importsRouter } from './routes/imports';
 import { remediationRouter } from './routes/remediation';
 import { structureTemplatesRouter } from './routes/structureTemplates';
+import { pendingStructuresRouter } from './routes/pendingStructures';
 import { usersRouter as usersRouter2 } from './routes/users';
 import { clientsRouter as clientsRouter2 } from './routes/clients';
 
@@ -70,6 +71,7 @@ app.use('/api/v1', requireAuth, taxonomyRouter);
 app.use('/api/v1', requireAuth, requireRole('Admin', 'Reviewer', 'Contractor'), registerRouter);
 app.use('/api/v1', requireAuth, requireRole('Admin', 'Reviewer', 'Contractor'), picklistsRouter);
 app.use('/api/v1', requireAuth, requireRole('Admin', 'Reviewer', 'Contractor'), structureTemplatesRouter);
+app.use('/api/v1/pending-structures', requireAuth, pendingStructuresRouter);
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
@@ -112,3 +114,4 @@ export { usersRouter };
 export { clientsRouter };
 export { registerRouter };
 export { schedulesRouter };
+export { pendingStructuresRouter };
