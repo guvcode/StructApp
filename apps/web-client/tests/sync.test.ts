@@ -13,6 +13,27 @@ const mockDb = vi.hoisted(() => ({
       }),
     }),
   },
+  offlineSubmissions: {
+    where: vi.fn().mockReturnValue({
+      equals: vi.fn().mockReturnValue({
+        toArray: vi.fn().mockResolvedValue([]),
+      }),
+    }),
+  },
+  offlinePendingStructureDeficiencies: {
+    where: vi.fn().mockReturnValue({
+      equals: vi.fn().mockReturnValue({
+        toArray: vi.fn().mockResolvedValue([]),
+      }),
+    }),
+  },
+  offlinePendingStructurePhotos: {
+    where: vi.fn().mockReturnValue({
+      equals: vi.fn().mockReturnValue({
+        toArray: vi.fn().mockResolvedValue([]),
+      }),
+    }),
+  },
 }));
 
 vi.mock('../src/lib/db', () => ({ db: mockDb }));
@@ -180,6 +201,78 @@ describe('sync utils', () => {
 
       expect(result.success).toBe(false);
       expect(result.error_code).toBe('AUTH_EXPIRED');
+    });
+
+    it('Pull should collect pending structures deficiencies and photos', async () => {
+      const validToken = createMockToken(3600);
+
+      const pendingDeficiencies = [
+        {
+          localId: 1,
+          pendingStructureLocalId: 10,
+          clientLocalId: 'client-1',
+          category: 'Steel',
+          equipmentType: 'Girder',
+          component: 'Flange',
+          subComponent: 'Top',
+          focusArea: 'North',
+          deficiencyCategory: 'Corrosion',
+          detailedDescription: 'Rust',
+          consequenceSeverity: 3,
+          likelihood: 'High',
+          recommendedAction: 'Paint',
+          mostAffectedConsequence: 'Structural',
+          gpsLatitude: 40.7128,
+          gpsLongitude: -74.006,
+          syncState: 'Pending_Sync',
+        },
+      ];
+
+      const pendingPhotos = [
+        {
+          localId: 1,
+          pendingStructureLocalId: 10,
+          pendingDeficiencyLocalId: 1,
+          clientLocalId: 'client-1',
+          filename: 'photo.jpg',
+          caption: 'Test',
+          displayOrder: 0,
+          storageUrl: null,
+          syncState: 'Pending_Sync',
+        },
+      ];
+
+      const deficienciesToArray = vi.fn().mockResolvedValue([]);
+      const submissionsToArray = vi.fn().mockResolvedValue([]);
+      const psDefToArray = vi.fn().mockResolvedValue(pendingDeficiencies);
+      const psPhotoToArray = vi.fn().mockResolvedValue(pendingPhotos);
+
+      mockDb.deficiencies.where.mockReturnValue({
+        equals: vi.fn().mockReturnValue({ toArray: deficienciesToArray }),
+      });
+      mockDb.offlineSubmissions.where.mockReturnValue({
+        equals: vi.fn().mockReturnValue({ toArray: submissionsToArray }),
+      });
+      mockDb.offlinePendingStructureDeficiencies.where.mockReturnValue({
+        equals: vi.fn().mockReturnValue({ toArray: psDefToArray }),
+      });
+      mockDb.offlinePendingStructurePhotos.where.mockReturnValue({
+        equals: vi.fn().mockReturnValue({ toArray: psPhotoToArray }),
+      });
+
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ success: true, data: [] }),
+      });
+
+      const result = await syncWithAutoRefresh(validToken, 'refresh-token');
+
+      expect(result.success).toBe(true);
+      const callArgs = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+      const body = JSON.parse(callArgs[1].body);
+      expect(body.pending_structures).toHaveLength(1);
+      expect(body.pending_structures[0].deficiencies).toHaveLength(1);
+      expect(body.pending_structures[0].photos).toHaveLength(1);
     });
   });
 });
