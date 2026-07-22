@@ -5,6 +5,8 @@ interface PropertiesPanelProps {
   node: TreeNode | null;
   path: TreeNode[];
   onRename: (nodeId: string, label: string) => void;
+  onUpdateCategory: (nodeId: string, category: string) => void;
+  onUpdateDisplayOrder: (nodeId: string, displayOrder: number) => void;
   onDeactivate: (nodeId: string) => void;
   onReactivate: (nodeId: string) => void;
   onAddChild: (parentId: string, label: string) => void;
@@ -18,9 +20,12 @@ const LEVEL_LABELS: Record<string, string> = {
   focus_area: 'Focus Area',
 };
 
-export function PropertiesPanel({ node, path, onRename, onDeactivate, onReactivate, onAddChild }: PropertiesPanelProps) {
+export function PropertiesPanel({ node, path, onRename, onUpdateCategory, onUpdateDisplayOrder, onDeactivate, onReactivate, onAddChild }: PropertiesPanelProps) {
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  const [editCategory, setEditCategory] = useState('');
+  const [editDisplayOrder, setEditDisplayOrder] = useState(0);
   const [isAdding, setIsAdding] = useState(false);
   const [addValue, setAddValue] = useState('');
 
@@ -31,6 +36,26 @@ export function PropertiesPanel({ node, path, onRename, onDeactivate, onReactiva
       </div>
     );
   }
+
+  const startEditing = () => {
+    setEditCategory(node.category);
+    setEditDisplayOrder(node.display_order);
+    setIsEditing(true);
+  };
+
+  const cancelEditing = () => {
+    setIsEditing(false);
+  };
+
+  const saveEditing = () => {
+    if (editCategory.trim() !== node.category) {
+      onUpdateCategory(node.node_id, editCategory.trim());
+    }
+    if (editDisplayOrder !== node.display_order) {
+      onUpdateDisplayOrder(node.node_id, editDisplayOrder);
+    }
+    setIsEditing(false);
+  };
 
   const handleStartRename = () => {
     setRenameValue(node.label);
@@ -96,12 +121,27 @@ export function PropertiesPanel({ node, path, onRename, onDeactivate, onReactiva
         )}
       </div>
 
+      {isEditing && (
+        <div className="flex gap-2 pt-2">
+          <button onClick={saveEditing} className="rounded-md bg-accent px-3 py-2 text-sm font-medium text-accent-foreground hover:bg-accent-dark transition-colors">Save Changes</button>
+          <button onClick={cancelEditing} className="rounded-md bg-surface-tertiary px-3 py-2 text-sm font-medium text-text-secondary hover:bg-surface-secondary transition-colors">Cancel</button>
+        </div>
+      )}
+
       {/* Details */}
       <div className="space-y-3">
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-surface-secondary rounded-lg p-3">
             <div className="text-xs text-text-muted mb-0.5">Category</div>
-            <div className="text-sm text-text-primary font-medium">{node.category}</div>
+            {isEditing ? (
+              <input
+                value={editCategory}
+                onChange={e => setEditCategory(e.target.value)}
+                className="w-full rounded-md border border-border bg-surface px-2 py-1 text-sm text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
+              />
+            ) : (
+              <div className="text-sm text-text-primary font-medium">{node.category}</div>
+            )}
           </div>
           <div className="bg-surface-secondary rounded-lg p-3">
             <div className="text-xs text-text-muted mb-0.5">Level</div>
@@ -109,7 +149,16 @@ export function PropertiesPanel({ node, path, onRename, onDeactivate, onReactiva
           </div>
           <div className="bg-surface-secondary rounded-lg p-3">
             <div className="text-xs text-text-muted mb-0.5">Display Order</div>
-            <div className="text-sm text-text-primary font-medium">{node.display_order}</div>
+            {isEditing ? (
+              <input
+                type="number"
+                value={editDisplayOrder}
+                onChange={e => setEditDisplayOrder(parseInt(e.target.value || '0', 10))}
+                className="w-full rounded-md border border-border bg-surface px-2 py-1 text-sm text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
+              />
+            ) : (
+              <div className="text-sm text-text-primary font-medium">{node.display_order}</div>
+            )}
           </div>
           <div className="bg-surface-secondary rounded-lg p-3">
             <div className="text-xs text-text-muted mb-0.5">Children</div>
@@ -149,6 +198,15 @@ export function PropertiesPanel({ node, path, onRename, onDeactivate, onReactiva
 
       {/* Actions */}
       <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
+        {!isEditing && (
+          <button
+            onClick={startEditing}
+            className="rounded-md bg-surface-tertiary px-3 py-1.5 text-sm font-medium text-text-primary hover:bg-surface-secondary transition-colors"
+          >
+            Edit
+          </button>
+        )}
+
         <button
           onClick={handleStartRename}
           className="rounded-md bg-surface-tertiary px-3 py-1.5 text-sm font-medium text-text-primary hover:bg-surface-secondary transition-colors"

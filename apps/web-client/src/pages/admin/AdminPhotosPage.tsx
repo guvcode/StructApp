@@ -5,6 +5,19 @@ import { getAdminPhotos } from '../../services/api/adminPhotos';
 import PhotoGallery from '../../components/PhotoGallery';
 import type { AdminPhotoResponse } from '../../services/api/adminPhotos';
 
+function parseGpsFromRaw(raw?: string): { lat?: number; lng?: number } {
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw);
+    return {
+      lat: parsed.GPSLatitude,
+      lng: parsed.GPSLongitude,
+    };
+  } catch {
+    return {};
+  }
+}
+
 export default function AdminPhotosPage() {
   const [clientFilter, setClientFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -62,7 +75,10 @@ export default function AdminPhotosPage() {
       )}
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {filtered.map(p => (
+        {filtered.map(p => {
+          const gps = parseGpsFromRaw(p.raw_exif_payload);
+          const hasGps = p.gps_latitude != null || gps.lat != null;
+          return (
           <div key={p.photo_id} className="bg-surface-primary border border-border rounded-lg overflow-hidden">
             <img src={p.storage_url} alt={p.caption} className="w-full h-40 object-cover" />
             <div className="p-3">
@@ -71,9 +87,15 @@ export default function AdminPhotosPage() {
               {p.original_filename && <p className="text-[10px] text-text-muted mt-0.5 truncate" title={p.original_filename}>{p.original_filename}</p>}
               {p.camera_make && p.camera_model && <p className="text-[10px] text-text-muted">{p.camera_make} {p.camera_model}</p>}
               {p.captured_at && <p className="text-[10px] text-text-muted">{new Date(p.captured_at).toLocaleString()}</p>}
+              {hasGps && (
+                <p className="text-[10px] text-text-muted mt-0.5">
+                  GPS: {(p.gps_latitude ?? gps.lat)?.toFixed(4)}, {(p.gps_longitude ?? gps.lng)?.toFixed(4)}
+                </p>
+              )}
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

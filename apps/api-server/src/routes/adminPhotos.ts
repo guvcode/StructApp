@@ -16,6 +16,8 @@ interface AdminPhotoRow {
   camera_make?: string;
   camera_model?: string;
   raw_exif_payload?: string;
+  gps_latitude?: number;
+  gps_longitude?: number;
   client_id?: string;
   client_name?: string;
   site_name?: string;
@@ -30,6 +32,7 @@ router.get(
     try {
       const result = await pool.query(
         `SELECT p.photo_id, p.deficiency_id, p.storage_url, p.caption, p.display_order, p.created_at,
+                p.gps_latitude, p.gps_longitude,
                 e.original_filename, e.captured_at, e.camera_make, e.camera_model, e.raw_exif_payload,
                 COALESCE(c.name, 'Unknown') AS client_name,
                 s.site_id,

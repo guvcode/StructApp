@@ -13,6 +13,8 @@ export interface AdminPhotoResponse {
   camera_make?: string;
   camera_model?: string;
   raw_exif_payload?: string;
+  gps_latitude?: number;
+  gps_longitude?: number;
   client_name?: string;
   site_id?: string;
   inspection_id?: string;

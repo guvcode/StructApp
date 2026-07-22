@@ -13,6 +13,7 @@ export type TaxonomyCreateInput = z.infer<typeof taxonomyCreateSchema>;
 export const taxonomyUpdateSchema = z.object({
   parent_id: z.string().uuid().nullable().optional(),
   label: z.string().min(1).max(255).optional(),
+  category: z.string().min(1).max(100).optional(),
   display_order: z.number().int().min(0).optional(),
   is_active: z.boolean().optional(),
 });
