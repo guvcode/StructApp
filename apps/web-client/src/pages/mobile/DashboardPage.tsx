@@ -229,6 +229,9 @@ export default function DashboardPage() {
         <button onClick={() => navigate('/m/structures/search')} className="flex-1 px-4 py-2.5 bg-accent text-white rounded-lg text-sm font-medium shadow-sm transition-all animate-buttonLift hover:animate-buttonLift-hover" aria-label="Scan QR code to find structure">
           Scan QR
         </button>
+        <button onClick={() => navigate('/m/pending-structures/new')} className="flex-1 px-4 py-2.5 bg-accent text-white rounded-lg text-sm font-medium shadow-sm transition-all animate-buttonLift hover:animate-buttonLift-hover" aria-label="Discover new on-site structure">
+          Discover
+        </button>
       </div>
 
       {syncState && (
