@@ -93,149 +93,200 @@ export default function DashboardPage() {
   return (
     <div className="space-y-4 animate-fadeIn">
       <div>
-        <h2 className="text-lg font-bold text-text-primary">Welcome, {userName}</h2>
-        <p className="text-xs text-text-secondary">Dashboard</p>
+        <h1 className="text-2xl font-bold text-ink">Welcome, {userName}</h1>
+        <p className="text-xs font-mono text-steel-light uppercase tracking-wider">Dashboard</p>
       </div>
 
-      <div className="bg-surface-elevated rounded-xl p-4 border border-border/50 shadow-card">
-        <div className="flex items-center gap-3">
-          <svg className="w-8 h-8 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v16h16V4H4zm2 2h12v12H6V6zm2 2v2h2V8H8zm0 4v2h2v-2H8zm4-4v6h2V8h-2zm0 8v2h2v-2h-2zm4-8v2h2V8h-2zm0 4v4h2v-4h-2z"/></svg>
+      <div className="status-card rounded-xl p-4 mb-4 relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-4 h-full bg-signal" />
+        <div className="flex items-center gap-4 pl-2">
+          <div className="w-10 h-10 rounded-lg bg-signal/20 border border-signal/40 flex items-center justify-center flex-shrink-0">
+            <svg className="w-5 h-5 text-signal" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v16h16V4H4zm2 2h12v12H6V6zm2 2v2h2V8H8zm0 4v2h2v-2H8zm4-4v6h2V8h-2zm0 8v2h2v-2h-2zm4-8v2h2V8h-2zm0 4v4h2v-4h-2z"/></svg>
+          </div>
           <div>
-            <p className="text-2xl font-bold text-accent">{pendingCount}</p>
-            <p className="text-xs text-text-secondary">items pending sync</p>
+            <p className="text-2xl font-bold text-white">{pendingCount}</p>
+            <p className="text-xs text-signal-light mt-0.5">items pending sync</p>
           </div>
         </div>
       </div>
 
       {returned.length > 0 && (
         <div>
-          <h3 className="font-semibold text-text-primary mb-2">Returned to You</h3>
+          <div className="section-head mb-2">
+            <h2 className="text-lg font-bold text-ink uppercase tracking-wider">Returned to You</h2>
+            <span className="font-mono text-sm text-steel-light">{returned.length}</span>
+          </div>
           {returned.map((insp) => {
             const i = insp as { id: string; clientId?: string; client_id?: string; siteId?: string; site_id?: string; status: string; scheduledDate?: string | null; scheduled_date?: string };
             return (
             <button
               key={i.id}
+              type="button"
               onClick={() => navigate(`/m/inspections/${i.id}`)}
-              className="w-full bg-red-50 border border-red-200 rounded-xl p-4 mb-2 text-left shadow-sm"
+              className="def-card returned rounded-xl border border-line mb-2 cursor-pointer hover:shadow-sm transition-shadow w-full text-left"
             >
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-200 text-red-800">Returned</span>
-              </div>
-              <p className="text-sm font-semibold text-red-800">
-                {clientLookup.get(i.clientId ?? i.client_id ?? '') ?? 'Unknown client'}
-              </p>
-              <p className="text-xs text-red-600 mt-0.5">
-                {siteLookup.get(i.siteId ?? i.site_id ?? '') ?? i.siteId ?? i.site_id} — due {formatDate(i.scheduledDate ?? i.scheduled_date)}
-              </p>
-            </button>
-            );
-          })}
-        </div>
-      )}
+              <div className="stripe" style={{ background: 'var(--red-tag)' }}></div>
+              <div className="def-body p-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded font-mono uppercase tracking-wider" style={{ background: 'var(--red-bg)', color: 'var(--red-tag)' }}>
+                    Returned
+                  </span>
+                </div>
+                <p className="text-sm font-semibold text-ink">
+                  {clientLookup.get(i.clientId ?? i.client_id ?? '') ?? 'Unknown client'}
+                </p>
+                <p className="text-xs text-steel mt-0.5">
+                  {siteLookup.get(i.siteId ?? i.site_id ?? '') ?? i.siteId ?? i.site_id} — due {formatDate(i.scheduledDate ?? i.scheduled_date) || 'Not yet scheduled'}
+                </p>
+               </div>
+             </button>
+             );
+           })}
+         </div>
+       )}
 
-      {submitted.length > 0 && (
+       {submitted.length > 0 && (
         <div>
-          <h3 className="font-semibold text-text-primary mb-2">Submitted ({submitted.length})</h3>
+          <div className="section-head mb-2">
+            <h2 className="text-lg font-bold text-ink uppercase tracking-wider">Submitted</h2>
+            <span className="font-mono text-sm text-steel-light">{submitted.length}</span>
+          </div>
           {submitted.map((insp) => {
             const i = insp as { id: string; clientId?: string; client_id?: string; siteId?: string; site_id?: string; status: string; scheduledDate?: string | null; scheduled_date?: string };
             return (
             <button
               key={i.id}
+              type="button"
               onClick={() => navigate(`/m/inspections/${i.id}`)}
-              className="w-full bg-surface-primary border border-border rounded-xl p-4 mb-2 text-left shadow-sm hover:shadow-md transition-shadow"
+              className="def-card assigned rounded-xl border border-line mb-2 cursor-pointer hover:shadow-sm transition-shadow w-full text-left"
             >
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">Submitted</span>
-                <span className="text-xs text-text-muted">{formatDate(i.scheduledDate ?? i.scheduled_date)}</span>
-              </div>
-              <p className="text-base font-semibold text-text-primary">
-                {clientLookup.get(i.clientId ?? i.client_id ?? '') ?? i.clientId ?? i.client_id}
-              </p>
-              <p className="text-sm text-text-secondary mt-0.5">
-                {siteLookup.get(i.siteId ?? i.site_id ?? '') ?? i.siteId ?? i.site_id}
-              </p>
-            </button>
-            );
-          })}
-        </div>
-      )}
+              <div className="stripe" style={{ background: 'var(--blue-tag)' }}></div>
+              <div className="def-body p-3">
+                <div className="flex items-center gap-2 mb-1">
+                   <span className="text-xs font-semibold px-2 py-0.5 rounded font-mono uppercase tracking-wider" style={{ background: 'var(--blue-bg)', color: 'var(--blue-tag)' }}>
+                     Submitted
+                   </span>
+                   <span className="text-xs text-steel-light font-mono">{formatDate(i.scheduledDate ?? i.scheduled_date) || 'Not yet scheduled'}</span>
+                </div>
+                <p className="text-base font-semibold text-ink">
+                  {clientLookup.get(i.clientId ?? i.client_id ?? '') ?? i.clientId ?? i.client_id}
+                </p>
+                <p className="text-sm text-steel mt-0.5">
+                  {siteLookup.get(i.siteId ?? i.site_id ?? '') ?? i.siteId ?? i.site_id}
+                </p>
+               </div>
+             </button>
+             );
+           })}
+         </div>
+       )}
 
-      {approved.length > 0 && (
+       {approved.length > 0 && (
         <div>
-          <h3 className="font-semibold text-text-primary mb-2">Approved ({approved.length})</h3>
+          <div className="section-head mb-2">
+            <h2 className="text-lg font-bold text-ink uppercase tracking-wider">Approved</h2>
+            <span className="font-mono text-sm text-steel-light">{approved.length}</span>
+          </div>
           {approved.map((insp) => {
             const i = insp as { id: string; clientId?: string; client_id?: string; siteId?: string; site_id?: string; status: string; scheduledDate?: string | null; scheduled_date?: string };
             return (
             <button
               key={i.id}
+              type="button"
               onClick={() => navigate(`/m/inspections/${i.id}`)}
-              className="w-full bg-surface-primary border border-border rounded-xl p-4 mb-2 text-left shadow-sm hover:shadow-md transition-shadow"
+              className="def-card low rounded-xl border border-line mb-2 cursor-pointer hover:shadow-sm transition-shadow w-full text-left"
             >
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-800">Approved</span>
-                <span className="text-xs text-text-muted">{formatDate(i.scheduledDate ?? i.scheduled_date)}</span>
-              </div>
-              <p className="text-base font-semibold text-text-primary">
-                {clientLookup.get(i.clientId ?? i.client_id ?? '') ?? i.clientId ?? i.client_id}
-              </p>
-              <p className="text-sm text-text-secondary mt-0.5">
-                {siteLookup.get(i.siteId ?? i.site_id ?? '') ?? i.siteId ?? i.site_id}
-              </p>
-            </button>
-            );
-          })}
-        </div>
-      )}
+              <div className="stripe" style={{ background: 'var(--green)' }}></div>
+              <div className="def-body p-3">
+                <div className="flex items-center gap-2 mb-1">
+                   <span className="text-xs font-semibold px-2 py-0.5 rounded font-mono uppercase tracking-wider" style={{ background: 'var(--green-bg)', color: 'var(--green)' }}>
+                     Approved
+                   </span>
+                   <span className="text-xs text-steel-light font-mono">{formatDate(i.scheduledDate ?? i.scheduled_date) || 'Not yet scheduled'}</span>
+                </div>
+                <p className="text-base font-semibold text-ink">
+                  {clientLookup.get(i.clientId ?? i.client_id ?? '') ?? i.clientId ?? i.client_id}
+                </p>
+                <p className="text-sm text-steel mt-0.5">
+                  {siteLookup.get(i.siteId ?? i.site_id ?? '') ?? i.siteId ?? i.site_id}
+                </p>
+               </div>
+             </button>
+             );
+           })}
+         </div>
+       )}
 
-      <div>
-        <h3 className="font-semibold text-text-primary mb-2">Active Inspections ({assigned.length})</h3>
+       <div>
+        <div className="section-head mb-2">
+          <h2 className="text-lg font-bold text-ink uppercase tracking-wider">Active Inspections</h2>
+          <span className="font-mono text-sm text-steel-light">{assigned.length}</span>
+        </div>
         {assigned.map((insp) => {
           const i = insp as { id: string; clientId?: string; client_id?: string; siteId?: string; site_id?: string; status: string; scheduledDate?: string | null; scheduled_date?: string; structureId?: string; structure_id?: string };
-          const statusColor = i.status === InspectionStatus.InProgress ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800';
+          const statusColor = i.status === InspectionStatus.InProgress ? 'var(--amber)' : 'var(--blue-tag)';
           const statusLabel = i.status === InspectionStatus.InProgress ? 'In Progress' : 'Assigned';
           return (
           <button
             key={i.id}
+            type="button"
             onClick={() => navigate(`/m/inspections/${i.id}`)}
-            className="w-full bg-surface-primary border border-border rounded-xl p-4 mb-2 text-left shadow-sm hover:shadow-md transition-shadow"
+            className="def-card assigned rounded-xl border border-line mb-2 cursor-pointer hover:shadow-sm transition-shadow w-full text-left"
           >
-            <div className="flex items-center gap-2 mb-1">
-              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${statusColor}`}>{statusLabel}</span>
-              <span className="text-xs text-text-muted">{formatDate(i.scheduledDate ?? i.scheduled_date)}</span>
-            </div>
-            <p className="text-base font-semibold text-text-primary">
-              {clientLookup.get(i.clientId ?? i.client_id ?? '') ?? i.clientId ?? i.client_id}
-            </p>
-            <p className="text-sm text-text-secondary mt-0.5">
-              {siteLookup.get(i.siteId ?? i.site_id ?? '') ?? i.siteId ?? i.site_id}
-              {structureLookup.get(i.structureId ?? i.structure_id ?? '') ? ` — ${structureLookup.get(i.structureId ?? i.structure_id ?? '')}` : ''}
-            </p>
-          </button>
-          );
-        })}
-        {assigned.length === 0 && (
+            <div className="stripe" style={{ background: statusColor }}></div>
+            <div className="def-body p-3">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs font-semibold px-2 py-0.5 rounded font-mono uppercase tracking-wider" style={{ background: i.status === InspectionStatus.InProgress ? 'var(--amber-bg)' : 'var(--blue-bg)', color: statusColor }}>
+                  {statusLabel}
+                </span>
+                <span className="text-xs text-steel-light font-mono">{formatDate(i.scheduledDate ?? i.scheduled_date)}</span>
+              </div>
+              <p className="text-base font-semibold text-ink">
+                {clientLookup.get(i.clientId ?? i.client_id ?? '') ?? i.clientId ?? i.client_id}
+              </p>
+              <p className="text-sm text-steel mt-0.5">
+                {siteLookup.get(i.siteId ?? i.site_id ?? '') ?? i.siteId ?? i.site_id}
+                {structureLookup.get(i.structureId ?? i.structure_id ?? '') ? ` — ${structureLookup.get(i.structureId ?? i.structure_id ?? '')}` : ''}
+               </p>
+             </div>
+           </button>
+           );
+         })}
+         {assigned.length === 0 && (
           <div className="text-center py-10">
-            <svg className="w-12 h-12 mx-auto text-text-muted mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-            <p className="text-text-secondary text-sm">No assigned inspections.</p>
-            <p className="text-text-muted text-xs mt-1">Pull the latest data from Sync to check.</p>
+            <svg className="w-12 h-12 mx-auto text-steel-light mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            <p className="text-steel text-sm">No assigned inspections.</p>
+            <p className="text-steel-light text-xs mt-1">Pull the latest data from Sync to check.</p>
           </div>
         )}
       </div>
 
       <div className="flex gap-2 pt-2">
-        <button onClick={() => navigate('/m/sync')} className="flex-1 px-4 py-2.5 bg-accent text-white rounded-lg text-sm font-medium shadow-sm transition-all animate-buttonLift hover:animate-buttonLift-hover" aria-label="Go to sync page">
+        <button
+          onClick={() => navigate('/m/sync')}
+          className="btn primary w-full"
+          aria-label="Sync Now"
+        >
           Sync Now
         </button>
-        <button onClick={() => navigate('/m/structures/search')} className="flex-1 px-4 py-2.5 bg-accent text-white rounded-lg text-sm font-medium shadow-sm transition-all animate-buttonLift hover:animate-buttonLift-hover" aria-label="Scan QR code to find structure">
+        <button
+          onClick={() => navigate('/m/structures/search')}
+          className="btn secondary w-full"
+          aria-label="Scan QR code to find structure"
+        >
           Scan QR
         </button>
-        <button onClick={() => navigate('/m/pending-structures/new')} className="flex-1 px-4 py-2.5 bg-accent text-white rounded-lg text-sm font-medium shadow-sm transition-all animate-buttonLift hover:animate-buttonLift-hover" aria-label="Discover new on-site structure">
+        <button
+          onClick={() => navigate('/m/pending-structures/new')}
+          className="btn secondary w-full"
+          aria-label="Discover new on-site structure"
+        >
           Discover
         </button>
       </div>
 
       {syncState && (
-        <p className="text-xs text-text-secondary text-center">
+        <p className="text-xs text-steel-light text-center font-mono">
           Last sync: {new Date(syncState.lastSync).toLocaleTimeString()}
         </p>
       )}

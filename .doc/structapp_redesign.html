@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>StructApp — Site Detail (Redesign)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#16212E;
+    --paper:#F3F4F1;
+    --surface:#FFFFFF;
+    --steel:#5B6B78;
+    --steel-light:#8C99A4;
+    --line:#E2E5E1;
+    --signal:#E2622A;
+    --signal-dark:#C44F1D;
+    --amber:#B9791E;
+    --amber-bg:#FBF0DC;
+    --green:#3E7A57;
+    --green-bg:#E4F0E8;
+    --blue-tag:#33566E;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:#0000; font-family:'Inter',sans-serif;}
+  body{
+    display:flex; justify-content:center; padding:32px 12px;
+    background: radial-gradient(circle at 50% 0%, #EEF0EC 0%, #DFE2DC 100%);
+  }
+  .frame{
+    width:390px;
+    background:var(--paper);
+    border-radius:34px;
+    overflow:hidden;
+    box-shadow: 0 30px 60px -20px rgba(22,33,46,0.35), 0 0 0 10px #12181F, 0 0 0 11px #2A333D;
+    position:relative;
+  }
+  .statusbar{
+    height:44px; display:flex; align-items:center; justify-content:space-between;
+    padding:0 22px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink);
+    background:var(--paper);
+  }
+  .content{ padding: 4px 18px 18px; }
+
+  /* Top nav */
+  .topnav{ display:flex; align-items:center; justify-content:space-between; padding:6px 2px 14px; }
+  .back-btn{
+    display:flex; align-items:center; gap:6px; color:var(--steel); font-weight:600; font-size:14px;
+    background:none; border:none; padding:6px 4px; cursor:pointer;
+  }
+  .back-btn svg{ stroke:var(--steel); }
+  .icon-btn{
+    width:34px; height:34px; border-radius:10px; background:var(--surface); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  /* Header */
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--steel-light); margin:0 0 4px;
+  }
+  h1.site-title{
+    font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:34px; line-height:1.02;
+    color:var(--ink); margin:0 0 16px; letter-spacing:0.01em;
+  }
+
+  /* Status card */
+  .status-card{
+    background:var(--ink); color:#fff; border-radius:16px; padding:16px 18px;
+    margin-bottom:20px; position:relative; overflow:hidden;
+  }
+  .status-card::before{
+    content:""; position:absolute; top:0; left:0; width:4px; height:100%; background:var(--signal);
+  }
+  .status-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .status-label{ font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:#AAB4BE; font-family:'IBM Plex Mono',monospace; }
+  .status-pill{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600; padding:4px 10px; border-radius:20px;
+    background:rgba(226,98,42,0.18); color:#F2A57E; border:1px solid rgba(226,98,42,0.4);
+  }
+  .status-meta{ font-size:13px; color:#CBD2D8; line-height:1.6; }
+  .status-meta strong{ color:#fff; font-weight:600; }
+  .status-meta .row{ display:flex; gap:8px; }
+  .status-meta .k{ color:#8592A0; min-width:88px; flex-shrink:0; }
+
+  /* Section header */
+  .section-head{ display:flex; align-items:baseline; justify-content:space-between; margin:0 0 10px; }
+  .section-head h2{
+    font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:20px; color:var(--ink); margin:0;
+    text-transform:uppercase; letter-spacing:0.02em;
+  }
+  .section-head .count{
+    font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--steel-light);
+  }
+
+  /* Deficiency cards */
+  .def-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:12px;
+    margin-bottom:10px; display:flex; overflow:hidden;
+  }
+  .def-card .stripe{ width:5px; flex-shrink:0; }
+  .def-card.medium .stripe{ background:var(--amber); }
+  .def-card.low .stripe{ background:var(--green); }
+  .def-body{ padding:13px 14px; flex:1; min-width:0; }
+  .def-toprow{ display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+  .sev-tag{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600; padding:2px 8px; border-radius:5px;
+    text-transform:uppercase; letter-spacing:0.03em;
+  }
+  .sev-tag.medium{ background:var(--amber-bg); color:var(--amber); }
+  .sev-tag.low{ background:var(--green-bg); color:var(--green); }
+  .prio-code{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--steel); background:var(--paper);
+    padding:2px 7px; border-radius:5px; border:1px solid var(--line);
+  }
+  .def-title{ font-size:14.5px; font-weight:600; color:var(--ink); margin:0 0 3px; }
+  .def-meta{ font-size:12.5px; color:var(--steel); }
+  .def-meta b{ color:var(--blue-tag); font-weight:600; }
+
+  /* Actions grid */
+  .actions{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:22px 0 4px; }
+  .btn{
+    border:none; border-radius:12px; padding:15px 10px; font-family:'Inter',sans-serif;
+    font-size:14px; font-weight:600; display:flex; flex-direction:column; align-items:center; gap:6px;
+    cursor:pointer;
+  }
+  .btn.primary{ background:var(--signal); color:#fff; grid-column: span 2; flex-direction:row; justify-content:center; padding:16px 10px; font-size:15px; }
+  .btn.primary:active{ background:var(--signal-dark); }
+  .btn.secondary{ background:var(--surface); color:var(--ink); border:1px solid var(--line); }
+  .btn svg{ flex-shrink:0; }
+
+  /* Install banner - dismissible, demoted */
+  .install-banner{
+    display:flex; align-items:center; gap:10px; background:var(--surface); border:1px solid var(--line);
+    border-radius:12px; padding:10px 12px; margin:0 0 16px;
+  }
+  .install-banner .ico{
+    width:32px; height:32px; border-radius:8px; background:var(--paper); display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .install-banner .txt{ flex:1; min-width:0; }
+  .install-banner .txt .t{ font-size:12.5px; font-weight:600; color:var(--ink); }
+  .install-banner .txt .s{ font-size:11px; color:var(--steel-light); }
+  .install-banner button.install-cta{
+    background:var(--paper); color:var(--ink); border:1px solid var(--line); font-family:'Inter'; font-weight:600;
+    font-size:12px; padding:7px 12px; border-radius:8px; cursor:pointer;
+  }
+  .install-banner button.dismiss{
+    background:none; border:none; color:var(--steel-light); font-size:16px; cursor:pointer; padding:2px 4px;
+  }
+
+  /* Bottom nav */
+  .bottomnav{
+    display:flex; justify-content:space-around; align-items:center; padding:10px 4px 22px;
+    background:var(--surface); border-top:1px solid var(--line);
+  }
+  .navitem{ display:flex; flex-direction:column; align-items:center; gap:4px; color:var(--steel-light); }
+  .navitem.active{ color:var(--signal); }
+  .navitem span{ font-size:10.5px; font-weight:500; font-family:'Inter'; }
+</style>
+</head>
+<body>
+<div class="frame">
+  <div class="statusbar">
+    <span>9:41</span>
+    <span>StructApp</span>
+    <span>100%</span>
+  </div>
+
+  <div class="content">
+
+    <div class="install-banner">
+      <div class="ico">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16212E" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
+      </div>
+      <div class="txt">
+        <div class="t">Install StructApp</div>
+        <div class="s">Quick access from your home screen</div>
+      </div>
+      <button class="install-cta">Install</button>
+      <button class="dismiss">✕</button>
+    </div>
+
+    <div class="topnav">
+      <button class="back-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M19 12H5m0 0l7 7m-7-7l7-7"/></svg>
+        Sites
+      </button>
+      <button class="icon-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16212E" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+      </button>
+    </div>
+
+    <p class="eyebrow">Site Record · SR-0142</p>
+    <h1 class="site-title">Template Site</h1>
+
+    <div class="status-card">
+      <div class="status-row">
+        <span class="status-label">Status</span>
+        <span class="status-pill">ASSIGNED</span>
+      </div>
+      <div class="status-meta">
+        <div class="row"><span class="k">Scheduled</span><span>Not yet scheduled</span></div>
+        <div class="row"><span class="k">Assigned to</span><span><strong>Olugbenga</strong> · gbengaomoni@gmail.com</span></div>
+      </div>
+    </div>
+
+    <div class="section-head">
+      <h2>Findings</h2>
+      <span class="count">2 open</span>
+    </div>
+
+    <div class="def-card medium">
+      <div class="stripe"></div>
+      <div class="def-body">
+        <div class="def-toprow">
+          <span class="sev-tag medium">Medium</span>
+          <span class="prio-code">P3</span>
+        </div>
+        <p class="def-title">Structural Support — corrosion at hanger connection</p>
+        <p class="def-meta"><b>Location:</b> Support Arms, Hangers</p>
+      </div>
+    </div>
+
+    <div class="def-card low">
+      <div class="stripe"></div>
+      <div class="def-body">
+        <div class="def-toprow">
+          <span class="sev-tag low">Low</span>
+          <span class="prio-code">P1</span>
+        </div>
+        <p class="def-title">Structural Support — minor grout hairline crack</p>
+        <p class="def-meta"><b>Location:</b> Baseplate, Grout</p>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg>
+        Submit Inspection
+      </button>
+      <button class="btn secondary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16212E" stroke-width="2"><path d="M12 5v14m-7-7h14"/></svg>
+        Add Deficiency
+      </button>
+      <button class="btn secondary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16212E" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        Discover
+      </button>
+      <button class="btn secondary" style="grid-column: span 2;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16212E" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9M3 12l3-3m-3 3l3 3M12 7v5l3 3"/></svg>
+        View History
+      </button>
+    </div>
+
+  </div>
+
+  <div class="bottomnav">
+    <div class="navitem active">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg>
+      <span>Dashboard</span>
+    </div>
+    <div class="navitem">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6M3 12a9 9 0 0115-6.7L21 8M3 22v-6h6M21 12a9 9 0 01-15 6.7L3 16"/></svg>
+      <span>Sync</span>
+    </div>
+    <div class="navitem">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="7" width="16" height="14" rx="2"/><path d="M9 7V4h6v3"/><path d="M12 12v4"/></svg>
+      <span>Pending</span>
+    </div>
+    <div class="navitem">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+      <span>Timesheets</span>
+    </div>
+    <div class="navitem">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      <span>Settings</span>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

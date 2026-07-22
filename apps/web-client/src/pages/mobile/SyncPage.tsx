@@ -209,22 +209,32 @@ export default function SyncPage() {
     <div className="space-y-4">
       <button onClick={() => navigate('/m/dashboard')} className="text-sm text-accent">&larr; Back</button>
       <h2 className="text-lg font-bold text-text-primary">Sync Hub</h2>
-      <div className="bg-surface-primary rounded-lg p-3 border border-border">
-        <p className="text-sm text-text-primary">
-          Status: {navigator.onLine ? 'Online' : 'Offline'}
-        </p>
-        {syncState && (
-          <p className="text-xs text-text-secondary">
-            Last sync: {syncState.lastSync ? new Date(syncState.lastSync).toLocaleTimeString() : 'Never'}
-          </p>
-        )}
+      <div className="status-card rounded-xl p-4 mb-4 relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-4 h-full bg-signal" />
+        <div className="flex items-center gap-4 pl-2">
+          <div className="w-10 h-10 rounded-lg bg-signal/20 border border-signal/40 flex items-center justify-center flex-shrink-0">
+            <svg className="w-5 h-5 text-signal" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v16h16V4H4zm2 2h12v12H6V6zm2 2v2h2V8H8zm0 4v2h2v-2H8zm4-4v6h2V8h-2zm0 8v2h2v-2h-2zm4-8v2h2V8h-2zm0 4v4h2v-4h-2z"/></svg>
+          </div>
+          <div>
+            <p className="text-2xl font-bold text-white">{navigator.onLine ? 'Online' : 'Offline'}</p>
+            <p className="text-xs text-signal-light mt-0.5">Sync status</p>
+          </div>
+        </div>
       </div>
 
-      <div className="flex gap-2">
+      {syncState && (
+        <div className="bg-surface-primary rounded-lg p-3 border border-border">
+          <p className="text-xs text-text-secondary">
+            Last sync: {syncState.lastSync ? new Date(syncState.lastSync).toLocaleTimeString() : 'Not yet scheduled'}
+          </p>
+        </div>
+      )}
+
+      <div className="flex flex-wrap gap-2 pt-2">
         <button
           onClick={() => pullMutation.mutate()}
-          disabled={loading}
-          className="flex-1 px-4 py-2 bg-accent text-white rounded-lg disabled:opacity-50"
+          disabled={loading || pushMutation.isPending}
+          className="flex-1 px-4 py-2 bg-signal text-white rounded-lg disabled:opacity-50"
           aria-label="Pull package from server"
         >
           Pull Package
@@ -232,7 +242,7 @@ export default function SyncPage() {
         <button
           onClick={() => pushMutation.mutate()}
           disabled={loading || pendingItems.length === 0}
-          className="flex-1 px-4 py-2 bg-accent text-white rounded-lg disabled:opacity-50"
+          className="flex-1 px-4 py-2 bg-surface-secondary border border-border text-text-primary rounded-lg disabled:opacity-50"
           aria-label="Push outbox to server"
         >
           Push Outbox
@@ -251,7 +261,7 @@ export default function SyncPage() {
           <h3 className="font-semibold text-text-primary mb-1">Pending ({pendingItems.length})</h3>
           <ul className="space-y-1">
             {pendingItems.map(item => (
-              <li key={item.id} className="bg-surface-primary p-2 rounded border border-border text-sm text-text-primary">
+              <li key={item.id} className="bg-surface-primary border border-border rounded-xl p-3 text-sm text-text-primary">
                 {item.type} — {item.status}
               </li>
             ))}
@@ -264,7 +274,7 @@ export default function SyncPage() {
           <h3 className="font-semibold text-text-primary mb-1">All Queue Items</h3>
           <ul className="space-y-1">
             {allItems.map(item => (
-              <li key={item.id} className="bg-surface-primary p-2 rounded border border-border text-sm flex justify-between">
+              <li key={item.id} className="bg-surface-primary border border-border rounded-xl p-3 text-sm flex justify-between">
                 <span className="text-text-primary">{item.type}</span>
                 <span className={item.status === 'pending' ? 'text-yellow-600' : 'text-green-600'}>{item.status}</span>
               </li>

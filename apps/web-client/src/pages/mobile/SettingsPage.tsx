@@ -17,7 +17,7 @@ export default function SettingsPage() {
     <div className="space-y-6">
       <button onClick={() => navigate('/m/dashboard')} className="text-sm text-accent">&larr; Back</button>
       <h2 className="text-lg font-bold text-text-primary">Settings</h2>
-      <div className="border border-border rounded-md divide-y divide-border bg-surface-primary">
+      <div className="bg-surface-primary border border-border rounded-xl divide-y divide-border">
         <div className="px-4 py-3 text-sm text-text-secondary">
           App version: 2.0.0
         </div>
@@ -25,14 +25,14 @@ export default function SettingsPage() {
           <div className="px-4 py-3">
             <button
               onClick={promptInstall}
-              className="w-full px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:opacity-90"
+              className="w-full px-4 py-2 bg-signal text-white rounded-lg text-sm font-medium hover:opacity-90"
             >
               Install to Phone
             </button>
           </div>
         )}
         <div className="px-4 py-3 flex items-center justify-between">
-          <span className="text-sm text-text-primary font-medium">Offline PIN</span>
+          <span className="text-sm text-text-primary font-medium uppercase tracking-wide">Offline PIN</span>
           <div className="flex items-center gap-2">
             <span className={`text-xs px-2 py-0.5 rounded-full ${pinEnabled ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
               {pinEnabled ? 'Enabled' : 'Off'}

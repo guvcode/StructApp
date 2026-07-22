@@ -252,7 +252,7 @@ export default function TimesheetDetailPage() {
         </div>
       )}
 
-      <button onClick={handleSave} disabled={saving} className="w-full px-4 py-2 bg-accent text-white rounded-lg disabled:opacity-50">
+      <button onClick={handleSave} disabled={saving} className="w-full px-4 py-2 bg-signal text-white rounded-lg disabled:opacity-50">
         {saving ? 'Saving...' : 'Save'}
       </button>
     </div>

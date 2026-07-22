@@ -31,7 +31,7 @@ export default function PendingStructuresListPage() {
         <h2 className="text-lg font-bold text-text-primary">My Pending Structures</h2>
         <button
           onClick={() => navigate('/m/pending-structures/new')}
-          className="px-3 py-1.5 bg-accent text-white rounded-lg text-sm"
+          className="px-3 py-1.5 bg-signal text-white rounded-lg text-sm"
         >
           + Discover
         </button>
@@ -41,14 +41,16 @@ export default function PendingStructuresListPage() {
         <p className="text-text-secondary text-sm text-center py-8">No pending structures. Tap Discover to capture a new on-site finding.</p>
       )}
 
-      {Array.from(grouped.entries()).map(([status, items]) => (
+      {Array.from(grouped.entries()).map(([status, items]) => {
+        const stripeColor = status === 'approved' ? 'bg-green-500' : status === 'rejected' ? 'bg-red-500' : status === 'submitted' ? 'bg-blue-500' : 'bg-amber-500';
+        return (
         <div key={status}>
-          <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">{status} ({items.length})</h3>
+          <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">{status.toUpperCase()} <span className="font-mono text-text-muted">({items.length})</span></h3>
           {items.map((p: any) => (
             <button
               key={p.pending_structure_id}
               onClick={() => navigate(`/m/pending-structures/${p.pending_structure_id}`)}
-              className="w-full bg-surface-primary border border-border rounded-lg p-3 mb-2 text-left"
+              className={`w-full bg-surface-primary border border-border rounded-xl p-3 mb-2 text-left border-l-4 ${stripeColor}`}
             >
               <p className="text-sm font-semibold text-text-primary">{p.asset_tag}</p>
               <p className="text-xs text-text-secondary mt-0.5">{p.description}</p>
@@ -59,7 +61,8 @@ export default function PendingStructuresListPage() {
             </button>
           ))}
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

@@ -123,11 +123,11 @@ export default function InspectionHistoryPage() {
       {hasData && (
         <div className="space-y-1">
           <div className="flex justify-between text-xs text-text-secondary">
-            <span>Triage Progress</span>
+            <span className="uppercase tracking-wide">Triage Progress</span>
             <span>{selectedCount} of {totalCount} deficiencies decided</span>
           </div>
           <div className="w-full h-2 bg-border rounded-full overflow-hidden">
-            <div className="h-full bg-accent rounded-full transition-all duration-300" style={{ width: `${progressPct}%` }} />
+            <div className="h-full bg-signal rounded-full transition-all duration-300" style={{ width: `${progressPct}%` }} />
           </div>
         </div>
       )}
@@ -138,8 +138,8 @@ export default function InspectionHistoryPage() {
 
       {hasData && (
         <>
-          <p className="text-sm text-text-primary font-semibold">
-            Unresolved Prior Findings ({displayData.length})
+          <p className="text-sm text-text-primary font-semibold uppercase tracking-wide">
+            Unresolved Prior Findings <span className="font-mono text-text-muted">({displayData.length})</span>
           </p>
           {triageMutation.isError && (
             <p className="text-sm text-red-600">Failed to save triage decisions. Please try again.</p>
@@ -154,12 +154,14 @@ export default function InspectionHistoryPage() {
             {displayData.map((def, idx) => {
               const raw = def as unknown as Record<string, unknown>;
               const defId = (raw.id as string) || (raw.deficiencyId as string) || `tmp_${idx}`;
+              const priority = (raw.priority_tier as string) || (raw.calculatedPriority as string) || '';
+              const stripeColor = priority === 'P1' ? 'border-l-red-500' : priority === 'P2' ? 'border-l-amber-500' : 'border-l-signal';
               return (
-                <div key={defId} className="bg-surface-primary border border-border rounded-lg p-3">
+                <div key={defId} className={`bg-surface-primary border border-border rounded-xl p-3 border-l-4 ${stripeColor}`}>
                   <p className="text-sm font-semibold text-text-primary">{(raw.title as string) || (raw.description as string) || ''}</p>
                   <p className="text-xs text-text-secondary">{raw.description as string}</p>
                   <div className="flex gap-2 mt-1 mb-2">
-                    <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-700">{raw.priority_tier as string || raw.calculatedPriority as string || ''}</span>
+                    <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-700">{priority}</span>
                     <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-700">{raw.severity as string || ''}</span>
                     <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-700">
                       {raw.source_inspection_date ? new Date(raw.source_inspection_date as string).toLocaleDateString() : ''}
@@ -182,7 +184,7 @@ export default function InspectionHistoryPage() {
           <button
             onClick={handleSave}
             disabled={selectedCount === 0 || triageMutation.isPending || saved}
-            className="w-full px-4 py-2 bg-accent text-white rounded-lg text-sm font-semibold disabled:opacity-50"
+            className="w-full px-4 py-2 bg-signal text-white rounded-lg text-sm font-semibold disabled:opacity-50"
           >
             {triageMutation.isPending ? 'Saving...' : saved ? 'Saved' : `Save Triage Decisions (${selectedCount})`}
           </button>

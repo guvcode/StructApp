@@ -75,31 +75,34 @@ const isReviewerAdmin = isReviewerOrAdmin(role);
       <button onClick={() => navigate(`/m/deficiencies/${id}`)} className="text-sm text-accent mb-2">&larr; Back</button>
       <h2 className="text-lg font-bold text-text-primary">Remediation Update</h2>
 
-      <div className="bg-surface-primary border border-border rounded-lg p-3 space-y-1">
-        <p className="font-semibold text-text-primary">{deficiency.component}</p>
-        <p className="text-sm text-text-secondary">{deficiency.description}</p>
-        <div className="flex gap-2 mt-1">
-          <span className={`px-2 py-0.5 rounded text-xs font-bold ${
-            deficiency.calculated_priority === 'P1' ? 'bg-red-100 text-red-700' :
-            deficiency.calculated_priority === 'P2' ? 'bg-orange-100 text-orange-700' :
-            'bg-gray-100 text-gray-600'
-          }`}>
-            {deficiency.calculated_priority}
-          </span>
-          {deficiency.risk_rating && (
-            <span className={`px-2 py-0.5 rounded text-xs ${
-              deficiency.risk_rating === 'High' ? 'bg-red-100 text-red-700' :
-              deficiency.risk_rating === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
-              'bg-green-100 text-green-700'
+      <div className="status-card rounded-xl p-4 relative overflow-hidden">
+        <div className={`absolute top-0 left-0 w-1 h-full ${deficiency.calculated_priority === 'P1' ? 'bg-red-500' : deficiency.calculated_priority === 'P2' ? 'bg-amber-500' : 'bg-gray-500'}`} />
+        <div className="pl-3 space-y-1">
+          <p className="font-semibold text-text-primary">{deficiency.component}</p>
+          <p className="text-sm text-text-secondary">{deficiency.description}</p>
+          <div className="flex gap-2 mt-1">
+            <span className={`px-2 py-0.5 rounded text-xs font-bold ${
+              deficiency.calculated_priority === 'P1' ? 'bg-red-100 text-red-700' :
+              deficiency.calculated_priority === 'P2' ? 'bg-orange-100 text-orange-700' :
+              'bg-gray-100 text-gray-600'
             }`}>
-              {deficiency.risk_rating} Risk
+              {deficiency.calculated_priority}
             </span>
-          )}
+            {deficiency.risk_rating && (
+              <span className={`px-2 py-0.5 rounded text-xs ${
+                deficiency.risk_rating === 'High' ? 'bg-red-100 text-red-700' :
+                deficiency.risk_rating === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
+                'bg-green-100 text-green-700'
+              }`}>
+                {deficiency.risk_rating} Risk
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="bg-surface-primary border border-border rounded-lg p-3">
-        <p className="text-sm font-medium text-text-primary mb-1">Current Status</p>
+      <div className="bg-surface-primary border border-border rounded-xl p-4">
+        <p className="text-sm font-medium text-text-primary mb-1 uppercase tracking-wide">Current Status</p>
         <p className="text-lg font-semibold text-text-primary">
           {deficiency.remediation_status === RemediationStatus.Open && 'Open'}
           {deficiency.remediation_status === RemediationStatus.RemediationScheduled && 'Remediation Scheduled'}
@@ -113,7 +116,7 @@ const isReviewerAdmin = isReviewerOrAdmin(role);
 
       {!isReadOnly && !isReviewerAdmin && (
         <div className="space-y-2">
-          <p className="text-sm font-medium text-text-primary">Actions</p>
+          <p className="text-sm font-medium text-text-primary uppercase tracking-wide">Actions</p>
           {STATUS_ACTIONS.map(action => {
             const disabled = saving || deficiency.remediation_status === RemediationStatus.VerifiedClosed;
             const show = deficiency.remediation_status !== action.targetStatus && deficiency.remediation_status !== RemediationStatus.VerifiedClosed;
@@ -123,7 +126,7 @@ const isReviewerAdmin = isReviewerOrAdmin(role);
                 key={action.targetStatus}
                 onClick={() => updateMutation.mutate(action.targetStatus)}
                 disabled={disabled}
-                className="w-full px-4 py-2 border border-accent text-accent rounded-lg disabled:opacity-50"
+                className="w-full px-4 py-2 border border-signal text-signal rounded-lg disabled:opacity-50"
                 aria-label={action.label}
               >
                 {saving ? 'Updating...' : action.label}
@@ -141,7 +144,7 @@ const isReviewerAdmin = isReviewerOrAdmin(role);
 
       {deficiency.remediation_status !== RemediationStatus.VerifiedClosed && (
         <div>
-          <p className="text-sm font-medium text-text-primary mb-2">Remediation Evidence Photos</p>
+          <p className="text-sm font-medium text-text-primary mb-2 uppercase tracking-wide">Remediation Evidence Photos</p>
           <div className="flex gap-2 mb-2">
             <input
               value={caption}
@@ -158,7 +161,7 @@ const isReviewerAdmin = isReviewerOrAdmin(role);
             <button
               onClick={() => addPhotoMutation.mutate()}
               disabled={!caption.trim() || !photoDataUrl}
-              className="px-3 py-2 bg-accent text-white rounded-lg text-sm disabled:opacity-50"
+              className="px-3 py-2 bg-signal text-white rounded-lg text-sm disabled:opacity-50"
               aria-label="Add remediation evidence photo"
             >
               Add
@@ -170,7 +173,7 @@ const isReviewerAdmin = isReviewerOrAdmin(role);
           ) : (
             <div className="space-y-1">
               {photos.map(p => (
-                <div key={p.id} className="flex items-center gap-2 bg-surface-primary border border-border rounded p-2">
+                <div key={p.id} className="flex items-center gap-2 bg-surface-primary border border-border rounded-xl p-3">
                   <span className="text-xs text-text-primary flex-1">{p.caption}</span>
                   <span className="text-xs text-green-600 font-medium">remediation evidence</span>
                 </div>

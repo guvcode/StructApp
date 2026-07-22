@@ -426,7 +426,7 @@ export default function DeficiencyDetailPage() {
       </div>
 
       <div className="border-t border-border pt-4">
-        <p className="text-sm font-semibold text-text-primary mb-3">Indication Details</p>
+        <p className="text-sm font-semibold text-text-primary mb-3 uppercase tracking-wide">Indication Details</p>
         <div>
           <label className="block text-sm font-medium text-text-primary mb-1">Potential Failure Mechanism</label>
           <input value={mechanisms} onChange={e => setMechanisms(e.target.value)} disabled={isReadOnly} className="w-full px-3 py-2 bg-surface-primary border border-border rounded-lg text-text-primary disabled:opacity-60" placeholder="e.g., Atmospheric corrosion, fatigue loading..." />
@@ -465,7 +465,7 @@ export default function DeficiencyDetailPage() {
       </div>
 
       <div className="border-t border-border pt-4">
-        <p className="text-sm font-semibold text-text-primary mb-3">Risk Assessment</p>
+        <p className="text-sm font-semibold text-text-primary mb-3 uppercase tracking-wide">Risk Assessment</p>
         <div className="grid grid-cols-3 gap-2">
           <div>
             <label className="block text-xs font-medium text-text-primary mb-1">Consequence (1-5)</label>
@@ -507,11 +507,11 @@ export default function DeficiencyDetailPage() {
       </div>
 
       <div className="border-t border-border pt-4">
-        <p className="text-sm font-semibold text-text-primary mb-3">Photos</p>
+        <p className="text-sm font-semibold text-text-primary mb-3 uppercase tracking-wide">Photos</p>
         {localId && localId !== 'new' && !isReadOnly && (
           <button
             onClick={() => navigate(`/m/deficiencies/${localId}/photos`)}
-            className="w-full px-4 py-2 border border-accent text-accent rounded-lg text-sm"
+            className="w-full px-4 py-2 border border-signal text-signal rounded-lg text-sm"
           >
             Manage Photos
           </button>
@@ -528,7 +528,7 @@ export default function DeficiencyDetailPage() {
       <button
         onClick={() => saveMutation.mutate()}
         disabled={saving || !category}
-        className="w-full px-4 py-2 bg-accent text-white rounded-lg disabled:opacity-50"
+        className="w-full px-4 py-2 bg-signal text-white rounded-lg disabled:opacity-50"
         aria-label="Save deficiency"
       >
         {saving ? 'Saving...' : 'Save Deficiency'}
