@@ -22,6 +22,7 @@ import TimesheetDetailPage from './pages/mobile/TimesheetDetailPage';
 import SettingsPage from './pages/mobile/SettingsPage';
 import PendingStructuresListPage from './pages/mobile/PendingStructuresListPage';
 import PendingStructureCapturePage from './pages/mobile/PendingStructureCapturePage';
+import PendingStructureDetailPage from './pages/mobile/PendingStructureDetailPage';
 import ReconciliationQueuePage from './pages/reviewer/ReconciliationQueuePage';
 import ReviewerDashboardPage from './pages/reviewer/ReviewerDashboardPage';
 import InspectionListPage from './pages/reviewer/InspectionListPage';
@@ -82,6 +83,7 @@ export default function AppRoutes() {
           <Route path="m/timesheets/:id" element={<TimesheetDetailPage />} />
           <Route path="m/settings" element={<SettingsPage />} />
           <Route path="m/pending-structures" element={<PendingStructuresListPage />} />
+          <Route path="m/pending-structures/:id" element={<PendingStructureDetailPage />} />
           <Route path="m/pending-structures/new" element={<PendingStructureCapturePage />} />
         </Route>
         <Route element={<DesktopShell />}>
