@@ -24,7 +24,7 @@ export default function DeficiencyDetailPage() {
 
   const { data: inspection } = useQuery({
     queryKey: ['inspections', inspectionId],
-    queryFn: () => apiClient<{ site_id?: string; siteId?: string; structure_id?: string; structureId?: string; status: string }>(ENDPOINTS.inspections.byId(inspectionId)),
+    queryFn: () => apiClient<{ site_id?: string; siteId?: string; structure_id?: string; structureId?: string; status: string; assignee_name?: string; assignee_email?: string; assigned_to?: string }>(ENDPOINTS.inspections.byId(inspectionId)),
     enabled: !!inspectionId,
   });
 
@@ -338,6 +338,14 @@ export default function DeficiencyDetailPage() {
           </p>
           <p className="text-text-secondary text-xs ml-6">{inspection.status}</p>
         </button>
+      )}
+      {(inspection?.assignee_name || inspection?.assigned_to) && (
+        <div className="bg-surface-primary border border-border rounded-lg p-3">
+          <p className="text-xs text-text-secondary uppercase tracking-wide font-semibold mb-1">Assigned Contractor</p>
+          <p className="text-sm text-text-primary font-medium">
+            {inspection.assignee_name ? `${inspection.assignee_name}${inspection.assignee_email ? ` (${inspection.assignee_email})` : ''}` : inspection.assigned_to}
+          </p>
+        </div>
       )}
       <h2 className="text-lg font-bold text-text-primary">{isNew ? 'New Deficiency' : 'Edit Deficiency'}</h2>
 

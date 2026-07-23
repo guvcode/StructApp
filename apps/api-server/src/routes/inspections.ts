@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { requireAuth, requireRole } from '../middleware/auth';
 import { requireAdmin } from '../middleware/requireAdmin';
 import { approveInspection, returnInspection, reopenInspection, submitInspection } from '../services/inspections-workflow';
-import { createInspection, rescheduleInspection, reassignInspection, updateInspectionMode } from '../services/inspections-admin';
+import { createInspection, rescheduleInspection, reassignInspection, updateInspectionMode, getReassignmentHistory } from '../services/inspections-admin';
 import { createDeficiency, listHistoricalDeficiencies } from '../services/deficiencies';
 import { inspectionReturnSchema, inspectionRescheduleSchema, inspectionReassignSchema, inspectionReopenSchema, inspectionSubmitSchema, inspectionCreateSchema, inspectionModeUpdateSchema } from '../contracts/inspections';
 import { pool } from '../lib/db';
@@ -94,6 +94,21 @@ router.get(
       const inspectionId = req.params.id;
       const deficiencies = await listHistoricalDeficiencies(inspectionId, user.client_id);
       res.json({ success: true, data: deficiencies });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+router.get(
+  '/:id/reassignment-history',
+  requireAuth,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const user = (req as Request & { user: { client_id: string } }).user;
+      const inspectionId = req.params.id;
+      const history = await getReassignmentHistory(inspectionId, user.client_id);
+      res.json({ success: true, data: history });
     } catch (err) {
       next(err);
     }

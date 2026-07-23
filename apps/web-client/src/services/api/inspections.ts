@@ -1,6 +1,14 @@
 import { apiClient } from './apiClient';
 import { ENDPOINTS } from './endpoints';
-import type { Inspection, Deficiency } from '../../types';
+import type { Inspection, Deficiency, ReassignmentHistoryEntry } from '../../types';
+
+export async function getReassignmentHistory(inspectionId: string): Promise<ReassignmentHistoryEntry[]> {
+  try {
+    return await apiClient<ReassignmentHistoryEntry[]>(ENDPOINTS.inspections.reassignmentHistory(inspectionId));
+  } catch {
+    return [];
+  }
+}
 
 export async function getInspections(filters?: Partial<{ site_id: string; status: string; assignee: string }>): Promise<Inspection[]> {
   const params = new URLSearchParams();
