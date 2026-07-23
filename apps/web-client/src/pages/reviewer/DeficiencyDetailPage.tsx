@@ -47,7 +47,7 @@ export default function DeficiencyDetailPage() {
 
   const { data: photos = [] } = useQuery({
     queryKey: ['deficiency-photos', id],
-    queryFn: () => apiClient<Array<{ photo_id: string; deficiency_id: string; storage_url: string; caption: string; display_order: number; created_at: string }>>(ENDPOINTS.remediation.photos(id!)),
+    queryFn: () => apiClient<Array<{ photo_id: string; deficiency_id: string; storage_url: string; caption: string; display_order: number; created_at: string; original_filename?: string; captured_at?: string; camera_make?: string; camera_model?: string; raw_exif_payload?: string }>>(ENDPOINTS.deficiencies.photos(id!)),
     enabled: !!id,
     select: (data) => data.map(p => ({
       id: p.photo_id,
@@ -57,6 +57,11 @@ export default function DeficiencyDetailPage() {
       purpose: 'evidence' as const,
       created_at: p.created_at,
       sync_state: 'synced' as const,
+      original_filename: p.original_filename,
+      captured_at: p.captured_at,
+      camera_make: p.camera_make,
+      camera_model: p.camera_model,
+      raw_exif_payload: p.raw_exif_payload,
     })) as PhotoRecord[],
   });
 

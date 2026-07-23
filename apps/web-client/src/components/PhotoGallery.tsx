@@ -135,9 +135,9 @@ export default function PhotoGallery({ photos, title }: PhotoGalleryProps) {
               <span className="mx-2">·</span>
               {new Date(lightbox.created_at).toLocaleDateString()}
             </p>
-            {(lightbox.original_filename || lightbox.camera_make || lightbox.camera_model || lightbox.gps_latitude != null) && (
-              <PhotoMetadata photo={lightbox} />
-            )}
+{(lightbox.original_filename || lightbox.camera_make || lightbox.camera_model || lightbox.gps_latitude != null || lightbox.raw_exif_payload) && (
+                <PhotoMetadata photo={lightbox} />
+              )}
             <button
               onClick={() => setLightbox(null)}
               className="absolute top-4 right-4 text-white/80 hover:text-white text-xl"
