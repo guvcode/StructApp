@@ -113,6 +113,18 @@ export default function DeficiencyDetailPage() {
                 <p className="text-sm text-text-primary font-medium">{deficiency.assignee_name}</p>
               </div>
             )}
+            {inspection?.assignee_name && !deficiency.assignee_name && (
+              <div>
+                <p className="text-xs text-text-secondary uppercase tracking-wide font-semibold mb-1">Assigned Contractor</p>
+                <p className="text-sm text-text-primary font-medium">{inspection.assignee_name}</p>
+              </div>
+            )}
+            {inspection?.assignee_name && deficiency.assignee_name && (
+              <div>
+                <p className="text-xs text-text-secondary uppercase tracking-wide font-semibold mb-1">Inspection Assignee</p>
+                <p className="text-sm text-text-primary font-medium">{inspection.assignee_name}</p>
+              </div>
+            )}
           </div>
         </Card>
 

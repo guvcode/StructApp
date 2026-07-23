@@ -71,6 +71,7 @@ export const ENDPOINTS = {
     reschedule: (id: string) => `${BASE_URL}/inspections/${id}/reschedule`,
     reassign: (id: string) => `${BASE_URL}/inspections/${id}/reassign`,
     bulkReassign: `${BASE_URL}/inspections/bulk-reassign`,
+    reassignmentHistory: (id: string) => `${BASE_URL}/inspections/${id}/reassignment-history`,
     updateMode: (id: string) => `${BASE_URL}/inspections/${id}/inspection-mode`,
     history: (id: string) => `${BASE_URL}/inspections/${id}/history`,
     triage: (id: string) => `${BASE_URL}/inspections/${id}/triage`,

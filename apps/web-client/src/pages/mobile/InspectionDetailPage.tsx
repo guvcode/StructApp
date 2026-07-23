@@ -7,12 +7,18 @@ import { ENDPOINTS } from '../../services/api/endpoints';
 import Skeleton from '../../components/Skeleton';
 import { formatDate } from '../../utils/dates';
 import { InspectionStatus } from '../../types';
+import { getReassignmentHistory } from '../../services/api/inspections';
 
 export default function InspectionDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: inspection, isLoading } = useInspection(id);
   const { data: deficiencies = [] } = useDeficienciesForInspection(id);
+  const { data: reassignmentHistory = [] } = useQuery({
+    queryKey: ['reassignment-history', id],
+    queryFn: () => getReassignmentHistory(id!),
+    enabled: !!id,
+  });
 
   const { data: allSites = [] } = useQuery({
     queryKey: ['sites'],
@@ -46,13 +52,45 @@ export default function InspectionDetailPage() {
          </div>
        </div>
 
-       {inspection.status === InspectionStatus.Returned && (
-         <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-800 text-sm">
-           This inspection was returned for corrections.
-         </div>
-       )}
+        {inspection.status === InspectionStatus.Returned && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-800 text-sm">
+            This inspection was returned for corrections.
+          </div>
+        )}
 
-      <div>
+        {(inspection.assignee_name || inspection.assigned_to) && (
+          <div className="bg-surface-primary border border-border rounded-lg p-3">
+            <p className="text-xs text-text-secondary uppercase tracking-wide font-semibold mb-1">Assigned Contractor</p>
+            <p className="text-sm text-text-primary font-medium">
+              {inspection.assignee_name ? `${inspection.assignee_name}${inspection.assignee_email ? ` (${inspection.assignee_email})` : ''}` : inspection.assigned_to}
+            </p>
+          </div>
+        )}
+
+        {reassignmentHistory.length > 0 && (
+          <div className="bg-surface-primary border border-border rounded-lg p-3">
+            <p className="text-xs text-text-secondary uppercase tracking-wide font-semibold mb-2">Reassignment Trail</p>
+            <div className="space-y-2">
+              {reassignmentHistory.map((entry) => (
+                <div key={entry.log_id} className="border-b border-border last:border-b-0 pb-2 last:pb-0">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-text-primary">
+                      {entry.old_inspector_name || entry.old_inspector_id}
+                      {' → '}
+                      {entry.new_inspector_name || entry.new_inspector_id}
+                    </span>
+                    <span className="text-xs text-text-secondary">
+                      {new Date(entry.timestamp).toLocaleDateString()}
+                    </span>
+                  </div>
+                  {entry.reason && <p className="text-xs text-text-secondary mt-1">Reason: {entry.reason}</p>}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+       <div>
         <h3 className="font-semibold text-text-primary mb-1">Deficiencies / Findings ({deficiencies.length})</h3>
         {deficiencies.map(def => {
           const defId = def.id || (def as unknown as Record<string, unknown>).deficiency_id as string;

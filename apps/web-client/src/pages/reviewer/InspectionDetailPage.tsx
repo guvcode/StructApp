@@ -13,11 +13,17 @@ import { INSPECTION_STATUS_STYLES } from '../../utils/statusMaps';
 import { ReturnInspectionModal } from '../../components/ReturnInspectionModal';
 import { ApproveInspectionModal } from '../../components/ApproveInspectionModal';
 import { ReopenInspectionModal } from '../../components/ReopenInspectionModal';
+import { getReassignmentHistory } from '../../services/api/inspections';
 
 export default function InspectionDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { data: inspection, isLoading } = useInspection(id);
   const { data: deficiencies = [], refetch } = useDeficienciesForInspection(id);
+  const { data: reassignmentHistory = [] } = useQuery({
+    queryKey: ['reassignment-history', id],
+    queryFn: () => getReassignmentHistory(id!),
+    enabled: !!id,
+  });
   const [showReturn, setShowReturn] = useState(false);
   const [showApprove, setShowApprove] = useState(false);
   const [showReopen, setShowReopen] = useState(false);
@@ -112,6 +118,30 @@ export default function InspectionDetailPage() {
           )}
         </div>
       </Card>
+
+      {reassignmentHistory.length > 0 && (
+        <Card padding="lg" className="shadow-card mb-6">
+          <h3 className="text-xl font-semibold text-text-primary mb-4">Reassignment Trail</h3>
+          <div className="space-y-3">
+            {reassignmentHistory.map((entry) => (
+              <div key={entry.log_id} className="border border-border rounded-lg p-4 bg-surface-primary">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-text-primary">
+                    {entry.old_inspector_name || entry.old_inspector_id}
+                    {' → '}
+                    {entry.new_inspector_name || entry.new_inspector_id}
+                  </span>
+                  <span className="text-xs text-text-secondary">
+                    {new Date(entry.timestamp).toLocaleString()}
+                  </span>
+                </div>
+                {entry.reason && <p className="text-sm text-text-secondary mb-1">Reason: {entry.reason}</p>}
+                <p className="text-xs text-text-muted">Reassigned by {entry.performed_by_name || entry.performed_by}</p>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
 
       {inspection.status === InspectionStatus.Submitted && (
         <Card padding="lg" className="shadow-card mb-6">

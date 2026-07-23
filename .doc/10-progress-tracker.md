@@ -3,8 +3,8 @@
 ## 10.0 Current Status
 
 **Phase:** Backend integration complete (CONN-1 through CONN-6 done), BL-001 completed
-**Last completed:** BL-001 — Structure Types picklist (migration, service, routes, frontend page, StructureListPage dropdown)
-**Next:** Sprint 6 — Taxonomy & Cascading Deficiency Flow
+**Last completed:** TAX-620 inline editing + BL-038 admin GPS metadata display
+**Next:** 
 
 ### Sprint status counters
 
@@ -268,6 +268,7 @@
 | FIX-010 | Taxonomy | `GET /api/v1/taxonomy` | Contractor users hit 403 because `picklistsRouter`'s `requireRole('Admin', 'Reviewer')` middleware mounted before `taxonomyRouter` at same prefix `/api/v1` — Express matched the restrictive middleware first and rejected Contractor requests before reaching the taxonomy handler | High | 2026-07-08 | 🟩 COMPLETED | | | | | | | |
 | FIX-011 | Deficiencies | `createDeficiency` INSERT | `POST /api/v1/inspections/:id/deficiencies` returned 500 because INSERT references columns (`structure_id`, `created_by`, `priority_tier`, `location_desc`) that don't exist in `deficiency_records` table. Fix: migration adds the four missing columns and makes old v2 required columns (`component`, `severity`, `probability`, `consequences`) nullable (replaced by Glencore grid in TAX-611) | High | 2026-07-08 | 🟩 COMPLETED | | | | | | | |
 | FIX-012 | Mobile Deficiencies | `DeficiencyDetailPage.tsx`, `deficiencies.ts` | Three bugs: (1) after saving new deficiency, page stays on create form — no way to add photos; (2) save button can be clicked multiple times creating duplicates; (3) revisiting an existing deficiency shows empty form (data not loaded). Fix: navigate to edit URL on save success, fetch existing data (Dexie + API), loading skeleton for edit mode. Additionally: server query `deficiency_id AS id` alias mismatch — all four SQL queries now alias `deficiency_id AS id` so frontend `Deficiency.id` is populated. Mobile InspectionDetailPage has defensive fallback `def.id || deficiency_id`. Sub-Component dropdown (3rd level) not persisted to DB — fixed by deriving from taxonomy tree using focusArea parent lookup. | High | 2026-07-08 | 🟩 COMPLETED |
+| FIX-015 | Inspections / Deficiencies | `InspectionDetailPage.tsx`, `DeficiencyDetailPage.tsx` | Inspection detail and deficiency detail pages did not show the assigned contractor. Mobile pages had no assignee display at all. Reviewer deficiency page only showed deficiency creator, not current inspection contractor. Fix: added assigned contractor display to all four detail pages (reviewer + mobile inspection, reviewer + mobile deficiency). Added new `GET /api/v1/inspections/:id/reassignment-history` endpoint returning audit log entries with resolved user display names. Reassignment trail section added to inspection detail pages showing old→new contractor with date and reason. | High | 2026-07-22 | 🟩 COMPLETED |
 | ~~BUG-006~~ | Admin | `UserEditDrawer` + `DeactivateDialog` | Backdrop overlay used `bg-black/20` causing ghosting effect. **FIXED**: reduced to `bg-black/5`, added sticky header/footer, shadow-2xl, border-l to UserEditDrawer. | High | 2026-06-26 | 🟩 COMPLETED |
 | CONN-7 | Inspections | NewInspectionPage / InspectionDetailPage / mockInspection | Inspection creation under Register with multi-structure support; read-only detail page with Approve/Return actions; batch create in mock service | High | 2026-06-28 | 🟩 COMPLETED |
 | FIX-014 | Taxonomy hierarchy | `1700000028000_fix_existing_client_taxonomy_hierarchy.ts`, `DeficiencyDetailPage.tsx`, `sync.ts`, `db.ts`, `types/index.ts`, `deficiencies.ts` | **Data disconnection**: Existing clients had old seed taxonomy (category→component→sub_component→focus_area) without `equipment_type` level. Backfill added `equipment_type` nodes but didn't re-parent `component` nodes — component page showed nothing when selecting equipment type. **Save mapping off-by-one**: Mobile DeficiencyDetailPage mapped component→sub_component, subComponent→focus_area, etc. **Sync path missing fields**: Sync push/pull + offline sync didn't handle equipment_type/component. Fixes: (1) migration 28000 deletes old seed hierarchy and re-inserts with correct parent chain (equipment_type→component→sub_component); (2) save mapping corrected; (3) types updated across DeficiencyRow, Deficiency, OfflineDeficiency, sync contract, sync payload; (4) push INSERT/pull SELECT include new fields; (5) reviewer detail page displays equipment_type and component | High | 2026-07-12 | 🟩 COMPLETED |
@@ -314,7 +315,7 @@
 | BL-034 | Feature | **Asset Library Taxonomy Template** — seed full WTP asset library (~105 taxonomy nodes) from XLSX for new clients; create `structure_taxonomy_templates` linking table; add `GET /api/v1/structure-taxonomy-templates` endpoint; update mobile DeficiencyDetailPage to pin template-relevant components at the top of each picker | High | 2026-07-11 | 🟩 COMPLETED |
 | ADM-421 | Email Queue UI — fix data fetch/response shape mismatch (pagination nested in `json.data`), make sidebar link always visible (phase P1 → P0), add frontend tests | Low | 2026-07-10 | 🟩 COMPLETED |
 | BL-036 | Nav | Register sidebar cleanup — remove Component Types nav item/page/route, rename Work Types → "Work Types (Timesheet)" | Low | 2026-07-14 | 🟩 COMPLETED |
-| BL-038 | Photo Metadata Visibility | Expose photo metadata (filename, capture time, camera, GPS) in PhotoGallery lightbox, ReconciliationQueuePage photo grid, and new Admin Photos page with dedicated route and backend query | Medium | 2026-07-22 | 🟩 COMPLETED |
+| BL-038 | Photo Metadata Visibility | Expose photo metadata (filename, capture time, camera, GPS) in PhotoGallery lightbox, ReconciliationQueuePage photo grid, and new Admin Photos page with dedicated route and backend query | Medium | 2026-07-22 | 🟩 COMPLETED (admin photos page updated to show parsed GPS coordinates from raw_exif_payload) |
 
 ## 10.13 Sprint 6 — Taxonomy & Cascading Deficiency Flow (TAX)
 
@@ -339,7 +340,7 @@
 | TAX-617 | Update mobile `RemediationUpdatePage` and reviewer `RemediationQueuePage` — display new taxonomy context and risk fields in remediation views; add tests | 6 | 🟩 COMPLETED | TAX-604, TAX-606 |
 | TAX-618 | Update mock data — add new taxonomy fields + Glencore risk values to all 18 mock deficiency records in `mockDeficiencies.ts`, `mockInspection.ts`, `mockRemediation.ts` | 6 | 🟩 COMPLETED | TAX-606 |
 | TAX-619 | Fix affected tests — update `b6-mobile.test.tsx`, `sync.test.ts`, `b10-remediation.test.ts`, `b1-mock-services.test.ts`, `b1-guard.test.ts` to match new `Deficiency` type shape | 6 | 🟩 COMPLETED | TAX-618 |
-| TAX-620 | Build taxonomy management UI — Admin/Reviewer page for managing hierarchical taxonomy (category tree CRUD with drag-and-drop or parent select); consumes TAX-602 backend; replace superseded `PicklistComponentTypesPage` | 6 | 🟩 COMPLETED | TAX-602 |
+| TAX-620 | Build taxonomy management UI — Admin/Reviewer page for managing hierarchical taxonomy (category tree CRUD with drag-and-drop or parent select); consumes TAX-602 backend; replace superseded `PicklistComponentTypesPage` | 6 | 🟩 COMPLETED (later updated to support inline editing for label, category, display_order) | TAX-602 |
 
 ## 10.7 Mobile Offline & Client Context
 

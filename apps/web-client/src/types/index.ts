@@ -393,6 +393,18 @@ export interface FeatureFlag {
   enabled: boolean;
 }
 
+export interface ReassignmentHistoryEntry {
+  log_id: number;
+  timestamp: string;
+  old_inspector_id: string;
+  new_inspector_id: string;
+  reason: string;
+  performed_by: string;
+  performed_by_name: string;
+  old_inspector_name: string;
+  new_inspector_name: string;
+}
+
 export interface AuditLogEntry {
   log_id: number;
   table_name: string;

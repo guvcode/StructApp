@@ -1,4 +1,5 @@
 import { approveInspection, returnInspection, rescheduleInspection, reassignInspection, submitInspection, createInspection, updateInspectionMode } from '../src/services/inspections';
+import { getReassignmentHistory } from '../src/services/inspections-admin';
 
 jest.mock('../src/lib/db', () => ({
   pool: {
@@ -464,6 +465,82 @@ describe('inspections service', () => {
 
       const result = await updateInspectionMode('test-id', 'post_inspection', 'client-id');
       expect(result.inspection_mode).toBe('post_inspection');
+    });
+  });
+
+  describe('getReassignmentHistory', () => {
+    it('returns empty array when no reassignments exist', async () => {
+      const mockClient = {
+        query: jest.fn()
+          .mockResolvedValueOnce({}) // BEGIN
+          .mockResolvedValueOnce({}) // set_config client_id
+          .mockResolvedValueOnce({}) // set_config bypass
+          .mockResolvedValueOnce({ rows: [], rowCount: 0 }) // no reassignments
+          .mockResolvedValueOnce({}), // COMMIT
+        release: jest.fn(),
+      };
+      mockPool.connect.mockResolvedValue(mockClient);
+
+      const result = await getReassignmentHistory('insp-1', 'client-1');
+      expect(result).toEqual([]);
+    });
+
+    it('returns reassignment history with resolved user names', async () => {
+      const mockClient = {
+        query: jest.fn()
+          .mockResolvedValueOnce({}) // BEGIN
+          .mockResolvedValueOnce({}) // set_config client_id
+          .mockResolvedValueOnce({}) // set_config bypass
+          .mockResolvedValueOnce({
+            rows: [
+              {
+                log_id: 1,
+                timestamp: '2026-07-22T10:00:00Z',
+                old_values: { inspector_id: 'user-old' },
+                new_values: { inspector_id: 'user-new', reason: 'Schedule conflict' },
+                performed_by: 'user-admin',
+              },
+            ],
+            rowCount: 1,
+          }) // SELECT system_audit_logs
+          .mockResolvedValueOnce({
+            rows: [
+              { user_id: 'user-old', display_name: 'Old Inspector' },
+              { user_id: 'user-new', display_name: 'New Inspector' },
+              { user_id: 'user-admin', display_name: 'Admin User' },
+            ],
+            rowCount: 3,
+          }) // SELECT users
+          .mockResolvedValueOnce({}), // COMMIT
+        release: jest.fn(),
+      };
+      mockPool.connect.mockResolvedValue(mockClient);
+
+      const result = await getReassignmentHistory('insp-1', 'client-1');
+      expect(result).toHaveLength(1);
+      expect(result[0]).toMatchObject({
+        log_id: 1,
+        timestamp: '2026-07-22T10:00:00Z',
+        old_inspector_id: 'user-old',
+        old_inspector_name: 'Old Inspector',
+        new_inspector_id: 'user-new',
+        new_inspector_name: 'New Inspector',
+        reason: 'Schedule conflict',
+        performed_by: 'user-admin',
+        performed_by_name: 'Admin User',
+      });
+    });
+
+    it('rolls back and rethrows on error', async () => {
+      const mockClient = {
+        query: jest.fn()
+          .mockResolvedValueOnce({}) // BEGIN
+          .mockRejectedValueOnce(new Error('db error')),
+        release: jest.fn(),
+      };
+      mockPool.connect.mockResolvedValue(mockClient);
+
+      await expect(getReassignmentHistory('insp-1', 'client-1')).rejects.toThrow('db error');
     });
   });
 });

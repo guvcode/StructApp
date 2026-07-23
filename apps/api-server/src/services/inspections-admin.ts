@@ -2,6 +2,85 @@ import { pool } from '../lib/db';
 import { logger } from '../lib/logger';
 import { enqueueNotification } from './notificationQueue';
 
+export interface ReassignmentHistoryEntry {
+  log_id: number;
+  timestamp: string;
+  old_inspector_id: string;
+  new_inspector_id: string;
+  reason: string;
+  performed_by: string;
+  performed_by_name: string;
+  old_inspector_name: string;
+  new_inspector_name: string;
+}
+
+export async function getReassignmentHistory(
+  inspectionId: string,
+  clientId: string
+): Promise<ReassignmentHistoryEntry[]> {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query("SELECT set_config('app.current_client_id', $1, true)", [clientId]);
+    await client.query("SELECT set_config('app.bypass_tenant_check', 'true', true)");
+
+    const result = await client.query(
+      `SELECT log_id, timestamp, old_values, new_values, performed_by
+       FROM system_audit_logs
+       WHERE table_name = 'inspections'
+         AND record_id = $1::uuid
+         AND action = 'REASSIGN'
+       ORDER BY timestamp ASC`,
+      [inspectionId]
+    );
+
+    if (result.rows.length === 0) {
+      await client.query('COMMIT');
+      return [];
+    }
+
+    const userIds = new Set<string>();
+    for (const row of result.rows) {
+      const oldValues = row.old_values as Record<string, string> | null;
+      const newValues = row.new_values as Record<string, string> | null;
+      const oldId = oldValues?.inspector_id;
+      const newId = newValues?.inspector_id;
+      if (oldId) userIds.add(oldId);
+      if (newId) userIds.add(newId);
+      userIds.add(row.performed_by);
+    }
+
+    const usersResult = await client.query(
+      `SELECT user_id, display_name FROM users WHERE user_id = ANY($1::uuid[])`,
+      [Array.from(userIds)]
+    );
+    const userMap = new Map(usersResult.rows.map(u => [u.user_id, u.display_name]));
+
+    await client.query('COMMIT');
+
+    return result.rows.map(row => {
+      const oldValues = row.old_values as Record<string, string> | null;
+      const newValues = row.new_values as Record<string, string> | null;
+      return {
+        log_id: row.log_id,
+        timestamp: row.timestamp,
+        old_inspector_id: oldValues?.inspector_id || '',
+        new_inspector_id: newValues?.inspector_id || '',
+        reason: newValues?.reason || '',
+        performed_by: row.performed_by,
+        performed_by_name: userMap.get(row.performed_by) || 'Unknown',
+        old_inspector_name: userMap.get(oldValues?.inspector_id || '') || oldValues?.inspector_id || 'Unknown',
+        new_inspector_name: userMap.get(newValues?.inspector_id || '') || newValues?.inspector_id || 'Unknown',
+      };
+    });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
 export async function createInspection(
   structureId: string,
   inspectorId: string,

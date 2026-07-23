@@ -7,7 +7,7 @@ import rateLimit from 'express-rate-limit';
 import { requireAuth, requireRole } from '../middleware/auth';
 import { pool } from '../lib/db';
 import { logger } from '../lib/logger';
-import { loginSchema, inviteSchema, switchClientSchema, forgotPasswordSchema, resetPasswordSchema } from '../contracts/auth';
+import { loginSchema, inviteSchema, switchClientSchema, forgotPasswordSchema, resetPasswordSchema, refreshSchema } from '../contracts/auth';
 import { login, refreshAccessToken, switchClient, forgotPassword, resetPassword } from '../services/auth';
 
 import { hashPin, verifyPin } from '../services/pin';
