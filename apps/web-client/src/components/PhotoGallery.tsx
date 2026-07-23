@@ -27,7 +27,7 @@ function PhotoMetadata({ photo }: { photo: PhotoRecord }) {
   return (
     <div className="border-t border-white/10 pt-2 mt-2">
       <button
-        onClick={() => setOpen(!open)}
+        onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
         className="text-xs text-gray-300 hover:text-white flex items-center gap-1 transition-colors"
         aria-expanded={open}
       >
@@ -80,21 +80,27 @@ export default function PhotoGallery({ photos, title }: PhotoGalleryProps) {
   const evidencePhotos = photos.filter(p => p.purpose === 'evidence');
   const remediationPhotos = photos.filter(p => p.purpose === 'remediation_evidence');
 
-  const renderPhoto = (photo: PhotoRecord) => (
-    <button
-      key={photo.id}
-      onClick={() => setLightbox(photo)}
-      className="group relative aspect-video bg-surface-secondary rounded-lg overflow-hidden border border-border hover:border-accent transition-colors text-left"
-    >
-      <img src={photo.dataUrl} alt={photo.caption} className="w-full h-full object-cover" />
-      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-2">
-        <p className="text-xs text-white truncate">{photo.caption}</p>
+  const renderPhoto = (photo: PhotoRecord) => {
+    const hasInlineDetails = photo.original_filename != null || photo.camera_make != null || photo.camera_model != null || photo.gps_latitude != null || photo.raw_exif_payload != null;
+    return (
+      <div
+        key={photo.id}
+        onClick={() => setLightbox(photo)}
+        className="group relative bg-surface-secondary rounded-lg overflow-hidden border border-border hover:border-accent transition-colors cursor-pointer"
+      >
+        <div className="aspect-video relative">
+          <img src={photo.dataUrl} alt={photo.caption} className="w-full h-full object-cover" />
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-2">
+            <p className="text-xs text-white truncate">{photo.caption}</p>
+          </div>
+          <span className="absolute top-2 right-2 text-[10px] uppercase bg-black/60 text-white px-1.5 py-0.5 rounded">
+            {photo.purpose === 'evidence' ? 'Evidence' : 'Remediation'}
+          </span>
+        </div>
+        {hasInlineDetails && <PhotoMetadata photo={photo} />}
       </div>
-      <span className="absolute top-2 right-2 text-[10px] uppercase bg-black/60 text-white px-1.5 py-0.5 rounded">
-        {photo.purpose === 'evidence' ? 'Evidence' : 'Remediation'}
-      </span>
-    </button>
-  );
+    );
+  };
 
   return (
     <div>
