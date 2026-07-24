@@ -81,4 +81,5 @@ export const OUTPUT_TYPE_LABELS: Record<ReportOutputType, string> = {
   [ReportOutputType.FinalPdf]: 'Final PDF',
   [ReportOutputType.Word]: 'Word',
   [ReportOutputType.Excel]: 'Excel',
+  [ReportOutputType.Csv]: 'CSV',
 };

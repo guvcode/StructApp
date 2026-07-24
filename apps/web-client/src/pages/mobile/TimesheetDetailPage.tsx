@@ -52,7 +52,7 @@ export default function TimesheetDetailPage() {
           setTimeout(() => navigate('/m/timesheets'), 2000);
           return;
         }
-        setEntryDate((entry.entry_date ?? '').split('T')[0]);
+         setEntryDate((entry.entry_date ?? '').split('T')[0] ?? '');
         setInspectionId(entry.inspection_id ?? '');
         setEntries([{
           id: crypto.randomUUID(),
@@ -119,7 +119,7 @@ export default function TimesheetDetailPage() {
           data: {
             work_type: entry.workType,
             hours: parseFloat(entry.hours),
-            notes: entry.notes || undefined,
+             notes: entry.notes ?? null,
             pre_inspection: entry.preInspection,
           },
         });

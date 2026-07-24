@@ -21,7 +21,7 @@ export function calculateGlencoreRisk(
   likelihood: 'A' | 'B' | 'C' | 'D' | 'E'
 ): GlencoreRiskResult {
   const key = `${consequenceSeverity}${likelihood}`;
-  const riskRank = GLENCORE_GRID[key];
+  const riskRank = GLENCORE_GRID[key] ?? 0;
 
   let riskRating: 'High' | 'Medium' | 'Low';
   if (riskRank >= 17) {

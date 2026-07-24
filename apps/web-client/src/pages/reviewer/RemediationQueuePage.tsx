@@ -159,7 +159,7 @@ export default function RemediationQueuePage() {
 function RemediationRow({ deficiency, role, onVerify, onOpen }: { deficiency: import('../../types').Deficiency; role: string | null; onVerify: (id: string) => void; onOpen: () => void }) {
   const defId = deficiency.id || (deficiency as unknown as Record<string, unknown>).deficiency_id as string;
   const { data: hasEvidence } = useHasRemediationEvidence(defId);
-  const canVerify = deficiency.remediation_status === RemediationStatus.PendingVerification && hasEvidence === true && isReviewerOrAdmin(role);
+   const canVerify = deficiency.remediation_status === RemediationStatus.PendingVerification && hasEvidence && isReviewerOrAdmin(role);
 
   return (
     <tr className="border-b border-border hover:bg-surface-hover transition-colors">

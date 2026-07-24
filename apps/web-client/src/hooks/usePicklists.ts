@@ -12,13 +12,13 @@ const TYPE_MAP: Record<string, PicklistEntry['type']> = {
 export function usePicklists(type: 'component-types' | 'work-types' | 'structure-types') {
   return useQuery<PicklistEntry[]>({
     queryKey: ['picklists', type],
-    queryFn: async () => {
+    queryFn: async (): Promise<PicklistEntry[]> => {
       const items = await apiClient<Array<Record<string, unknown>>>(ENDPOINTS.picklists.byType(type));
       return items.map(item => ({
-        id: (item as Record<string, string>).component_type_id || (item as Record<string, string>).work_type_id || (item as Record<string, string>).structure_type_id,
+        id: (item as Record<string, string>).component_type_id ?? (item as Record<string, string>).work_type_id ?? (item as Record<string, string>).structure_type_id ?? '',
         name: item.name as string,
         isActive: (item.is_active ?? true) as boolean,
-        type: TYPE_MAP[type],
+        type: TYPE_MAP[type] as PicklistEntry['type'],
       }));
     },
   });
