@@ -14,15 +14,18 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
       },
       manifest: {
+        id: '/',
         name: 'StructApp',
         short_name: 'StructApp',
         description: 'Structural inspection PWA',
         start_url: '/',
         scope: '/',
         lang: 'en',
+        orientation: 'any',
         theme_color: '#000000',
         background_color: '#000000',
         display: 'standalone',
+        categories: ['business', 'productivity'],
         icons: [
           { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
           { src: 'pwa-192x192-maskable.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
