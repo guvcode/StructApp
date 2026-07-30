@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSyncState } from '../../hooks/useSync';
 import { getPendingItems, getAllQueueItems, clearQueue } from '../../services/mockSync';
 import { apiClient } from '../../services/api/apiClient';
 import { ENDPOINTS } from '../../services/api/endpoints';
 import { getActiveClientId } from '../../lib/authStore';
+import { syncWithAutoRefresh } from '../../lib/sync';
+import { queryClient } from '../../lib/queryClient';
+import { db } from '../../lib/db';
 import type { SyncQueueItem } from '../../types/index';
 import Skeleton from '../../components/Skeleton';
 
@@ -13,6 +16,7 @@ const activeClientId = getActiveClientId() || '';
 
 export default function SyncPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data: syncState } = useSyncState();
   const [pendingItems, setPendingItems] = useState<SyncQueueItem[]>([]);
   const [allItems, setAllItems] = useState<SyncQueueItem[]>([]);
@@ -33,11 +37,32 @@ export default function SyncPage() {
   useEffect(() => { load(); }, []);
 
   const pushMutation = useMutation({
-    mutationFn: () => apiClient(ENDPOINTS.sync.push, { method: 'POST', body: '{}' }),
-    onSuccess: () => {
-      setMessage('Synced items to server.');
-      clearQueue();
-      load();
+    mutationFn: async () => {
+      const authState = await db.authState.get('current');
+      if (!authState?.accessToken || !authState?.refreshToken) {
+        throw new Error('No auth tokens available');
+      }
+      return syncWithAutoRefresh(authState.accessToken, authState.refreshToken);
+    },
+    onSuccess: (result) => {
+      if (result.success) {
+        const data = result.data as Record<string, unknown>;
+        const syncedDeficiencies = (data?.synced_deficiencies as unknown as Array<unknown> | undefined)?.length ?? 0;
+        const syncedSubmissions = (data?.synced_submissions as unknown as Array<unknown> | undefined)?.length ?? 0;
+        const syncedPendingStructures = (data?.synced_pending_structures as unknown as Array<unknown> | undefined)?.length ?? 0;
+        const totalSynced = syncedDeficiencies + syncedSubmissions + syncedPendingStructures;
+        setMessage(`Synced ${totalSynced} items to server.`);
+        clearQueue();
+        load();
+        queryClient.invalidateQueries({ queryKey: ['sync', 'state'] });
+        queryClient.invalidateQueries({ queryKey: ['inspections'] });
+        queryClient.invalidateQueries({ queryKey: ['deficiencies'] });
+        queryClient.invalidateQueries({ queryKey: ['pending-structures'] });
+        queryClient.invalidateQueries({ queryKey: ['dashboard', 'admin'] });
+        queryClient.invalidateQueries({ queryKey: ['admin-photos'] });
+      } else {
+        setError(result.message || 'Push failed.');
+      }
     },
     onError: () => setError('Push failed. Please try again.'),
   });
@@ -197,6 +222,12 @@ export default function SyncPage() {
       setMessage(`Pulled ${data.inspections?.length ?? 0} inspections, ${data.deficiencies?.length ?? 0} deficiencies, ${data.pending_structure_deficiencies?.length ?? 0} pending deficiencies.`);
       clearQueue();
       load();
+      queryClient.invalidateQueries({ queryKey: ['sync', 'state'] });
+      queryClient.invalidateQueries({ queryKey: ['inspections'] });
+      queryClient.invalidateQueries({ queryKey: ['deficiencies'] });
+      queryClient.invalidateQueries({ queryKey: ['pending-structures'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'admin'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-photos'] });
     },
     onError: () => setError('Pull failed. Please try again.'),
   });

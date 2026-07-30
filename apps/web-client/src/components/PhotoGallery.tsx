@@ -19,16 +19,22 @@ function parseGpsFromRaw(raw?: string): { lat?: number; lng?: number } {
   }
 }
 
-function PhotoMetadata({ photo }: { photo: PhotoRecord }) {
+function PhotoMetadata({ photo, variant }: { photo: PhotoRecord; variant?: 'light' | 'dark' }) {
+  const isDark = variant === 'dark';
   const [open, setOpen] = useState(false);
   const gps = parseGpsFromRaw(photo.raw_exif_payload);
   const hasGps = photo.gps_latitude != null || gps.lat != null;
 
+  const labelCls = isDark ? 'text-gray-400' : 'text-gray-500';
+  const valueCls = isDark ? 'text-gray-200' : 'text-gray-800';
+  const btnCls = isDark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900';
+  const borderCls = isDark ? 'border-white/10' : 'border-gray-200';
+
   return (
-    <div className="border-t border-white/10 pt-2 mt-2">
+    <div className={`border-t ${borderCls} pt-2 mt-2`}>
       <button
         onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
-        className="text-xs text-gray-300 hover:text-white flex items-center gap-1 transition-colors"
+        className={`text-xs flex items-center gap-1 transition-colors ${btnCls}`}
         aria-expanded={open}
       >
         <svg
@@ -43,26 +49,26 @@ function PhotoMetadata({ photo }: { photo: PhotoRecord }) {
         <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
           {photo.original_filename && (
             <div>
-              <span className="text-gray-400">Filename</span>
-              <p className="text-gray-200 truncate">{photo.original_filename}</p>
+              <span className={labelCls}>Filename</span>
+              <p className={valueCls}>{photo.original_filename}</p>
             </div>
           )}
           {photo.captured_at && (
             <div>
-              <span className="text-gray-400">Captured</span>
-              <p className="text-gray-200">{new Date(photo.captured_at).toLocaleString()}</p>
+              <span className={labelCls}>Captured</span>
+              <p className={valueCls}>{new Date(photo.captured_at).toLocaleString()}</p>
             </div>
           )}
           {photo.camera_make && photo.camera_model && (
             <div>
-              <span className="text-gray-400">Camera</span>
-              <p className="text-gray-200">{photo.camera_make} {photo.camera_model}</p>
+              <span className={labelCls}>Camera</span>
+              <p className={valueCls}>{photo.camera_make} {photo.camera_model}</p>
             </div>
           )}
           {hasGps && (
             <div>
-              <span className="text-gray-400">GPS</span>
-              <p className="text-gray-200">
+              <span className={labelCls}>GPS</span>
+              <p className={valueCls}>
                 {(photo.gps_latitude ?? gps.lat)?.toFixed(4)}, {(photo.gps_longitude ?? gps.lng)?.toFixed(4)}
               </p>
             </div>
@@ -97,7 +103,7 @@ export default function PhotoGallery({ photos, title }: PhotoGalleryProps) {
             {photo.purpose === 'evidence' ? 'Evidence' : 'Remediation'}
           </span>
         </div>
-        {hasInlineDetails && <PhotoMetadata photo={photo} />}
+        {hasInlineDetails &&         <PhotoMetadata photo={photo} variant="light" />}
       </div>
     );
   };
@@ -142,7 +148,7 @@ export default function PhotoGallery({ photos, title }: PhotoGalleryProps) {
               {new Date(lightbox.created_at).toLocaleDateString()}
             </p>
 {(lightbox.original_filename || lightbox.camera_make || lightbox.camera_model || lightbox.gps_latitude != null || lightbox.raw_exif_payload) && (
-                <PhotoMetadata photo={lightbox} />
+                <PhotoMetadata photo={lightbox} variant="dark" />
               )}
             <button
               onClick={() => setLightbox(null)}

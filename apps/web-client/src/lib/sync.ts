@@ -127,6 +127,52 @@ export async function syncWithAutoRefresh(
     }
   }
 
+  // On success, mark synced pending structure deficiencies and photos as Synced
+  if (data.success && data.data?.synced_pending_structures) {
+    const syncedPendingStructures = data.data.synced_pending_structures as Array<{
+      local_id: string;
+      server_id: string;
+      deficiency_local_ids: string[];
+    }>;
+    const syncedDeficiencyLocalIds = new Set<string>(
+      syncedPendingStructures.flatMap((s) => s.deficiency_local_ids)
+    );
+
+    const allPendingDeficiencies = await db.offlinePendingStructureDeficiencies
+      .where('syncState')
+      .equals('Pending_Sync')
+      .toArray();
+
+    if (syncedDeficiencyLocalIds.size > 0) {
+      for (const deficiency of allPendingDeficiencies) {
+        if (deficiency.clientLocalId && syncedDeficiencyLocalIds.has(deficiency.clientLocalId)) {
+          await db.offlinePendingStructureDeficiencies.update(deficiency.localId!, {
+            syncState: 'Synced',
+          });
+        }
+      }
+    }
+
+    const allPendingPhotos = await db.offlinePendingStructurePhotos
+      .where('syncState')
+      .equals('Pending_Sync')
+      .toArray();
+
+    for (const photo of allPendingPhotos) {
+      const deficiencyLocalId = photo.pendingDeficiencyLocalId;
+      if (deficiencyLocalId != null) {
+        const matchingDeficiency = allPendingDeficiencies.find(
+          (d) => d.localId === deficiencyLocalId && syncedDeficiencyLocalIds.has(d.clientLocalId!)
+        );
+        if (matchingDeficiency) {
+          await db.offlinePendingStructurePhotos.update(photo.localId!, {
+            syncState: 'Synced',
+          });
+        }
+      }
+    }
+  }
+
   // Remove synced submissions from the queue
   if (data.success && data.data?.synced_submissions) {
     for (const sub of data.data.synced_submissions) {

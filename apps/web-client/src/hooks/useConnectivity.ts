@@ -18,7 +18,7 @@ export function useConnectivity(): ConnectivityState {
 
   const getPendingCount = useCallback(async (): Promise<number> => {
     try {
-      const [pendingDeficiencies, pendingPinItems, pendingSubmissions] = await Promise.all([
+      const [pendingDeficiencies, pendingPinItems, pendingSubmissions, pendingStructureDeficiencies, pendingStructurePhotos] = await Promise.all([
         db.deficiencies
           .where('syncState')
           .equals('Pending_Sync')
@@ -29,8 +29,16 @@ export function useConnectivity(): ConnectivityState {
           .where('syncState')
           .equals('Pending_Sync')
           .count(),
+        db.offlinePendingStructureDeficiencies
+          .where('syncState')
+          .equals('Pending_Sync')
+          .count(),
+        db.offlinePendingStructurePhotos
+          .where('syncState')
+          .equals('Pending_Sync')
+          .count(),
       ]);
-      return pendingDeficiencies + pendingPinItems + pendingSubmissions;
+      return pendingDeficiencies + pendingPinItems + pendingSubmissions + pendingStructureDeficiencies + pendingStructurePhotos;
     } catch {
       return 0;
     }
@@ -49,14 +57,18 @@ export function useConnectivity(): ConnectivityState {
       return;
     }
 
-    const result = await syncWithAutoRefresh(authState.accessToken, authState.refreshToken);
+    try {
+      const result = await syncWithAutoRefresh(authState.accessToken, authState.refreshToken);
 
-    if (!result.success && result.error_code === 'AUTH_EXPIRED') {
-      setIsReconnecting(false);
-      return;
+      if (!result.success && result.error_code === 'AUTH_EXPIRED') {
+        setIsReconnecting(false);
+        return;
+      }
+    } catch {
+      // Sync failed due to network or server error; UI will retry on next event
+    } finally {
+      updatePendingCount();
     }
-
-    updatePendingCount();
   }, [updatePendingCount]);
 
   useEffect(() => {
