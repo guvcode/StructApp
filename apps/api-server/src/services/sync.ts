@@ -460,9 +460,9 @@ export async function processSyncPull(
              ORDER BY created_at DESC
              LIMIT 20
            ) i ON d.inspection_id = i.inspection_id
-           WHERE d.client_id = $1`,
-          isContractor ? [clientId, userId, clientId] : [clientId, clientId]
-        ),
+            WHERE d.client_id = $1`,
+           isContractor ? [clientId, userId] : [clientId]
+         ),
         client.query(
           `SELECT pending_structure_id, local_id, site_id, contractor_id, asset_tag, description,
                   qr_code_value, status, rejection_reason, reviewed_by, reviewed_at,
