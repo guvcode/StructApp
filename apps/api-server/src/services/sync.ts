@@ -366,6 +366,8 @@ export async function logSyncAction(
 
 export async function processSyncPull(
   clientId: string,
+  userId: string,
+  role: string,
   _input: { last_sync_at?: string }
 ): Promise<{
   structures: Array<{ structure_id: string; asset_tag: string; description: string; qr_code_value: string | null }>;
@@ -418,12 +420,14 @@ export async function processSyncPull(
       filename: string; storage_url: string | null; caption: string; display_order: number;
       created_at: string;
     }>;
-  }> {
-   const client = await pool.connect();
-   try {
-     await client.query('BEGIN');
-     await client.query("SELECT set_config('app.current_client_id', $1, true)", [clientId]);
-     await client.query("SELECT set_config('app.bypass_tenant_check', 'true', true)");
+   }> {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      await client.query("SELECT set_config('app.current_client_id', $1, true)", [clientId]);
+      await client.query("SELECT set_config('app.bypass_tenant_check', 'true', true)");
+
+      const isContractor = role === 'Contractor';
 
       const [structuresResult, sitesResult, projectsResult, componentTypesResult, workTypesResult, taxonomyResult, inspectionsResult, deficienciesResult, pendingStructuresResult, pendingDeficienciesResult, pendingPhotosResult] = await Promise.all([
         client.query('SELECT structure_id, asset_tag, description, qr_code_value FROM structures WHERE client_id = $1', [clientId]),
@@ -438,10 +442,10 @@ export async function processSyncPull(
                   i.updated_at, i.returned_reason, i.approved_by, i.approved_at
            FROM inspections i
            JOIN structures st ON i.structure_id = st.structure_id
-           WHERE i.client_id = $1
+           WHERE i.client_id = $1${isContractor ? ' AND i.inspector_id = $2' : ''}
            ORDER BY i.created_at DESC
            LIMIT 20`,
-          [clientId]
+          isContractor ? [clientId, userId] : [clientId]
         ),
         client.query(
           `SELECT d.deficiency_id, d.inspection_id, d.client_id, d.description,
@@ -452,22 +456,22 @@ export async function processSyncPull(
            FROM deficiency_records d
            JOIN (
              SELECT inspection_id FROM inspections
-             WHERE client_id = $1
+             WHERE client_id = $1${isContractor ? ' AND inspector_id = $2' : ''}
              ORDER BY created_at DESC
              LIMIT 20
            ) i ON d.inspection_id = i.inspection_id
            WHERE d.client_id = $1`,
-          [clientId]
+          isContractor ? [clientId, userId, clientId] : [clientId, clientId]
         ),
         client.query(
           `SELECT pending_structure_id, local_id, site_id, contractor_id, asset_tag, description,
                   qr_code_value, status, rejection_reason, reviewed_by, reviewed_at,
                   created_at, updated_at
            FROM pending_structures
-           WHERE client_id = $1
+           WHERE client_id = $1${isContractor ? ' AND contractor_id = $2' : ''}
            ORDER BY created_at DESC
            LIMIT 50`,
-          [clientId]
+          isContractor ? [clientId, userId] : [clientId]
         ),
         client.query(
           `SELECT pending_deficiency_id, pending_structure_id, local_id, category, equipment_type,
@@ -476,18 +480,18 @@ export async function processSyncPull(
                   gps_latitude, gps_longitude, created_at, updated_at
            FROM pending_structure_deficiencies
            WHERE pending_structure_id IN (
-             SELECT pending_structure_id FROM pending_structures WHERE client_id = $1
+             SELECT pending_structure_id FROM pending_structures WHERE client_id = $1${isContractor ? ' AND contractor_id = $2' : ''}
            )`,
-          [clientId]
+          isContractor ? [clientId, userId] : [clientId]
         ),
         client.query(
           `SELECT pending_photo_id, pending_structure_id, pending_deficiency_id, filename,
                   storage_url, caption, display_order, created_at
            FROM pending_structure_photos
            WHERE pending_structure_id IN (
-             SELECT pending_structure_id FROM pending_structures WHERE client_id = $1
+             SELECT pending_structure_id FROM pending_structures WHERE client_id = $1${isContractor ? ' AND contractor_id = $2' : ''}
            )`,
-          [clientId]
+          isContractor ? [clientId, userId] : [clientId]
         ),
       ]);
 

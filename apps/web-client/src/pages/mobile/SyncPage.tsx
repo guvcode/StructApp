@@ -26,8 +26,8 @@ export default function SyncPage() {
 
   const load = async () => {
     try {
-      setPendingItems(getPendingItems());
-      setAllItems(getAllQueueItems());
+      setPendingItems(await getPendingItems());
+      setAllItems(await getAllQueueItems());
     } catch {
       setError('Failed to load sync data.');
     }
