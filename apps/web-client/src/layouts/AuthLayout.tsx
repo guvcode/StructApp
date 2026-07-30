@@ -14,7 +14,7 @@ export default function AuthLayout() {
         <Outlet />
       </main>
       <footer className="p-2 text-center text-xs text-text-secondary border-t border-border">
-        v2.0.0
+        v3.0.0
       </footer>
     </div>
   );
