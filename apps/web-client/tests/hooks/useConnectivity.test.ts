@@ -4,6 +4,8 @@ import { useConnectivity } from '../../src/hooks/useConnectivity';
 
 let mockDeficienciesCount = 0;
 let mockSubmissionsCount = 0;
+let mockPendingStructureDeficienciesCount = 0;
+let mockPendingStructurePhotosCount = 0;
 
 vi.mock('../../src/lib/db', () => ({
   db: {
@@ -28,6 +30,20 @@ vi.mock('../../src/lib/db', () => ({
         }),
       }),
     },
+    offlinePendingStructureDeficiencies: {
+      where: () => ({
+        equals: () => ({
+          count: () => Promise.resolve(mockPendingStructureDeficienciesCount),
+        }),
+      }),
+    },
+    offlinePendingStructurePhotos: {
+      where: () => ({
+        equals: () => ({
+          count: () => Promise.resolve(mockPendingStructurePhotosCount),
+        }),
+      }),
+    },
   },
 }));
 
@@ -47,6 +63,8 @@ describe('useConnectivity hook', () => {
     });
     mockDeficienciesCount = 0;
     mockSubmissionsCount = 0;
+    mockPendingStructureDeficienciesCount = 0;
+    mockPendingStructurePhotosCount = 0;
     mockSyncWithAutoRefresh.mockClear();
   });
 
@@ -122,5 +140,20 @@ describe('useConnectivity hook', () => {
     expect(mockSyncWithAutoRefresh).not.toHaveBeenCalled();
 
     vi.useRealTimers();
+  });
+
+  test('getPendingCount includes pending structure deficiencies and photos', async () => {
+    mockDeficienciesCount = 1;
+    mockPendingStructureDeficienciesCount = 2;
+    mockPendingStructurePhotosCount = 3;
+
+    Object.defineProperty(navigator, 'onLine', { value: true, writable: true, configurable: true });
+    const { result } = renderHook(() => useConnectivity());
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(result.current.pendingSyncCount).toBe(6);
   });
 });

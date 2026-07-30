@@ -28,12 +28,13 @@ const mockDb = vi.hoisted(() => ({
     }),
   },
   offlinePendingStructurePhotos: {
-    where: vi.fn().mockReturnValue({
-      equals: vi.fn().mockReturnValue({
-        toArray: vi.fn().mockResolvedValue([]),
+      where: vi.fn().mockReturnValue({
+        equals: vi.fn().mockReturnValue({
+          toArray: vi.fn().mockResolvedValue([]),
+        }),
       }),
-    }),
-  },
+      update: vi.fn(),
+    },
 }));
 
 vi.mock('../src/lib/db', () => ({ db: mockDb }));
@@ -203,14 +204,27 @@ describe('sync utils', () => {
       expect(result.error_code).toBe('AUTH_EXPIRED');
     });
 
-    it('Pull should collect pending structures deficiencies and photos', async () => {
+  describe('syncWithAutoRefresh marks pending structures as synced', () => {
+    const originalFetch = global.fetch;
+
+    beforeEach(() => {
+      global.fetch = vi.fn();
+      mockDb.authState.get.mockResolvedValue({ accessToken: 'test-token', refreshToken: 'test-refresh' });
+      vi.clearAllMocks();
+    });
+
+    afterEach(() => {
+      global.fetch = originalFetch;
+    });
+
+    it('marks synced pending structure deficiencies and photos as Synced', async () => {
       const validToken = createMockToken(3600);
 
       const pendingDeficiencies = [
         {
           localId: 1,
           pendingStructureLocalId: 10,
-          clientLocalId: 'client-1',
+          clientLocalId: 'ps-def-1',
           category: 'Steel',
           equipmentType: 'Girder',
           component: 'Flange',
@@ -233,7 +247,7 @@ describe('sync utils', () => {
           localId: 1,
           pendingStructureLocalId: 10,
           pendingDeficiencyLocalId: 1,
-          clientLocalId: 'client-1',
+          clientLocalId: 'ps-photo-1',
           filename: 'photo.jpg',
           caption: 'Test',
           displayOrder: 0,
@@ -260,19 +274,39 @@ describe('sync utils', () => {
         equals: vi.fn().mockReturnValue({ toArray: psPhotoToArray }),
       });
 
+      const pendingStructureUpdate = vi.fn().mockResolvedValue(1);
+      const pendingPhotoUpdate = vi.fn().mockResolvedValue(1);
+
+      mockDb.offlinePendingStructureDeficiencies.update = pendingStructureUpdate;
+      mockDb.offlinePendingStructurePhotos.update = pendingPhotoUpdate;
+
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ success: true, data: [] }),
+        json: () =>
+          Promise.resolve({
+            success: true,
+            data: {
+              synced_pending_structures: [
+                {
+                  local_id: 'sync-bundle-1',
+                  server_id: 'server-ps-1',
+                  deficiency_local_ids: ['ps-def-1'],
+                },
+              ],
+            },
+          }),
       });
 
       const result = await syncWithAutoRefresh(validToken, 'refresh-token');
 
       expect(result.success).toBe(true);
-      const callArgs = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
-      const body = JSON.parse(callArgs[1].body);
-      expect(body.pending_structures).toHaveLength(1);
-      expect(body.pending_structures[0].deficiencies).toHaveLength(1);
-      expect(body.pending_structures[0].photos).toHaveLength(1);
+      expect(pendingStructureUpdate).toHaveBeenCalledWith(1, {
+        syncState: 'Synced',
+      });
+      expect(pendingPhotoUpdate).toHaveBeenCalledWith(1, {
+        syncState: 'Synced',
+      });
     });
   });
+});
 });
