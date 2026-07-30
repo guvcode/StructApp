@@ -19,7 +19,7 @@ export default function SettingsPage() {
       <h2 className="text-lg font-bold text-text-primary">Settings</h2>
       <div className="bg-surface-primary border border-border rounded-xl divide-y divide-border">
         <div className="px-4 py-3 text-sm text-text-secondary">
-          App version: 2.0.0
+          App version: 3.0.0
         </div>
         {canInstall && (
           <div className="px-4 py-3">
