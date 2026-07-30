@@ -145,15 +145,17 @@ export async function getSyncState(): Promise<SyncStateInfo> {
 
 export async function pushChanges(_items: unknown[]): Promise<{ success: boolean; synced: number }> {
   await delay(80);
-  if (_items && _items.length > 0) {
-    return { success: true, synced: _items.length };
+  if (!_items || _items.length === 0) {
+    return { success: true, synced: 0 };
   }
-  for (const item of localQueue.values()) {
-    item.status = 'synced';
+  for (const item of _items) {
+    const queueItem = item as SyncQueueItem;
+    const existing = localQueue.get(queueItem.id);
+    if (existing) {
+      existing.status = 'synced';
+    }
   }
-  const count = localQueue.size;
-  localQueue.clear();
-  return { success: true, synced: count };
+  return { success: true, synced: _items.length };
 }
 
 export async function pullChanges(_since: string): Promise<{ items: unknown[] }> {

@@ -103,31 +103,37 @@ async function dispatchNotification(
     }
 
     case 'inspection_submitted': {
-      const reviewerEmails = payload.reviewer_emails as string[];
-      for (const email of reviewerEmails) {
-        await resendAdapter.sendEmail(
-          email,
-          'Inspection Submitted',
-          'An inspection has been submitted and requires review.',
-        );
+      if (payload.reviewer_emails) {
+        const reviewerEmails = payload.reviewer_emails as string[];
+        for (const email of reviewerEmails) {
+          await resendAdapter.sendEmail(
+            email,
+            'Inspection Submitted',
+            'An inspection has been submitted and requires review.',
+          );
+        }
       }
       break;
     }
 
     case 'inspection_returned':
-      await resendAdapter.sendEmail(
-        payload.inspector_email as string,
-        'Inspection Returned',
-        `Your inspection has been returned. Reason: ${payload.returned_reason}`,
-      );
+      if (payload.inspector_email) {
+        await resendAdapter.sendEmail(
+          payload.inspector_email as string,
+          'Inspection Returned',
+          `Your inspection has been returned. Reason: ${payload.returned_reason}`,
+        );
+      }
       break;
 
     case 'inspection_reassigned':
-      await resendAdapter.sendEmail(
-        payload.old_inspector_email as string,
-        'Inspection Reassigned',
-        `An inspection for structure ${payload.structure_id} (scheduled ${payload.scheduled_date}) has been reassigned. Reason: ${payload.reason}`,
-      );
+      if (payload.old_inspector_email) {
+        await resendAdapter.sendEmail(
+          payload.old_inspector_email as string,
+          'Inspection Reassigned',
+          `An inspection for structure ${payload.structure_id} (scheduled ${payload.scheduled_date}) has been reassigned. Reason: ${payload.reason}`,
+        );
+      }
       break;
 
     case 'bulk_reassign_summary':
@@ -164,32 +170,38 @@ async function dispatchNotification(
       break;
 
     case 'pending_structure_submitted': {
-      const reviewerEmails = payload.reviewer_emails as string[];
-      for (const email of reviewerEmails) {
-        await resendAdapter.sendEmail(
-          email,
-          'Pending Structure Submitted',
-          `A new on-site structure discovery (asset ${payload.asset_tag}) has been submitted by a contractor and is awaiting reconciliation.`,
-        );
+      if (payload.reviewer_emails) {
+        const reviewerEmails = payload.reviewer_emails as string[];
+        for (const email of reviewerEmails) {
+          await resendAdapter.sendEmail(
+            email,
+            'Pending Structure Submitted',
+            `A new on-site structure discovery (asset ${payload.asset_tag}) has been submitted by a contractor and is awaiting reconciliation.`,
+          );
+        }
       }
       break;
     }
 
     case 'pending_structure_approved': {
-      await resendAdapter.sendEmail(
-        payload.contractor_email as string,
-        'Structure Discovery Approved',
-        `Your on-site discovery for asset ${payload.asset_tag} has been approved and registered as structure ${payload.structure_id}.`,
-      );
+      if (payload.contractor_email) {
+        await resendAdapter.sendEmail(
+          payload.contractor_email as string,
+          'Structure Discovery Approved',
+          `Your on-site discovery for asset ${payload.asset_tag} has been approved and registered as structure ${payload.structure_id}.`,
+        );
+      }
       break;
     }
 
     case 'pending_structure_rejected': {
-      await resendAdapter.sendEmail(
-        payload.contractor_email as string,
-        'Structure Discovery Rejected',
-        `Your on-site discovery for asset ${payload.asset_tag} was rejected. Reason: ${payload.rejection_reason}`,
-      );
+      if (payload.contractor_email) {
+        await resendAdapter.sendEmail(
+          payload.contractor_email as string,
+          'Structure Discovery Rejected',
+          `Your on-site discovery for asset ${payload.asset_tag} was rejected. Reason: ${payload.rejection_reason}`,
+        );
+      }
       break;
     }
 

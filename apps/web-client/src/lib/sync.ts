@@ -116,7 +116,7 @@ export async function syncWithAutoRefresh(
   // On success, mark synced deficiencies as Synced
   if (data.success && data.data?.synced_deficiencies) {
     for (const synced of data.data.synced_deficiencies) {
-      const localId = parseInt(synced.local_id, 10);
+      const localId = Number(synced.local_id);
       if (!isNaN(localId)) {
         await db.deficiencies.update(localId, {
           syncState: 'Synced',

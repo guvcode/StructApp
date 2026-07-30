@@ -171,7 +171,7 @@ export default function SyncPage() {
         await db.offlinePendingStructureDeficiencies.bulkPut(
           data.pending_structure_deficiencies.map((d: any) => ({
             pendingDeficiencyId: d.pending_deficiency_id,
-            pendingStructureLocalId: parseInt(d.pending_structure_id, 10),
+            pendingStructureLocalId: d.pending_structure_id,
              clientLocalId: activeClientId,
              category: d.category ?? null,
              equipmentType: d.equipment_type ?? null,
@@ -194,8 +194,8 @@ export default function SyncPage() {
         await db.offlinePendingStructurePhotos.bulkPut(
           data.pending_structure_photos.map((p: any) => ({
             pendingPhotoId: p.pending_photo_id,
-            pendingStructureLocalId: parseInt(p.pending_structure_id, 10),
-            ...(p.pending_deficiency_id ? { pendingDeficiencyLocalId: parseInt(p.pending_deficiency_id, 10) } : {}),
+            pendingStructureLocalId: p.pending_structure_id,
+            ...(p.pending_deficiency_id ? { pendingDeficiencyLocalId: p.pending_deficiency_id } : {}),
             clientLocalId: activeClientId,
             filename: p.filename,
             caption: p.caption ?? '',

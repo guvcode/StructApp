@@ -509,10 +509,13 @@ export async function processSyncPull(
         pending_structure_deficiencies: pendingDeficienciesResult.rows,
         pending_structure_photos: pendingPhotosResult.rows,
       };
-  } finally {
-    client.release();
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
   }
-}
 
 export async function processPhotoUpload(
   clientId: string,
@@ -579,6 +582,9 @@ export async function processPhotoUpload(
       photo_id: photoResult.rows[0].photo_id,
       storage_url: storageUrl,
     };
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
   } finally {
     client.release();
   }

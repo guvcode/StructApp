@@ -87,7 +87,7 @@ export default function PhotoGallery({ photos, title }: PhotoGalleryProps) {
   const remediationPhotos = photos.filter(p => p.purpose === 'remediation_evidence');
 
   const renderPhoto = (photo: PhotoRecord) => {
-    const hasInlineDetails = photo.original_filename != null || photo.camera_make != null || photo.camera_model != null || photo.gps_latitude != null || photo.raw_exif_payload != null;
+    const hasInlineDetails = photo.original_filename || photo.camera_make || photo.camera_model || photo.gps_latitude != null || photo.raw_exif_payload;
     return (
       <div
         key={photo.id}
