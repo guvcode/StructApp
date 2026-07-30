@@ -1,5 +1,4 @@
 import { processSyncPush } from '../src/services/sync';
-import { calculatePriorityTier } from '../src/utils/riskCalculator';
 
 jest.mock('../src/lib/db', () => ({
   pool: {
@@ -174,7 +173,7 @@ describe('processSyncPull', () => {
     mockPool.connect.mockResolvedValue(mockClient);
 
     const { processSyncPull } = require('../src/services/sync');
-    const result = await processSyncPull('client-1', {});
+    const result = await processSyncPull('client-1', 'user-123', 'Admin', {});
 
     expect(result.taxonomy).toHaveLength(1);
     expect(result.taxonomy[0].label).toBe('Roofing');

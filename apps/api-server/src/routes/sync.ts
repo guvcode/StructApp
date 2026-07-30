@@ -27,9 +27,9 @@ syncRouter.post(
   requireAuth,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const user = (req as Request & { user: { client_id: string } }).user;
+      const user = (req as Request & { user: { client_id: string; sub: string; role: string } }).user;
       const parsed = syncPullSchema.safeParse(req.body);
-      const result = await processSyncPull(user.client_id, parsed.success ? parsed.data : {});
+      const result = await processSyncPull(user.client_id, user.sub, user.role, parsed.success ? parsed.data : {});
       res.json({ success: true, data: result });
     } catch (err) {
       next(err);

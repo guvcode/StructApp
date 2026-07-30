@@ -1,4 +1,5 @@
 import type { SyncStateInfo, SyncQueueItem } from '../types/index';
+import { db } from '../lib/db';
 
 function delay(ms = 70): Promise<void> {
   return new Promise(r => setTimeout(r, ms + Math.random() * 60));
@@ -30,12 +31,99 @@ export async function getPendingCount(): Promise<number> {
   return getPendingCountSync();
 }
 
-export function getPendingItems(): SyncQueueItem[] {
-  return Array.from(localQueue.values()).filter(i => i.status === 'pending');
+export async function getPendingItems(): Promise<SyncQueueItem[]> {
+  const [deficiencies, pendingStructureDeficiencies, submissions] = await Promise.all([
+    db.deficiencies.where('syncState').equals('Pending_Sync').toArray(),
+    db.offlinePendingStructureDeficiencies.where('syncState').equals('Pending_Sync').toArray(),
+    db.offlineSubmissions.where('syncState').equals('Pending_Sync').toArray(),
+  ]);
+
+  const items: SyncQueueItem[] = [];
+
+  for (const d of deficiencies) {
+    items.push({
+      id: String(d.localId),
+      type: 'deficiency',
+      payload: d,
+      status: 'pending',
+      created_at: d.createdAt.toISOString(),
+    });
+  }
+
+  for (const d of pendingStructureDeficiencies) {
+    items.push({
+      id: String(d.localId),
+      type: 'deficiency',
+      payload: d,
+      status: 'pending',
+      created_at: new Date().toISOString(),
+    });
+  }
+
+  for (const s of submissions) {
+    items.push({
+      id: s.inspectionId,
+      type: 'inspection_submit',
+      payload: s,
+      status: 'pending',
+      created_at: new Date().toISOString(),
+    });
+  }
+
+  return items;
 }
 
-export function getAllQueueItems(): SyncQueueItem[] {
-  return Array.from(localQueue.values());
+export async function getAllQueueItems(): Promise<SyncQueueItem[]> {
+  const [deficiencies, pendingStructureDeficiencies, submissions, pinOutbox] = await Promise.all([
+    db.deficiencies.toArray(),
+    db.offlinePendingStructureDeficiencies.toArray(),
+    db.offlineSubmissions.toArray(),
+    db.pinOutbox.toArray(),
+  ]);
+
+  const items: SyncQueueItem[] = [];
+
+  for (const d of deficiencies) {
+    items.push({
+      id: String(d.localId),
+      type: 'deficiency',
+      payload: d,
+      status: d.syncState === 'Pending_Sync' ? 'pending' : 'synced',
+      created_at: d.createdAt.toISOString(),
+    });
+  }
+
+  for (const d of pendingStructureDeficiencies) {
+    items.push({
+      id: String(d.localId),
+      type: 'deficiency',
+      payload: d,
+      status: d.syncState === 'Pending_Sync' ? 'pending' : 'synced',
+      created_at: new Date().toISOString(),
+    });
+  }
+
+  for (const s of submissions) {
+    items.push({
+      id: s.inspectionId,
+      type: 'inspection_submit',
+      payload: s,
+      status: s.syncState === 'Pending_Sync' ? 'pending' : 'synced',
+      created_at: new Date().toISOString(),
+    });
+  }
+
+  for (const p of pinOutbox) {
+    items.push({
+      id: String(p.localId),
+      type: 'photo',
+      payload: p,
+      status: 'pending',
+      created_at: p.createdAt.toISOString(),
+    });
+  }
+
+  return items;
 }
 
 export function removeFromQueue(id: string): void {
